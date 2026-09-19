@@ -80,26 +80,30 @@
 </section>
 {% endif %}
 
-<!-- Store promise. Gray band — the colour shift is the only divider. -->
+<!-- Store promise. Gray band — the colour shift is the only divider.
+     Every line here is written by staff under Homepage in the management
+     panel; only the stock figure is counted from the catalog. -->
 <section class="band band-gray">
   <div class="wrap">
-    <h2 class="t-subheading text-ink">{% translate "Why shop here" %}</h2>
+    {% if homepage.translated_promise_heading %}<h2 class="t-subheading text-ink">{{ homepage.translated_promise_heading }}</h2>{% endif %}
 
     <div class="mt-10 card bg-paper p-7 sm:p-10 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
       <div>
-        <h3 class="t-heading-sm text-ink">{% translate "Checked devices at the price on the tag" %}</h3>
-        <p class="t-body-sm text-midgray mt-5 max-w-xl">
-          {% translate "Everything listed is on our shelves right now. We test and photograph each device ourselves, and the price on the page is the price at the counter." %}
-        </p>
+        {% if homepage.translated_promise_card_heading %}<h3 class="t-heading-sm text-ink">{{ homepage.translated_promise_card_heading }}</h3>{% endif %}
+        {% if homepage.translated_promise_text %}
+        <p class="t-body-sm text-midgray mt-5 max-w-xl">{{ homepage.translated_promise_text }}</p>
+        {% endif %}
+        {% if homepage.translated_promise_button_text %}
         <div class="mt-7">
-          <a href="{% url 'shop:product_list' %}" class="btn btn-blue">{% translate "Browse the catalog" %}</a>
+          <a href="{% url 'shop:product_list' %}" class="btn btn-blue">{{ homepage.translated_promise_button_text }}</a>
         </div>
+        {% endif %}
       </div>
 
       <div class="text-center lg:text-right">
         <p class="t-display text-ink leading-none figures">{{ in_stock_count }}</p>
-        <p class="t-body-sm text-midgray mt-3">{% translate "devices in stock" %}</p>
-        <p class="t-caption text-midgray mt-1">{% translate "Restocked every week" %}</p>
+        {% if homepage.translated_promise_stat_label %}<p class="t-body-sm text-midgray mt-3">{{ homepage.translated_promise_stat_label }}</p>{% endif %}
+        {% if homepage.translated_promise_stat_caption %}<p class="t-caption text-midgray mt-1">{{ homepage.translated_promise_stat_caption }}</p>{% endif %}
       </div>
     </div>
   </div>
@@ -139,20 +143,21 @@
   </div>
 </section>
 
-<!-- Bring-it-in band, closing the page on the gray canvas. -->
+<!-- Bring-it-in band, closing the page on the gray canvas. Written by
+     staff under Homepage in the management panel. -->
 <section class="band band-gray">
   <div class="wrap grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
     <div>
-      <p class="t-body-sm text-ember">{% translate "Looking for something else" %}</p>
-      <h2 class="t-heading text-ink mt-3">{% translate "Not in the catalog? We will bring it in" %}</h2>
+      {% if homepage.translated_invite_eyebrow %}<p class="t-body-sm text-ember">{{ homepage.translated_invite_eyebrow }}</p>{% endif %}
+      {% if homepage.translated_invite_heading %}<h2 class="t-heading text-ink mt-3">{{ homepage.translated_invite_heading }}</h2>{% endif %}
     </div>
     <div>
-      <p class="t-body-sm text-midgray max-w-xl">
-        {% translate "The shelves change every week. Tell us which model you are after and we will order it in or let you know the moment it arrives." %}
-      </p>
-      {% if contact_settings.has_any_channel %}
+      {% if homepage.translated_invite_text %}
+      <p class="t-body-sm text-midgray max-w-xl">{{ homepage.translated_invite_text }}</p>
+      {% endif %}
+      {% if contact_settings.has_any_channel and homepage.translated_invite_button_text %}
       <div class="mt-7">
-        <a href="{% url 'shop:contact_us' %}" class="btn btn-ghost">{% translate "Tell us what you need" %}</a>
+        <a href="{% url 'shop:contact_us' %}" class="btn btn-ghost">{{ homepage.translated_invite_button_text }}</a>
       </div>
       {% endif %}
     </div>

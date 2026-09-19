@@ -1,0 +1,102 @@
+{% extends "shop/product/_management_base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% translate "Removed Listings" %} | {{ store_name }}{% endblock %}
+{% block breadcrumb %}{% translate "Removed" %}{% endblock %}
+{% block page_heading %}{% translate "Removed Listings" %}{% endblock %}
+{% block page_intro %}{% translate "Everything taken off the catalog, newest first. Put one back on sale, or erase it for good." %}{% endblock %}
+
+{% block management_content %}
+
+    <!-- How the removals split: a sale recorded one, a plain delete didn't.
+         One card divided in three rather than three cards in a grid, so a
+         phone doesn't strand the third tile on a row of its own. -->
+    <div class="bg-white border border-gray-100 rounded-2xl sm:rounded-3xl shadow-sm grid grid-cols-3 divide-x divide-gray-100">
+        <div class="px-3 py-3.5 sm:px-5 sm:py-4">
+            <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider leading-tight">{% if search_query %}{% translate "Matching" %}{% else %}{% translate "Removed in total" %}{% endif %}</span>
+            <span class="block mt-1 text-xl sm:text-2xl font-black text-gray-950 tabular-nums">{{ shown_count }}</span>
+        </div>
+        <div class="px-3 py-3.5 sm:px-5 sm:py-4">
+            <span class="block text-[10px] font-bold text-emerald-700/70 uppercase tracking-wider leading-tight">{% translate "Sold" %}</span>
+            <span class="block mt-1 text-xl sm:text-2xl font-black text-emerald-700 tabular-nums">{{ sold_count }}</span>
+        </div>
+        <div class="px-3 py-3.5 sm:px-5 sm:py-4">
+            <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider leading-tight">{% translate "Deleted" %}</span>
+            <span class="block mt-1 text-xl sm:text-2xl font-black text-gray-950 tabular-nums">{{ deleted_count }}</span>
+        </div>
+    </div>
+
+    <section class="bg-white border border-gray-100 rounded-3xl shadow-sm p-5 sm:p-8 space-y-5">
+
+        <form method="GET" class="space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:items-end sm:gap-3">
+            <div class="sm:flex-grow sm:min-w-[200px]">
+                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">{% translate "Search removed listings" %}</label>
+                <input type="text" name="search" value="{{ search_query }}" placeholder="{% translate 'Name, brand, category or #ID' %}" class="w-full bg-gray-50 border border-gray-200/80 rounded-xl px-3.5 py-2.5 text-xs font-bold text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="flex-1 sm:flex-none py-2.5 px-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md shadow-indigo-600/30">
+                    <i class="fa-solid fa-magnifying-glass text-xs"></i> {% translate "Search" %}
+                </button>
+                {% if search_query %}
+                    <a href="{% url 'shop:removed_products' %}" class="py-2.5 px-4 bg-gray-50 hover:bg-gray-100 text-gray-500 border border-gray-200 rounded-xl text-xs font-bold transition-colors whitespace-nowrap">
+                        <i class="fa-solid fa-xmark"></i> {% translate "Reset" %}
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+
+        <div class="divide-y divide-gray-50">
+            {% for p in removed_products %}
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-3 py-3.5 first:pt-0 last:pb-0">
+                <div class="min-w-0 sm:flex-1">
+                    <p class="text-xs font-black text-gray-900 break-words">
+                        {{ p.name }}
+                        {% if p.was_sold %}
+                            <span class="ml-1 text-[9px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded" title="{% translate 'Removed by marking it sold, so it is counted in the sales report.' %}">{% translate "Sold" %}</span>
+                        {% else %}
+                            <span class="ml-1 text-[9px] font-black uppercase tracking-wider text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded" title="{% translate 'Taken off the catalog without recording a sale.' %}">{% translate "Deleted" %}</span>
+                        {% endif %}
+                    </p>
+                    <p class="text-[10px] text-gray-400 uppercase font-bold truncate">
+                        {{ p.brand }}{% if p.catalog_code %} &middot; {{ p.catalog_code }}{% endif %} &middot; {% blocktranslate with when=p.deleted_at|date:"d M Y, H:i" %}removed {{ when }}{% endblocktranslate %}
+                    </p>
+                </div>
+                <div class="flex items-center gap-2 sm:gap-1.5 shrink-0">
+                    <!-- Restoring a sold listing also drops the sale it recorded,
+                         so the report stops counting a sale that was undone. -->
+                    <form method="POST" action="{% url 'shop:restore_product' p.id %}" class="flex-1 sm:flex-none">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="removed">
+                        <button type="submit" class="w-full text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-2 sm:px-2.5 sm:py-1.5 rounded-lg transition-colors whitespace-nowrap">
+                            <i class="fa-solid fa-rotate-left"></i> {% translate "Restore" %}
+                        </button>
+                    </form>
+                    <!-- Second, deliberate step: this one cannot be undone. -->
+                    <form method="POST" action="{% url 'shop:purge_product' p.id %}" data-confirm-delete="{% blocktranslate with name=p.name %}{{ name }} and its photos will be erased for good and cannot be restored. Sales already recorded for it stay in the report.{% endblocktranslate %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="removed">
+                        <button type="submit" title="{% translate 'Delete permanently' %}" class="text-[11px] font-bold text-red-700 bg-red-50 hover:bg-red-100 px-3.5 py-2 sm:px-2.5 sm:py-1.5 rounded-lg transition-colors">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-xs text-gray-400 py-8 text-center">
+                {% if search_query %}
+                    {% translate "No removed listing matches that search." %}
+                {% else %}
+                    {% translate "Nothing removed. Listings you mark sold or delete from the Products page land here, and can be restored from here." %}
+                {% endif %}
+            </p>
+            {% endfor %}
+        </div>
+
+    </section>
+
+    <p class="text-[10px] text-gray-400 px-1">
+        {% translate "Deleting permanently erases the listing and its photos, but never the sale it recorded — past months keep their revenue. To strike a sale itself, use the ✕ on the sales page." %}
+    </p>
+
+{% endblock %}

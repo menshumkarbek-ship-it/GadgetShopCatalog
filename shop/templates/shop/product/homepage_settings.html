@@ -1,0 +1,177 @@
+{% extends "shop/product/_management_base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% translate "Homepage Sections" %} | {{ store_name }}{% endblock %}
+{% block breadcrumb %}{% translate "Homepage" %}{% endblock %}
+{% block page_heading %}{% translate "Homepage Sections" %}{% endblock %}
+{% block page_intro %}{% translate "The two written sections wrapped around your product rows on the homepage. Everything between them is built from the catalog itself." %}{% endblock %}
+{% block page_actions %}
+<a href="{% url 'shop:home' %}" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 hover:text-indigo-500 transition-colors">
+    {% translate "Open homepage" %} <i class="fa-solid fa-arrow-up-right-from-square"></i>
+</a>
+{% endblock %}
+
+{% block management_content %}
+
+    <!-- Where each section sits, so it is clear which band is being edited. -->
+    <div class="bg-white border border-gray-100 rounded-3xl shadow-sm p-4 sm:p-6">
+        <p class="text-[10px] font-black uppercase tracking-wider text-gray-300 mb-3">{% translate "Order on the homepage" %}</p>
+        <div class="space-y-1.5">
+            <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 px-3 py-2.5 rounded-xl bg-gray-50 text-[11px] font-bold text-gray-400">
+                <i class="fa-solid fa-images w-4 shrink-0 text-center"></i>
+                <span class="min-w-0 break-words">{% translate "Hero slideshow" %}</span>
+                <span class="w-full sm:w-auto sm:ml-auto text-[10px] font-bold text-gray-300">{% translate "from your categories" %}</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 px-3 py-2.5 rounded-xl bg-indigo-50 text-[11px] font-black text-indigo-700 border border-indigo-100">
+                <i class="fa-solid fa-pen w-4 shrink-0 text-center"></i>
+                <span class="min-w-0 break-words">{% translate "Section 1 — Why shop here" %}</span>
+                <span class="w-full sm:w-auto sm:ml-auto text-[10px] font-bold text-indigo-400">{% translate "edited below" %}</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 px-3 py-2.5 rounded-xl bg-gray-50 text-[11px] font-bold text-gray-400">
+                <i class="fa-solid fa-table-cells-large w-4 shrink-0 text-center"></i>
+                <span class="min-w-0 break-words">{% translate '"Newest In" product rows' %}</span>
+                <a href="{% url 'shop:create_category' %}" class="w-full sm:w-auto sm:ml-auto text-[10px] font-bold text-indigo-500 hover:underline">{% translate "set per category" %}</a>
+            </div>
+            <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 px-3 py-2.5 rounded-xl bg-indigo-50 text-[11px] font-black text-indigo-700 border border-indigo-100">
+                <i class="fa-solid fa-pen w-4 shrink-0 text-center"></i>
+                <span class="min-w-0 break-words">{% translate "Section 2 — Order it in" %}</span>
+                <span class="w-full sm:w-auto sm:ml-auto text-[10px] font-bold text-indigo-400">{% translate "edited below" %}</span>
+            </div>
+            <div class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-gray-50 text-[11px] font-bold text-gray-400">
+                <i class="fa-solid fa-grip-lines w-4 shrink-0 text-center"></i>
+                <span class="min-w-0 break-words">{% translate "Footer" %}</span>
+            </div>
+        </div>
+    </div>
+
+    <section class="bg-white border border-gray-100 rounded-3xl shadow-sm p-5 sm:p-8">
+
+        {% if form.errors %}
+        <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-semibold space-y-1">
+            <p class="font-bold text-sm">⚠️ {% translate "Please correct errors below:" %}</p>
+            <ul class="list-disc list-inside space-y-0.5">
+                {% for field, errors in form.errors.items %}
+                    <li><strong>{{ field|title }}:</strong> {{ errors|striptags }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <form method="POST" class="space-y-8">
+            {% csrf_token %}
+
+            <!-- Language switcher: the whole form below has one field set per -->
+            <!-- language. Fill in whichever languages you want; a blank field -->
+            <!-- falls back to the English version on the public page. -->
+            <div class="lang-tabs flex items-center gap-1.5 p-1 bg-gray-50 rounded-xl w-fit" data-group="home-page">
+                <button type="button" class="lang-tab-btn px-4 py-1.5 rounded-lg text-xs font-black bg-indigo-600 text-white" data-lang="en">EN</button>
+                <button type="button" class="lang-tab-btn px-4 py-1.5 rounded-lg text-xs font-black bg-gray-100 text-gray-500" data-lang="ru">RU</button>
+                <button type="button" class="lang-tab-btn px-4 py-1.5 rounded-lg text-xs font-black bg-gray-100 text-gray-500" data-lang="ky">KY</button>
+            </div>
+
+            {% for lang, heading_field, card_heading_field, text_field, button_field, stat_label_field, stat_caption_field, eyebrow_field, invite_heading_field, invite_text_field, invite_button_field in homepage_lang_fields %}
+            <div class="lang-field space-y-8 {% if not forloop.first %}hidden{% endif %}" data-group="home-page" data-lang="{{ lang }}">
+
+                <!-- ── Section 1: the promise, above the product rows ── -->
+                <div class="space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2 sm:flex-wrap">
+                        <h2 class="text-[11px] font-black uppercase tracking-wider text-indigo-600">{% translate "Section 1 — Why shop here" %}</h2>
+                        {% if forloop.first %}<span class="text-[10px] text-gray-400 leading-relaxed">{% translate "Sits between the hero slideshow and your product rows." %}</span>{% endif %}
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">{% translate "Section Heading" %}</label>
+                        {{ heading_field }}
+                        {% if forloop.first %}<p class="text-[10px] text-gray-400 mt-1">{% translate 'The small line above the card, e.g. "Why shop here".' %}</p>{% endif %}
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">{% translate "Card Heading" %}</label>
+                        {{ card_heading_field }}
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">{% translate "Card Text" %}</label>
+                        {{ text_field }}
+                        {% if forloop.first %}<p class="text-[10px] text-gray-400 mt-1">{% translate "Your promise to the customer — what they get by buying from you." %}</p>{% endif %}
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">{% translate "Button Label" %}</label>
+                        {{ button_field }}
+                        {% if forloop.first %}<p class="text-[10px] text-gray-400 mt-1">{% translate "Links to your catalog. Leave blank to hide the button entirely." %}</p>{% endif %}
+                    </div>
+
+                    <div class="rounded-2xl border border-gray-100 bg-gray-50/60 p-4 space-y-4">
+                        <p class="text-[10px] font-black uppercase tracking-wider text-gray-400">
+                            {% blocktranslate with count=in_stock_count %}Stock counter — currently reads "{{ count }}"{% endblocktranslate %}
+                        </p>
+                        {% if forloop.first %}
+                        <p class="text-[10px] text-gray-400 -mt-2">{% translate "The number is counted from your catalog and updates on its own. You write the two lines under it." %}</p>
+                        {% endif %}
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">{% translate "Label" %}</label>
+                                {{ stat_label_field }}
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">{% translate "Caption" %}</label>
+                                {{ stat_caption_field }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Section 2: the invitation, below the product rows ── -->
+                <div class="space-y-4 pt-6 border-t border-gray-100">
+                    <div class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2 sm:flex-wrap">
+                        <h2 class="text-[11px] font-black uppercase tracking-wider text-indigo-600">{% translate "Section 2 — Order it in" %}</h2>
+                        {% if forloop.first %}<span class="text-[10px] text-gray-400 leading-relaxed">{% translate "Closes the homepage, between your product rows and the footer." %}</span>{% endif %}
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">{% translate "Eyebrow" %}</label>
+                        {{ eyebrow_field }}
+                        {% if forloop.first %}<p class="text-[10px] text-gray-400 mt-1">{% translate "The small coloured line above the heading." %}</p>{% endif %}
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">{% translate "Heading" %}</label>
+                        {{ invite_heading_field }}
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">{% translate "Text" %}</label>
+                        {{ invite_text_field }}
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">{% translate "Button Label" %}</label>
+                        {{ invite_button_field }}
+                        {% if forloop.first %}
+                        <p class="text-[10px] text-gray-400 mt-1">
+                            {% translate "Links to your Contact page." %}
+                            {% if not contact_settings.has_any_channel %}
+                                <span class="text-amber-600 font-bold">{% translate "Hidden right now — you have no contact channels set up." %}</span>
+                            {% endif %}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+            {% endfor %}
+
+            <div class="pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <p class="text-[10px] text-gray-400 leading-relaxed sm:max-w-md">
+                    {% translate "Russian and Kyrgyz start out already translated. Clear one and that language falls back to the English text." %}
+                </p>
+                <button type="submit" class="w-full sm:w-auto shrink-0 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-7 py-3 rounded-xl transition-all shadow-md shadow-indigo-600/30 active:scale-95 uppercase tracking-wider">
+                    <i class="fa-solid fa-floppy-disk"></i> {% translate "Save Homepage" %}
+                </button>
+            </div>
+        </form>
+    </section>
+
+{% endblock %}

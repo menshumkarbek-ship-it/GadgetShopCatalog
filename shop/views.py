@@ -11,8 +11,13 @@ from django.utils.dates import MONTHS
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
-from .models import Product, Category, ProductImage, ContactSettings, AboutPageContent, Sale
-from .forms import ProductCreateForm, CategoryCreateForm, ContactSettingsForm, AboutPageContentForm
+from .models import (
+    Product, Category, ProductImage, ContactSettings, AboutPageContent, HomePageContent, Sale,
+)
+from .forms import (
+    ProductCreateForm, CategoryCreateForm, ContactSettingsForm, AboutPageContentForm,
+    HomePageContentForm,
+)
 
 # Rotating accent colors for the per-category homepage rows, so each
 # category's "Newest In" slideshow gets a distinct look automatically.
@@ -91,6 +96,10 @@ def home_page(request):
         'category_sections': category_sections,
         # Counted off the grouping above rather than a second COUNT query.
         'in_stock_count': sum(len(items) for items in newest_by_category.values()),
+        # The two editorial bands wrapped around the rows above. Staff
+        # write them on the Homepage tab of the management panel; the
+        # rows themselves come from the catalog and have no copy to set.
+        'homepage': HomePageContent.get_solo(),
     }
     return render(request, 'shop/home.html', context)
 
@@ -258,6 +267,23 @@ def is_admin_or_manager(user):
 
 @login_required
 @user_passes_test(is_admin_or_manager, login_url='shop:product_list', redirect_field_name=None)
+def management_home(request):
+    """
+    The front door of the management panel.
+
+    On a phone this is the whole panel's top level: the section list fills
+    the screen, and picking one opens that section on its own (with a Back
+    link returning here), the way a settings app drills down. On a desktop
+    it is the same sidebar beside an overview of the sections.
+
+    Passes no `active` key on purpose — that is what tells the shell to show
+    the list instead of a section (see _management_base.html).
+    """
+    return render(request, 'shop/product/management_home.html')
+
+
+@login_required
+@user_passes_test(is_admin_or_manager, login_url='shop:product_list', redirect_field_name=None)
 def create_product(request, product_id=None):
     product_instance = None
     if product_id:
@@ -309,11 +335,9 @@ def create_product(request, product_id=None):
     # Recently removed listings, so an accidental removal can be undone from
     # the same page it happened on. Capped at 10 — this is an undo affordance,
     # not an archive browser.
-    removed_products = list(Product.all_objects.filter(
+    removed_products = _annotate_removal_kind(Product.all_objects.filter(
         deleted_at__isnull=False
     ).select_related('category').order_by('-deleted_at')[:10])
-    for removed in removed_products:
-        removed.was_sold = _sale_for_removal(removed) is not None
 
     context = {
         'form': form,
@@ -323,6 +347,7 @@ def create_product(request, product_id=None):
         'gallery_images': gallery_images,
         'search_query': search_query,
         'removed_products': removed_products,
+        'active': 'products',
     }
     return render(request, 'shop/product/create.html', context)
 
@@ -336,6 +361,41 @@ def _sale_for_removal(product):
     return Sale.objects.filter(
         product=product, sold_at__gte=product.deleted_at - timedelta(seconds=5),
     ).order_by('-sold_at', '-id').first()
+
+
+def _annotate_removal_kind(products):
+    """
+    Set `was_sold` on each removed listing: whether the removal currently
+    in effect recorded a sale, or was a plain delete. Resolves the whole
+    list in one query — _sale_for_removal() is the single-row version and
+    would cost a query per listing on a page showing every removal.
+    """
+    products = list(products)
+    if not products:
+        return products
+
+    sales_by_product = {}
+    for sale in Sale.objects.filter(product__in=products).only('product_id', 'sold_at'):
+        sales_by_product.setdefault(sale.product_id, []).append(sale.sold_at)
+
+    for product in products:
+        # Same five-second tolerance as _sale_for_removal: Sale.sold_at is
+        # stamped a moment before deleted_at.
+        cutoff = product.deleted_at - timedelta(seconds=5) if product.deleted_at else None
+        product.was_sold = cutoff is not None and any(
+            sold_at >= cutoff for sold_at in sales_by_product.get(product.id, ())
+        )
+    return products
+
+
+def _after_catalog_action(request):
+    """
+    Where to land after removing, restoring, or deleting a listing. Both
+    the Products page and the Removed page offer these, so each posts its
+    own `next` and the admin stays on the page they acted from.
+    """
+    destinations = {'removed': 'shop:removed_products', 'products': 'shop:create_product'}
+    return redirect(destinations.get(request.POST.get('next'), 'shop:create_product'))
 
 
 def _remove_from_catalog(product):
@@ -373,7 +433,7 @@ def sell_product(request, product_id):
         _('"%(name)s" was marked as sold and removed from the catalog. You can undo this from "Recently removed".')
         % {'name': product.name},
     )
-    return redirect('shop:create_product')
+    return _after_catalog_action(request)
 
 
 @login_required
@@ -392,7 +452,7 @@ def remove_product(request, product_id):
         _('"%(name)s" was removed from the catalog (not counted as a sale). You can undo this from "Recently removed".')
         % {'name': product.name},
     )
-    return redirect('shop:create_product')
+    return _after_catalog_action(request)
 
 
 @login_required
@@ -414,7 +474,7 @@ def restore_product(request, product_id):
     product.save(update_fields=['deleted_at'])
 
     messages.success(request, _('"%(name)s" is back in the catalog.') % {'name': product.name})
-    return redirect('shop:create_product')
+    return _after_catalog_action(request)
 
 
 def _delete_product_files(product):
@@ -450,7 +510,7 @@ def purge_product(request, product_id):
         request,
         _('"%(name)s" was permanently deleted, along with its photos.') % {'name': name},
     )
-    return redirect('shop:create_product')
+    return _after_catalog_action(request)
 
 
 @login_required
@@ -485,40 +545,6 @@ def delete_category(request, category_id):
 
 @login_required
 @user_passes_test(is_admin_or_manager, login_url='shop:product_list', redirect_field_name=None)
-def sales_archive(request):
-    """
-    Every sale ever recorded, newest first — the permanent counterpart to the
-    10-slot "Recently removed" list, which is only an undo affordance.
-
-    Reads the same Sale rows as the monthly report, so the two can never
-    disagree; each row links to the month it belongs to over there.
-    """
-    # product is joined too: each row checks whether the listing behind it
-    # still exists, which would otherwise be a query per sale.
-    sales = Sale.objects.select_related('sold_by', 'product').order_by('-sold_at')
-
-    search_query = (request.GET.get('search') or '').strip()
-    if search_query:
-        sales = sales.filter(
-            Q(product_name__icontains=search_query) |
-            Q(brand__icontains=search_query) |
-            Q(category_name__icontains=search_query) |
-            Q(catalog_code__icontains=search_query)
-        )
-
-    totals = sales.aggregate(total_revenue=Sum('price'), total_count=Count('id'))
-
-    context = {
-        'sales': sales,
-        'total_revenue': totals['total_revenue'] or 0,
-        'total_count': totals['total_count'] or 0,
-        'search_query': search_query,
-    }
-    return render(request, 'shop/product/sales_archive.html', context)
-
-
-@login_required
-@user_passes_test(is_admin_or_manager, login_url='shop:product_list', redirect_field_name=None)
 @require_POST
 def discard_sale(request, sale_id):
     """
@@ -532,6 +558,11 @@ def discard_sale(request, sale_id):
         request,
         _('"%(name)s" was struck from the sales report.') % {'name': sale.product_name},
     )
+    if request.POST.get('period') == 'all':
+        # Struck from the all-time view, so go back to it rather than
+        # dropping the admin into whatever month the sale happened to be in.
+        return redirect('shop:sales_archive')
+
     url = reverse('shop:sales_report')
     month, year = request.POST.get('month'), request.POST.get('year')
     if month and year:
@@ -574,6 +605,7 @@ def create_category(request):
     context = {
         'form': form,
         'all_categories': all_categories,
+        'active': 'categories',
     }
     return render(request, 'shop/product/category_create.html', context)
 
@@ -631,7 +663,7 @@ def manage_contacts(request):
     else:
         form = ContactSettingsForm(instance=settings_obj)
 
-    return render(request, 'shop/product/contact_settings.html', {'form': form})
+    return render(request, 'shop/product/contact_settings.html', {'form': form, 'active': 'contacts'})
 
 
 @login_required
@@ -669,18 +701,28 @@ def manage_about(request):
         for lang, suffix in [('en', ''), ('ru', '_ru'), ('ky', '_ky')]
     ]
 
-    return render(request, 'shop/product/about_settings.html', {'form': form, 'about_lang_fields': about_lang_fields})
+    return render(request, 'shop/product/about_settings.html', {
+        'form': form, 'about_lang_fields': about_lang_fields, 'active': 'about',
+    })
 
 
 @login_required
 @user_passes_test(is_admin_or_manager, login_url='shop:product_list', redirect_field_name=None)
-def sales_report(request):
+def sales_report(request, period='month'):
     """
-    Monthly sales report built from the Sale records created when a product
-    is marked sold (see sell_product) — that is how a real-world sale gets
-    recorded, since this store has no separate checkout flow.
+    One sales page answering both questions staff ask of it: "how did this
+    month go", and "when did we sell that". Both read the same Sale rows —
+    created when a product is marked sold, which is how a sale gets recorded
+    here since the store has no checkout flow — so the monthly figures and
+    the full history can never disagree.
+
+    `period` is 'month' (filtered by the month/year pickers) or 'all' (every
+    sale ever recorded); shop:sales_archive is this same page pinned to 'all'.
     """
     today = date.today()
+    if request.GET.get('period') in ('month', 'all'):
+        period = request.GET['period']
+
     try:
         year = int(request.GET.get('year', today.year))
     except (TypeError, ValueError):
@@ -692,15 +734,31 @@ def sales_report(request):
     if not 1 <= month <= 12:
         month = today.month
 
-    month_sales = Sale.objects.filter(sold_at__year=year, sold_at__month=month).select_related('sold_by')
+    # product is joined too: each row says whether the listing behind it
+    # still exists, which would otherwise be a query per sale.
+    sales = Sale.objects.select_related('sold_by', 'product')
+    if period == 'month':
+        sales = sales.filter(sold_at__year=year, sold_at__month=month)
 
-    totals = month_sales.aggregate(total_revenue=Sum('price'), total_count=Count('id'))
+    search_query = (request.GET.get('search') or '').strip()
+    if search_query:
+        sales = sales.filter(
+            Q(product_name__icontains=search_query) |
+            Q(brand__icontains=search_query) |
+            Q(category_name__icontains=search_query) |
+            Q(catalog_code__icontains=search_query)
+        )
 
-    by_category = month_sales.values('category_name').annotate(
+    totals = sales.aggregate(total_revenue=Sum('price'), total_count=Count('id'))
+
+    # The trailing order_by is what keeps these grouped by one column: it
+    # clears Sale's default '-sold_at' ordering, which would otherwise join
+    # the GROUP BY and split every category across its individual sale dates.
+    by_category = sales.values('category_name').annotate(
         total=Sum('price'), count=Count('id')
     ).order_by('-total')
 
-    by_brand = month_sales.values('brand').annotate(
+    by_brand = sales.values('brand').annotate(
         total=Sum('price'), count=Count('id')
     ).order_by('-total')
 
@@ -713,7 +771,8 @@ def sales_report(request):
     months = sorted(MONTHS.items())
 
     context = {
-        'sales': month_sales,
+        'period': period,
+        'sales': sales,
         'total_revenue': totals['total_revenue'] or 0,
         'total_count': totals['total_count'] or 0,
         'by_category': by_category,
@@ -722,5 +781,122 @@ def sales_report(request):
         'selected_month': month,
         'available_years': available_years,
         'months': months,
+        'search_query': search_query,
+        'active': 'sales_all' if period == 'all' else 'sales_month',
     }
     return render(request, 'shop/product/sales_report.html', context)
+
+
+def sales_archive(request):
+    """
+    The all-time view of the sales page above, kept on its own URL: it is a
+    distinct place to navigate to from the sidebar, and links made to
+    /management/archive/ before the two pages merged still land on it.
+    """
+    return sales_report(request, period='all')
+
+
+# ==========================================
+# 🏠 HOMEPAGE SECTIONS CONTROLLER
+# ==========================================
+
+@login_required
+@user_passes_test(is_admin_or_manager, login_url='shop:product_list', redirect_field_name=None)
+def manage_homepage(request):
+    """
+    Lets staff/managers write the two editorial bands on the homepage: the
+    promise sitting between the hero slideshow and the category rows, and
+    the closing invitation between those rows and the footer.
+
+    Everything between the two — the hero slides and the "Newest In" rows —
+    is built from the catalog itself and is switched on per category from
+    the Categories page, so there is nothing to write for it here.
+    """
+    content_obj = HomePageContent.get_solo()
+
+    if request.method == 'POST':
+        form = HomePageContentForm(request.POST, instance=content_obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Homepage sections updated!"))
+            return redirect('shop:manage_homepage')
+        else:
+            messages.error(request, _("Please correct the entry errors below."))
+    else:
+        form = HomePageContentForm(instance=content_obj)
+
+    # One row per language, each holding that language's variant of every
+    # field in a fixed order the template loops over — the same shape as
+    # manage_about, so the template renders one block per language instead
+    # of tripling the markup for English/Russian/Kyrgyz by hand.
+    homepage_lang_fields = [
+        (
+            lang,
+            form[f'promise_heading{suffix}'], form[f'promise_card_heading{suffix}'],
+            form[f'promise_text{suffix}'], form[f'promise_button_text{suffix}'],
+            form[f'promise_stat_label{suffix}'], form[f'promise_stat_caption{suffix}'],
+            form[f'invite_eyebrow{suffix}'], form[f'invite_heading{suffix}'],
+            form[f'invite_text{suffix}'], form[f'invite_button_text{suffix}'],
+        )
+        for lang, suffix in [('en', ''), ('ru', '_ru'), ('ky', '_ky')]
+    ]
+
+    context = {
+        'form': form,
+        'homepage_lang_fields': homepage_lang_fields,
+        # Shown beside the stock-count fields so the admin can see what the
+        # number they are labelling currently reads on the live page.
+        'in_stock_count': Product.objects.filter(is_sold=False).count(),
+        'active': 'homepage',
+    }
+    return render(request, 'shop/product/homepage_settings.html', context)
+
+
+# ==========================================
+# 🗑️ REMOVED LISTINGS CONTROLLER
+# ==========================================
+
+@login_required
+@user_passes_test(is_admin_or_manager, login_url='shop:product_list', redirect_field_name=None)
+def removed_products(request):
+    """
+    Every listing taken off the catalog, newest removal first, with restore
+    and permanent delete on each.
+
+    The Products page keeps a short strip of the most recent removals as an
+    undo affordance for the click that just happened; this is the full list,
+    searchable, for finding one that scrolled off it weeks ago.
+    """
+    removed = Product.all_objects.filter(
+        deleted_at__isnull=False
+    ).select_related('category').order_by('-deleted_at')
+
+    search_query = (request.GET.get('search') or '').strip()
+    if search_query:
+        # Same lookup as the catalog search on the Products page: the catalog
+        # number is how staff identify a specific listing, with name/brand as
+        # the more casual fallback.
+        search_filter = (
+            Q(name__icontains=search_query) |
+            Q(brand__icontains=search_query) |
+            Q(category__name__icontains=search_query)
+        )
+        if search_query.lstrip('#').isdigit():
+            search_filter |= Q(category_number=int(search_query.lstrip('#')))
+        removed = removed.filter(search_filter)
+
+    removed = _annotate_removal_kind(removed)
+
+    context = {
+        'removed_products': removed,
+        'search_query': search_query,
+        # Counted off the list actually shown, so the tallies agree with it
+        # while a search is narrowing things down. The sidebar badge
+        # (removed_count, from the management_nav processor) stays the
+        # unfiltered total on purpose.
+        'shown_count': len(removed),
+        'sold_count': sum(1 for product in removed if product.was_sold),
+        'deleted_count': sum(1 for product in removed if not product.was_sold),
+        'active': 'removed',
+    }
+    return render(request, 'shop/product/removed_products.html', context)

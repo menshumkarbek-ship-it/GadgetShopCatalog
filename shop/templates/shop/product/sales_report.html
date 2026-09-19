@@ -1,70 +1,108 @@
-{% extends "shop/base.html" %}
+{% extends "shop/product/_management_base.html" %}
 {% load static %}
 {% load i18n %}
 
-{% block title %}{% translate "Sales Report" %} | {{ store_name }}{% endblock %}
+{% comment %}
+  One page, two periods. `period` is 'month' (the month/year pickers apply)
+  or 'all' (every sale ever recorded). Both read the same Sale rows, so the
+  totals, the breakdowns and the list below never disagree between them.
+{% endcomment %}
 
-{% block content %}
-<div class="product-management max-w-5xl mx-auto my-6 px-4 sm:px-6 space-y-6">
+{% block title %}{% if period == 'all' %}{% translate "All Sales" %}{% else %}{% translate "Sales Report" %}{% endif %} | {{ store_name }}{% endblock %}
+{% block breadcrumb %}{% translate "Sales" %}{% endblock %}
+{% block page_heading %}{% if period == 'all' %}{% translate "All Sales" %}{% else %}{% translate "Sales Report" %}{% endif %}{% endblock %}
+{% block page_intro %}
+    {% if period == 'all' %}
+        {% translate "Every sale ever recorded, newest first. A sale is filed here the moment you mark a product sold." %}
+    {% else %}
+        {% translate "How one month went. A sale is recorded the moment you mark a product sold." %}
+    {% endif %}
+{% endblock %}
 
-    <!-- Navigation Breadcrumb -->
-    <div class="flex items-center space-x-2 text-xs font-bold text-gray-400 uppercase tracking-wide">
-        <a href="{% url 'shop:product_list' %}" class="hover:text-indigo-600 transition-colors">{% translate "Catalog" %}</a>
-        <span>/</span>
-        <span class="text-indigo-600">{% translate "Sales Report" %}</span>
-    </div>
+{% block management_content %}
 
-    <!-- Settings hub tabs (shared strip, see _management_tabs.html) -->
-    {% include 'shop/product/_management_tabs.html' with active='sales' %}
+    <!-- Period switcher + the filter belonging to the period in view -->
+    <section class="bg-white border border-gray-100 rounded-3xl shadow-sm p-5 sm:p-8 space-y-4 sm:space-y-5">
 
-    <!-- Month Filter -->
-    <section class="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 sm:p-8">
-        <form method="GET" class="flex flex-wrap items-end gap-3">
-            <div>
-                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">{% translate "Month" %}</label>
-                <select name="month" class="bg-gray-50 border border-gray-200/80 rounded-xl px-3.5 py-2.5 text-xs font-bold text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer">
-                    {% for value, label in months %}
-                        <option value="{{ value }}" {% if value == selected_month %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
+        <div class="grid grid-cols-2 sm:flex sm:items-center gap-1.5 p-1 bg-gray-50 rounded-xl sm:w-fit">
+            {% if period == 'all' %}
+                <a href="{% url 'shop:sales_report' %}" class="text-center px-4 py-2 sm:py-1.5 rounded-lg text-xs font-black text-gray-500 hover:text-indigo-600 transition-colors">{% translate "A month" %}</a>
+                <span class="text-center px-4 py-2 sm:py-1.5 rounded-lg text-xs font-black bg-indigo-600 text-white">{% translate "All time" %}</span>
+            {% else %}
+                <span class="text-center px-4 py-2 sm:py-1.5 rounded-lg text-xs font-black bg-indigo-600 text-white">{% translate "A month" %}</span>
+                <a href="{% url 'shop:sales_archive' %}" class="text-center px-4 py-2 sm:py-1.5 rounded-lg text-xs font-black text-gray-500 hover:text-indigo-600 transition-colors">{% translate "All time" %}</a>
+            {% endif %}
+        </div>
+
+        {% if period == 'all' %}
+        <form method="GET" class="space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:items-end sm:gap-3">
+            <div class="sm:flex-grow sm:min-w-[200px]">
+                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">{% translate "Search every sale" %}</label>
+                <input type="text" name="search" value="{{ search_query }}" placeholder="{% translate 'Name, brand, category or catalog ID' %}" class="w-full bg-gray-50 border border-gray-200/80 rounded-xl px-3.5 py-2.5 text-xs font-bold text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
             </div>
-            <div>
-                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">{% translate "Year" %}</label>
-                <select name="year" class="bg-gray-50 border border-gray-200/80 rounded-xl px-3.5 py-2.5 text-xs font-bold text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer">
-                    {% for y in available_years %}
-                        <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
-                    {% endfor %}
-                </select>
+            <div class="flex gap-2">
+                <button type="submit" class="flex-1 sm:flex-none py-2.5 px-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md shadow-indigo-600/30">
+                    <i class="fa-solid fa-magnifying-glass text-xs"></i> {% translate "Search" %}
+                </button>
+                {% if search_query %}
+                    <a href="{% url 'shop:sales_archive' %}" class="py-2.5 px-4 bg-gray-50 hover:bg-gray-100 text-gray-500 border border-gray-200 rounded-xl text-xs font-bold transition-colors whitespace-nowrap">
+                        <i class="fa-solid fa-xmark"></i> {% translate "Reset" %}
+                    </a>
+                {% endif %}
             </div>
-            <button type="submit" class="py-2.5 px-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md shadow-indigo-600/30">
+        </form>
+        {% else %}
+        <form method="GET" class="space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:items-end sm:gap-3">
+            <div class="flex gap-3">
+                <div class="flex-1 sm:flex-none">
+                    <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">{% translate "Month" %}</label>
+                    <select name="month" class="w-full sm:w-auto bg-gray-50 border border-gray-200/80 rounded-xl px-3.5 py-2.5 text-xs font-bold text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer">
+                        {% for value, label in months %}
+                            <option value="{{ value }}" {% if value == selected_month %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="flex-1 sm:flex-none">
+                    <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">{% translate "Year" %}</label>
+                    <select name="year" class="w-full sm:w-auto bg-gray-50 border border-gray-200/80 rounded-xl px-3.5 py-2.5 text-xs font-bold text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer">
+                        {% for y in available_years %}
+                            <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="w-full sm:w-auto py-2.5 px-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md shadow-indigo-600/30">
                 <i class="fa-solid fa-magnifying-glass text-xs"></i> {% translate "View Report" %}
             </button>
         </form>
+        {% endif %}
     </section>
 
     <!-- Summary Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div class="bg-white border border-gray-100 rounded-3xl shadow-sm p-6">
-            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wide">{% translate "Total Revenue" %}</p>
-            <p class="text-2xl font-black text-gray-950 mt-1">{{ total_revenue }} {% translate "som" %}</p>
+    <div class="grid grid-cols-2 gap-3 sm:gap-4">
+        <div class="bg-white border border-gray-100 rounded-2xl sm:rounded-3xl shadow-sm p-4 sm:p-6">
+            <p class="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-wide leading-tight">{% translate "Total Revenue" %}</p>
+            <p class="text-lg sm:text-2xl font-black text-emerald-700 mt-1 tabular-nums break-words">{{ total_revenue }} {% translate "som" %}</p>
         </div>
-        <div class="bg-white border border-gray-100 rounded-3xl shadow-sm p-6">
-            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wide">{% translate "Items Sold" %}</p>
-            <p class="text-2xl font-black text-gray-950 mt-1">{{ total_count }}</p>
+        <div class="bg-white border border-gray-100 rounded-2xl sm:rounded-3xl shadow-sm p-4 sm:p-6">
+            <p class="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-wide leading-tight">{% translate "Items Sold" %}</p>
+            <p class="text-lg sm:text-2xl font-black text-gray-950 mt-1 tabular-nums">{{ total_count }}</p>
         </div>
     </div>
 
     <!-- Breakdown by Category / Brand -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <section class="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 sm:p-8">
+        <section class="bg-white border border-gray-100 rounded-3xl shadow-sm p-5 sm:p-8">
             <h2 class="text-sm font-black text-gray-950 mb-4">{% translate "By Category" %}</h2>
             {% if by_category %}
                 <div class="space-y-2">
                     {% for row in by_category %}
-                        <div class="flex items-center justify-between text-xs border-b border-gray-50 pb-2">
-                            <span class="font-bold text-gray-700">{{ row.category_name }}</span>
-                            <span class="text-gray-400">{{ row.count }} {% translate "pcs" %}</span>
-                            <span class="font-black text-gray-950">{{ row.total }} {% translate "som" %}</span>
+                        <div class="flex items-start justify-between gap-3 text-xs border-b border-gray-50 pb-2">
+                            <span class="font-bold text-gray-700 min-w-0 break-words">{{ row.category_name }}</span>
+                            <span class="shrink-0 text-right">
+                                <span class="block font-black text-gray-950 tabular-nums whitespace-nowrap">{{ row.total }} {% translate "som" %}</span>
+                                <span class="block text-[10px] text-gray-400">{{ row.count }} {% translate "pcs" %}</span>
+                            </span>
                         </div>
                     {% endfor %}
                 </div>
@@ -73,15 +111,17 @@
             {% endif %}
         </section>
 
-        <section class="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 sm:p-8">
+        <section class="bg-white border border-gray-100 rounded-3xl shadow-sm p-5 sm:p-8">
             <h2 class="text-sm font-black text-gray-950 mb-4">{% translate "By Brand" %}</h2>
             {% if by_brand %}
                 <div class="space-y-2">
                     {% for row in by_brand %}
-                        <div class="flex items-center justify-between text-xs border-b border-gray-50 pb-2">
-                            <span class="font-bold text-gray-700">{{ row.brand }}</span>
-                            <span class="text-gray-400">{{ row.count }} {% translate "pcs" %}</span>
-                            <span class="font-black text-gray-950">{{ row.total }} {% translate "som" %}</span>
+                        <div class="flex items-start justify-between gap-3 text-xs border-b border-gray-50 pb-2">
+                            <span class="font-bold text-gray-700 min-w-0 break-words">{{ row.brand }}</span>
+                            <span class="shrink-0 text-right">
+                                <span class="block font-black text-gray-950 tabular-nums whitespace-nowrap">{{ row.total }} {% translate "som" %}</span>
+                                <span class="block text-[10px] text-gray-400">{{ row.count }} {% translate "pcs" %}</span>
+                            </span>
                         </div>
                     {% endfor %}
                 </div>
@@ -92,10 +132,53 @@
     </div>
 
     <!-- Sales List -->
-    <section class="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 sm:p-8">
-        <h2 class="text-sm font-black text-gray-950 mb-4">{% translate "Sales in This Period" %}</h2>
+    <section class="bg-white border border-gray-100 rounded-3xl shadow-sm p-5 sm:p-8">
+        <h2 class="text-sm font-black text-gray-950 mb-4">
+            {% if period == 'all' %}{% translate "Every sale" %}{% else %}{% translate "Sales in This Period" %}{% endif %}
+        </h2>
         {% if sales %}
-            <div class="overflow-x-auto">
+            <!-- Phones: one stacked card per sale. The table below carries the
+                 same rows from `sm` up, where seven columns actually fit. -->
+            <div class="sm:hidden divide-y divide-gray-50">
+                {% for sale in sales %}
+                <div class="flex items-start justify-between gap-3 py-3.5 first:pt-0 last:pb-0">
+                    <div class="min-w-0">
+                        <p class="text-xs font-black text-gray-900 break-words">
+                            {{ sale.product_name }}
+                            {% if not sale.product %}
+                                <span class="ml-1 text-[9px] font-black uppercase tracking-wider text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded" title="{% translate 'The listing itself was deleted; this record keeps the sale.' %}">
+                                    {% translate "Listing deleted" %}
+                                </span>
+                            {% endif %}
+                        </p>
+                        <p class="mt-0.5 text-[10px] font-bold text-gray-400 uppercase break-words">
+                            {{ sale.brand }}{% if sale.category_name %} &middot; {{ sale.category_name }}{% endif %}{% if sale.catalog_code %} &middot; {{ sale.catalog_code }}{% endif %}
+                        </p>
+                        {% if period == 'all' %}
+                            <a href="{% url 'shop:sales_report' %}?month={{ sale.sold_at|date:'n' }}&year={{ sale.sold_at|date:'Y' }}" class="mt-1 inline-block text-[10px] font-bold text-indigo-600 hover:underline">
+                                {{ sale.sold_at|date:"d M Y" }}
+                            </a>
+                        {% else %}
+                            <p class="mt-1 text-[10px] text-gray-400">{{ sale.sold_at|date:"d M Y" }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="shrink-0 flex flex-col items-end gap-1.5">
+                        <span class="text-xs font-black text-gray-950 tabular-nums whitespace-nowrap">{{ sale.price }} {% translate "som" %}</span>
+                        <form method="POST" action="{% url 'shop:discard_sale' sale.id %}" data-confirm-delete="{% translate 'Strike this sale from the report? The product stays removed from the catalog; restore it from the Removed page if it should be back on sale.' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="period" value="{{ period }}">
+                            <input type="hidden" name="month" value="{{ selected_month }}">
+                            <input type="hidden" name="year" value="{{ selected_year }}">
+                            <button type="submit" title="{% translate 'Not a sale — strike from the report' %}" class="text-gray-400 hover:text-red-600 transition-colors px-2 py-1">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="hidden sm:block overflow-x-auto">
                 <table class="w-full text-xs">
                     <thead>
                         <tr class="text-left text-[10px] font-bold text-gray-400 uppercase tracking-wide border-b border-gray-100">
@@ -111,16 +194,33 @@
                     <tbody>
                         {% for sale in sales %}
                             <tr class="border-b border-gray-50">
-                                <td class="py-2 pr-3 text-gray-500">{{ sale.sold_at|date:"d M Y" }}</td>
-                                <td class="py-2 pr-3 font-bold text-gray-800">{{ sale.product_name }}</td>
+                                <td class="py-2 pr-3 text-gray-500 whitespace-nowrap">
+                                    {% if period == 'all' %}
+                                        <!-- Straight into the month this sale lands in. -->
+                                        <a href="{% url 'shop:sales_report' %}?month={{ sale.sold_at|date:'n' }}&year={{ sale.sold_at|date:'Y' }}" class="font-bold text-indigo-600 hover:underline">
+                                            {{ sale.sold_at|date:"d M Y" }}
+                                        </a>
+                                    {% else %}
+                                        {{ sale.sold_at|date:"d M Y" }}
+                                    {% endif %}
+                                </td>
+                                <td class="py-2 pr-3 font-bold text-gray-800">
+                                    {{ sale.product_name }}
+                                    {% if not sale.product %}
+                                        <span class="ml-1 text-[9px] font-black uppercase tracking-wider text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded" title="{% translate 'The listing itself was deleted; this record keeps the sale.' %}">
+                                            {% translate "Listing deleted" %}
+                                        </span>
+                                    {% endif %}
+                                </td>
                                 <td class="py-2 pr-3 text-gray-400">{{ sale.catalog_code }}</td>
                                 <td class="py-2 pr-3 text-gray-500">{{ sale.brand }}</td>
                                 <td class="py-2 pr-3 text-gray-500">{{ sale.category_name }}</td>
-                                <td class="py-2 pr-3 text-right font-black text-gray-950">{{ sale.price }} {% translate "som" %}</td>
+                                <td class="py-2 pr-3 text-right font-black text-gray-950 tabular-nums whitespace-nowrap">{{ sale.price }} {% translate "som" %}</td>
                                 <td class="py-2 pl-3 text-right">
                                     <!-- Marked sold by mistake: strike the row, the product stays removed. -->
-                                    <form method="POST" action="{% url 'shop:discard_sale' sale.id %}" onsubmit="return confirm('{% translate "Strike this sale from the report? The product stays removed from the catalog; restore it from &quot;Recently removed&quot; on the Products tab if it should be back on sale." %}');">
+                                    <form method="POST" action="{% url 'shop:discard_sale' sale.id %}" data-confirm-delete="{% translate 'Strike this sale from the report? The product stays removed from the catalog; restore it from the Removed page if it should be back on sale.' %}">
                                         {% csrf_token %}
+                                        <input type="hidden" name="period" value="{{ period }}">
                                         <input type="hidden" name="month" value="{{ selected_month }}">
                                         <input type="hidden" name="year" value="{{ selected_year }}">
                                         <button type="submit" title="{% translate 'Not a sale — strike from the report' %}" class="text-gray-400 hover:text-red-600 transition-colors px-1">
@@ -134,9 +234,16 @@
                 </table>
             </div>
         {% else %}
-            <p class="text-xs text-gray-400 italic">{% translate "No sales recorded for this period yet." %}</p>
+            <p class="text-xs text-gray-400 italic">
+                {% if search_query %}
+                    {% translate "No sale matches that search." %}
+                {% elif period == 'all' %}
+                    {% translate "Nothing sold yet. Marking a product as sold files it here automatically." %}
+                {% else %}
+                    {% translate "No sales recorded for this period yet." %}
+                {% endif %}
+            </p>
         {% endif %}
     </section>
 
-</div>
 {% endblock %}

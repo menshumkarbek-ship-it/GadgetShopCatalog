@@ -231,6 +231,157 @@ class AboutPageContent(models.Model):
 
 
 # ==========================================
+# 🏠 HOME PAGE CONTENT (SINGLETON)
+# ==========================================
+
+class HomePageContent(models.Model):
+    """
+    The copy in the two editorial bands on the homepage: the "why shop here"
+    promise sitting between the hero slideshow and the category rows, and the
+    "we'll order it in" invitation closing the page above the footer.
+
+    Everything between those two bands — the hero slides and the "Newest In"
+    rows — is generated from the catalog itself, so there is nothing to write
+    here for it; those are switched on per category from the Categories page.
+
+    Singleton like ContactSettings and AboutPageContent: only one row ever
+    exists (enforced via save()). The Russian and Kyrgyz defaults below are
+    the translations these strings already shipped with while they were
+    hardcoded template text, so handing them to the admin doesn't leave
+    either language suddenly reading English.
+    """
+
+    # --- Band 1: the promise, between the hero and the category rows ---
+    promise_heading = models.CharField(
+        max_length=150, blank=True, default="Why shop here",
+        help_text="Small heading above the promise card."
+    )
+    promise_card_heading = models.CharField(
+        max_length=200, blank=True, default="Checked devices at the price on the tag"
+    )
+    promise_text = models.TextField(
+        blank=True,
+        default=(
+            "Everything listed is on our shelves right now. We test and photograph each "
+            "device ourselves, and the price on the page is the price at the counter."
+        )
+    )
+    promise_button_text = models.CharField(
+        max_length=80, blank=True, default="Browse the catalog",
+        help_text="Label on the button linking to the catalog. Leave blank to hide the button."
+    )
+    promise_stat_label = models.CharField(
+        max_length=100, blank=True, default="devices in stock",
+        help_text="Caption under the live in-stock count. The number itself is counted from the catalog and isn't editable."
+    )
+    promise_stat_caption = models.CharField(
+        max_length=100, blank=True, default="Restocked every week",
+        help_text="Smaller line under the stock count, e.g. how often you restock."
+    )
+
+    # --- Band 2: the invitation, between the category rows and the footer ---
+    invite_eyebrow = models.CharField(
+        max_length=100, blank=True, default="Looking for something else",
+        help_text="Small coloured line above the closing heading."
+    )
+    invite_heading = models.CharField(
+        max_length=200, blank=True, default="Not in the catalog? We will bring it in"
+    )
+    invite_text = models.TextField(
+        blank=True,
+        default=(
+            "The shelves change every week. Tell us which model you are after and we will "
+            "order it in or let you know the moment it arrives."
+        )
+    )
+    invite_button_text = models.CharField(
+        max_length=80, blank=True, default="Tell us what you need",
+        help_text="Label on the button linking to the Contact page. Hidden automatically while no contact channel is configured."
+    )
+
+    # Per-language overrides. Unlike the other content singletons these ship
+    # pre-filled rather than blank — see the class docstring. Clearing one
+    # falls back to the base (English) field, exactly as elsewhere.
+    promise_heading_ru = models.CharField(max_length=150, blank=True, default="Почему у нас", verbose_name="Section Heading (Russian)")
+    promise_heading_ky = models.CharField(max_length=150, blank=True, default="Эмне үчүн бизде", verbose_name="Section Heading (Kyrgyz)")
+    promise_card_heading_ru = models.CharField(max_length=200, blank=True, default="Проверенная техника по честной цене", verbose_name="Card Heading (Russian)")
+    promise_card_heading_ky = models.CharField(max_length=200, blank=True, default="Текшерилген техника адилет баада", verbose_name="Card Heading (Kyrgyz)")
+    promise_text_ru = models.TextField(
+        blank=True, verbose_name="Card Text (Russian)",
+        default=(
+            "Всё, что в каталоге, сейчас стоит у нас на полке. Каждое устройство мы "
+            "проверяем и фотографируем сами, а цена на странице совпадает с ценой на кассе."
+        )
+    )
+    promise_text_ky = models.TextField(
+        blank=True, verbose_name="Card Text (Kyrgyz)",
+        default=(
+            "Каталогдогунун баары ушул учурда бизде текчеде турат. Ар бир түзмөктү өзүбүз "
+            "текшерип, сүрөткө тартабыз, ал эми барактагы баа кассадагы баа менен бирдей."
+        )
+    )
+    promise_button_text_ru = models.CharField(max_length=80, blank=True, default="Смотреть каталог", verbose_name="Button Label (Russian)")
+    promise_button_text_ky = models.CharField(max_length=80, blank=True, default="Каталогду көрүү", verbose_name="Button Label (Kyrgyz)")
+    promise_stat_label_ru = models.CharField(max_length=100, blank=True, default="устройств в наличии", verbose_name="Stock Count Label (Russian)")
+    promise_stat_label_ky = models.CharField(max_length=100, blank=True, default="түзмөк кампада бар", verbose_name="Stock Count Label (Kyrgyz)")
+    promise_stat_caption_ru = models.CharField(max_length=100, blank=True, default="Пополняем каждую неделю", verbose_name="Stock Count Caption (Russian)")
+    promise_stat_caption_ky = models.CharField(max_length=100, blank=True, default="Жума сайын толукталат", verbose_name="Stock Count Caption (Kyrgyz)")
+
+    invite_eyebrow_ru = models.CharField(max_length=100, blank=True, default="Ищете другое", verbose_name="Eyebrow (Russian)")
+    invite_eyebrow_ky = models.CharField(max_length=100, blank=True, default="Башка нерсе издеп жатасызбы", verbose_name="Eyebrow (Kyrgyz)")
+    invite_heading_ru = models.CharField(max_length=200, blank=True, default="Нет в каталоге? Привезём под заказ", verbose_name="Heading (Russian)")
+    invite_heading_ky = models.CharField(max_length=200, blank=True, default="Каталогдо жокпу? Алып келебиз", verbose_name="Heading (Kyrgyz)")
+    invite_text_ru = models.TextField(
+        blank=True, verbose_name="Text (Russian)",
+        default=(
+            "Полки меняются каждую неделю. Скажите, какая модель нужна, — закажем или "
+            "сообщим, как только она появится."
+        )
+    )
+    invite_text_ky = models.TextField(
+        blank=True, verbose_name="Text (Kyrgyz)",
+        default=(
+            "Текчелер жума сайын жаңырат. Кайсы модель керек экенин айтыңыз — заказ "
+            "кылабыз же келери менен кабарлайбыз."
+        )
+    )
+    invite_button_text_ru = models.CharField(max_length=80, blank=True, default="Расскажите, что нужно", verbose_name="Button Label (Russian)")
+    invite_button_text_ky = models.CharField(max_length=80, blank=True, default="Эмне керек экенин айтыңыз", verbose_name="Button Label (Kyrgyz)")
+
+    class Meta:
+        verbose_name = "Home Page Content"
+        verbose_name_plural = "Home Page Content"
+
+    def __str__(self):
+        return "Home Page Content"
+
+    def save(self, *args, **kwargs):
+        # Enforce a single row: the homepage only ever has one set of bands.
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        # Never allow deleting the singleton row from anywhere in the app.
+        pass
+
+    @classmethod
+    def get_solo(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    translated_promise_heading = translatable_property('promise_heading')
+    translated_promise_card_heading = translatable_property('promise_card_heading')
+    translated_promise_text = translatable_property('promise_text')
+    translated_promise_button_text = translatable_property('promise_button_text')
+    translated_promise_stat_label = translatable_property('promise_stat_label')
+    translated_promise_stat_caption = translatable_property('promise_stat_caption')
+    translated_invite_eyebrow = translatable_property('invite_eyebrow')
+    translated_invite_heading = translatable_property('invite_heading')
+    translated_invite_text = translatable_property('invite_text')
+    translated_invite_button_text = translatable_property('invite_button_text')
+
+
+# ==========================================
 # 📱 PRODUCT CATALOG & AUTOMATED NO-BG PROCESSOR
 # ==========================================
 

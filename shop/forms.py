@@ -1,6 +1,6 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
-from .models import Product, Category, ContactSettings, AboutPageContent
+from .models import Product, Category, ContactSettings, AboutPageContent, HomePageContent
 from .utils import build_unique_slug
 
 # Shared widget styling for the many near-identical translated-field inputs
@@ -8,6 +8,12 @@ from .utils import build_unique_slug
 # kept as constants so all of them stay visually consistent.
 TEXT_INPUT_CLASS = 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all'
 TEXTAREA_CLASS = TEXT_INPUT_CLASS
+
+# Every translated field carries the same 'leave it blank and the base
+# language shows instead' hint, worded for the kind of field it sits on.
+FALLBACK_HEADING_HINT = _('Optional — falls back to the heading above if left blank')
+FALLBACK_TEXT_HINT = _('Optional — falls back to the text above if left blank')
+FALLBACK_LABEL_HINT = _('Optional — falls back to the label above if left blank')
 
 
 # ==========================================
@@ -231,4 +237,71 @@ class AboutPageContentForm(forms.ModelForm):
             'cta_text': forms.Textarea(attrs={'class': TEXTAREA_CLASS, 'placeholder': _('Invite customers to browse or get in touch...'), 'rows': 3}),
             'cta_text_ru': forms.Textarea(attrs={'class': TEXTAREA_CLASS, 'placeholder': _('Optional — falls back to the text above if left blank'), 'rows': 3}),
             'cta_text_ky': forms.Textarea(attrs={'class': TEXTAREA_CLASS, 'placeholder': _('Optional — falls back to the text above if left blank'), 'rows': 3}),
+        }
+
+
+# ==========================================
+# 🏠 HOME PAGE CONTENT FORM
+# ==========================================
+
+class HomePageContentForm(forms.ModelForm):
+    """
+    Edits the two editorial bands on the homepage. Same shape as
+    AboutPageContentForm: every field has a Russian and Kyrgyz twin, and the
+    template shows one language at a time behind the EN/RU/KY tabs.
+    """
+    class Meta:
+        model = HomePageContent
+        fields = [
+            'promise_heading', 'promise_heading_ru', 'promise_heading_ky',
+            'promise_card_heading', 'promise_card_heading_ru', 'promise_card_heading_ky',
+            'promise_text', 'promise_text_ru', 'promise_text_ky',
+            'promise_button_text', 'promise_button_text_ru', 'promise_button_text_ky',
+            'promise_stat_label', 'promise_stat_label_ru', 'promise_stat_label_ky',
+            'promise_stat_caption', 'promise_stat_caption_ru', 'promise_stat_caption_ky',
+            'invite_eyebrow', 'invite_eyebrow_ru', 'invite_eyebrow_ky',
+            'invite_heading', 'invite_heading_ru', 'invite_heading_ky',
+            'invite_text', 'invite_text_ru', 'invite_text_ky',
+            'invite_button_text', 'invite_button_text_ru', 'invite_button_text_ky',
+        ]
+        widgets = {
+            'promise_heading': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Why shop here')}),
+            'promise_heading_ru': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': FALLBACK_HEADING_HINT}),
+            'promise_heading_ky': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': FALLBACK_HEADING_HINT}),
+
+            'promise_card_heading': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Checked devices at the price on the tag')}),
+            'promise_card_heading_ru': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': FALLBACK_HEADING_HINT}),
+            'promise_card_heading_ky': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': FALLBACK_HEADING_HINT}),
+
+            'promise_text': forms.Textarea(attrs={'class': TEXTAREA_CLASS, 'placeholder': _('What customers get by buying from you...'), 'rows': 4}),
+            'promise_text_ru': forms.Textarea(attrs={'class': TEXTAREA_CLASS, 'placeholder': FALLBACK_TEXT_HINT, 'rows': 4}),
+            'promise_text_ky': forms.Textarea(attrs={'class': TEXTAREA_CLASS, 'placeholder': FALLBACK_TEXT_HINT, 'rows': 4}),
+
+            'promise_button_text': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Browse the catalog')}),
+            'promise_button_text_ru': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': FALLBACK_LABEL_HINT}),
+            'promise_button_text_ky': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': FALLBACK_LABEL_HINT}),
+
+            'promise_stat_label': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('devices in stock')}),
+            'promise_stat_label_ru': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': FALLBACK_LABEL_HINT}),
+            'promise_stat_label_ky': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': FALLBACK_LABEL_HINT}),
+
+            'promise_stat_caption': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Restocked every week')}),
+            'promise_stat_caption_ru': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': FALLBACK_LABEL_HINT}),
+            'promise_stat_caption_ky': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': FALLBACK_LABEL_HINT}),
+
+            'invite_eyebrow': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Looking for something else')}),
+            'invite_eyebrow_ru': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': FALLBACK_LABEL_HINT}),
+            'invite_eyebrow_ky': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': FALLBACK_LABEL_HINT}),
+
+            'invite_heading': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Not in the catalog? We will bring it in')}),
+            'invite_heading_ru': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': FALLBACK_HEADING_HINT}),
+            'invite_heading_ky': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': FALLBACK_HEADING_HINT}),
+
+            'invite_text': forms.Textarea(attrs={'class': TEXTAREA_CLASS, 'placeholder': _('Invite customers to ask for a model you do not stock yet...'), 'rows': 4}),
+            'invite_text_ru': forms.Textarea(attrs={'class': TEXTAREA_CLASS, 'placeholder': FALLBACK_TEXT_HINT, 'rows': 4}),
+            'invite_text_ky': forms.Textarea(attrs={'class': TEXTAREA_CLASS, 'placeholder': FALLBACK_TEXT_HINT, 'rows': 4}),
+
+            'invite_button_text': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Tell us what you need')}),
+            'invite_button_text_ru': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': FALLBACK_LABEL_HINT}),
+            'invite_button_text_ky': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': FALLBACK_LABEL_HINT}),
         }

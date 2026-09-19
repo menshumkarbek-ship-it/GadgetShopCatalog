@@ -1,7 +1,9 @@
 from django.contrib import admin
 from django.shortcuts import redirect
 from django.urls import reverse
-from .models import Category, Product, ProductImage, ContactSettings, AboutPageContent, Sale
+from .models import (
+    Category, Product, ProductImage, ContactSettings, AboutPageContent, HomePageContent, Sale,
+)
 
 
 class ProductImageInline(admin.TabularInline):
@@ -83,3 +85,22 @@ class AboutPageContentAdmin(admin.ModelAdmin):
     def changelist_view(self, request, extra_context=None):
         obj = AboutPageContent.get_solo()
         return redirect(reverse('admin:shop_aboutpagecontent_change', args=[obj.pk]))
+
+
+@admin.register(HomePageContent)
+class HomePageContentAdmin(admin.ModelAdmin):
+    """
+    Singleton editor for the homepage's two editorial bands. The in-app
+    management panel is where staff normally edit these; this exists so the
+    row is reachable from Django admin like the other content singletons.
+    """
+
+    def has_add_permission(self, request):
+        return not HomePageContent.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def changelist_view(self, request, extra_context=None):
+        obj = HomePageContent.get_solo()
+        return redirect(reverse('admin:shop_homepagecontent_change', args=[obj.pk]))

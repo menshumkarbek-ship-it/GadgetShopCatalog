@@ -1,0 +1,32 @@
+{% extends "shop/product/_management_base.html" %}
+{% load i18n %}
+
+{% comment %}
+  The panel's front door. Passes no `active` key, which is what makes the
+  shell show the section list on its own on phones; from `lg` up the list is
+  the sidebar as usual and this overview fills the column beside it.
+{% endcomment %}
+
+{% block title %}{% translate "Management" %} | {{ store_name }}{% endblock %}
+{% block page_heading %}{% translate "Management" %}{% endblock %}
+{% block page_intro %}{% translate "Pick a section to edit your catalog, review sales, or change what the storefront shows." %}{% endblock %}
+
+{% block management_content %}
+    {% for group in management_groups %}
+    <section>
+        <p class="px-1 pb-2 text-[10px] font-black uppercase tracking-wider text-gray-300">{{ group.label }}</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+            {% for item in group.items %}
+            <a href="{{ item.url }}" class="group flex items-center gap-3.5 bg-white border border-gray-100 rounded-2xl shadow-sm px-4 py-3.5 hover:border-indigo-200 hover:shadow-md transition-all">
+                <span class="w-10 h-10 shrink-0 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                    <i class="fa-solid {{ item.icon }}"></i>
+                </span>
+                <span class="min-w-0 flex-1 text-sm font-black text-gray-950 truncate">{{ item.label }}</span>
+                {% if item.badge %}<span class="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-black text-gray-500 tabular-nums">{{ item.badge }}</span>{% endif %}
+                <i class="fa-solid fa-chevron-right shrink-0 text-[10px] text-gray-300 group-hover:text-indigo-400 transition-colors"></i>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endfor %}
+{% endblock %}

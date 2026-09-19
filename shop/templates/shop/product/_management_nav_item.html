@@ -1,0 +1,27 @@
+{% load i18n %}
+{% comment %} One link in the management section menu. Include with `key`,
+   `label`, `icon`, `url`, and optionally `badge` (a count shown on the right).
+
+   The `active` key each management view puts in its context is compared
+   here rather than at the include site, because {% include %}'s `with`
+   clause takes plain values and cannot hold a comparison.
+
+   On phones the row is a full-width tap target with a chevron on the right,
+   because there the list is the whole screen and each row opens a section.
+   In the desktop sidebar the same row is tighter and the chevron is dropped,
+   since the section is already open beside it. {% endcomment %}
+{% if active == key %}
+<span aria-current="page" class="flex items-center gap-3 lg:gap-2.5 px-3 py-3 lg:py-2 rounded-xl text-[15px] lg:text-xs font-bold bg-indigo-600 text-white shadow-md shadow-indigo-600/30">
+    <i class="fa-solid {{ icon }} w-4 shrink-0 text-center text-xs lg:text-[11px]"></i>
+    <span class="min-w-0 flex-1 truncate">{{ label }}</span>
+    {% if badge %}<span class="shrink-0 rounded-full bg-white/20 px-1.5 py-0.5 text-[10px] font-black tabular-nums">{{ badge }}</span>{% endif %}
+    <i class="fa-solid fa-chevron-right lg:hidden shrink-0 text-[10px] text-white/70"></i>
+</span>
+{% else %}
+<a href="{{ url }}" class="flex items-center gap-3 lg:gap-2.5 px-3 py-3 lg:py-2 rounded-xl text-[15px] lg:text-xs font-bold text-gray-500 hover:text-indigo-600 hover:bg-indigo-50/60 transition-colors">
+    <i class="fa-solid {{ icon }} w-4 shrink-0 text-center text-xs lg:text-[11px] text-gray-400"></i>
+    <span class="min-w-0 flex-1 truncate">{{ label }}</span>
+    {% if badge %}<span class="shrink-0 rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-black text-gray-500 tabular-nums">{{ badge }}</span>{% endif %}
+    <i class="fa-solid fa-chevron-right lg:hidden shrink-0 text-[10px] text-gray-300"></i>
+</a>
+{% endif %}

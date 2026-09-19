@@ -61,3 +61,82 @@ def site_identity(request):
         store_name = AboutPageContent.get_solo().translated_site_name
         cache.set(cache_key, store_name, SETTINGS_CACHE_TIMEOUT)
     return {'store_name': store_name}
+
+
+# Every view that renders inside the management panel's sidebar layout. The
+# panel is also reachable at /admin/, which resolves to the same view as
+# shop:create_product under the name `admin_panel`.
+MANAGEMENT_URL_NAMES = frozenset({
+    'management_home', 'create_product', 'update_product', 'create_category',
+    'removed_products', 'manage_homepage', 'manage_about', 'manage_contacts',
+    'sales_report', 'sales_archive',
+})
+
+
+def management_nav(request):
+    """
+    The management panel's sidebar: its grouped links, and the counts on them.
+
+    Built here rather than spelled out in the template because the panel
+    renders this list twice — stacked in the desktop sidebar, and inside a
+    collapsible disclosure on phones, which also has to name the section the
+    admin is currently on. One list means those can't drift apart, and adding
+    a page to the panel is one entry here.
+
+    Which entry is lit is NOT decided here: each view passes its own `active`
+    key (see _management_nav_item.html), so the page itself stays the
+    authority on where the admin is.
+
+    Scoped to management pages by url_name rather than by path, so it holds
+    whatever those URLs are mounted at — and so the storefront never pays a
+    query for a sidebar it doesn't render. resolver_match is set on the
+    request before the view runs, and context processors run at render time,
+    so it is always populated by the time this is asked.
+    """
+    match = getattr(request, 'resolver_match', None)
+    if match is None or match.url_name not in MANAGEMENT_URL_NAMES:
+        return {}
+
+    from django.urls import reverse
+    from django.utils.translation import gettext as _
+
+    from .models import Product
+
+    removed_count = Product.all_objects.filter(deleted_at__isnull=False).count()
+
+    return {
+        'removed_count': removed_count,
+        'management_groups': [
+            {
+                'label': _('Catalog'),
+                'items': [
+                    {'key': 'products', 'label': _('Products'), 'icon': 'fa-box',
+                     'url': reverse('shop:create_product')},
+                    {'key': 'categories', 'label': _('Categories'), 'icon': 'fa-tags',
+                     'url': reverse('shop:create_category')},
+                    {'key': 'removed', 'label': _('Removed'), 'icon': 'fa-trash-can',
+                     'url': reverse('shop:removed_products'), 'badge': removed_count},
+                ],
+            },
+            {
+                'label': _('Sales'),
+                'items': [
+                    {'key': 'sales_month', 'label': _('This Month'), 'icon': 'fa-chart-line',
+                     'url': reverse('shop:sales_report')},
+                    {'key': 'sales_all', 'label': _('All Time'), 'icon': 'fa-clock-rotate-left',
+                     'url': reverse('shop:sales_archive')},
+                ],
+            },
+            {
+                'label': _('Pages'),
+                'items': [
+                    {'key': 'homepage', 'label': _('Homepage'), 'icon': 'fa-house',
+                     'url': reverse('shop:manage_homepage')},
+                    {'key': 'about', 'label': _('About Page'), 'icon': 'fa-file-lines',
+                     'url': reverse('shop:manage_about')},
+                    {'key': 'contacts', 'label': _('Contacts'), 'icon': 'fa-address-book',
+                     'url': reverse('shop:manage_contacts')},
+                ],
+            },
+        ],
+    }

@@ -1,30 +1,16 @@
-{% extends "shop/base.html" %}
+{% extends "shop/product/_management_base.html" %}
 {% load static %}
 {% load i18n %}
 
 {% block title %}{% translate "Category Management" %} | {{ store_name }}{% endblock %}
+{% block breadcrumb %}{% translate "Categories" %}{% endblock %}
+{% block page_heading %}{% translate "Categories" %}{% endblock %}
+{% block page_intro %}{% translate 'New categories (e.g. Headphones, Powerbanks, Smartwatches) show up immediately in the catalog filter, and automatically get their own "Newest In" slideshow on the homepage as soon as they have at least one product.' %}{% endblock %}
 
-{% block content %}
-<div class="product-management max-w-4xl mx-auto my-6 px-4 sm:px-6 space-y-6">
-
-    <!-- Navigation Breadcrumb -->
-    <div class="flex items-center space-x-2 text-xs font-bold text-gray-400 uppercase tracking-wide">
-        <a href="{% url 'shop:product_list' %}" class="hover:text-indigo-600 transition-colors">{% translate "Catalog" %}</a>
-        <span>/</span>
-        <span class="text-indigo-600">{% translate "Category Management" %}</span>
-    </div>
-
-    <!-- Settings hub tabs (shared strip, see _management_tabs.html) -->
-    {% include 'shop/product/_management_tabs.html' with active='categories' %}
-
+{% block management_content %}
     <!-- Add Category Form -->
-    <section class="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 sm:p-8">
-        <div class="mb-6 pb-4 border-b border-gray-50">
-            <h1 class="text-xl font-black text-gray-950">{% translate "Add New Category" %}</h1>
-            <p class="text-xs text-gray-400 mt-1">
-                {% translate 'New categories (e.g. Headphones, Powerbanks, Smartwatches) show up immediately in the catalog filter, and automatically get their own "Newest In" slideshow on the homepage as soon as they have at least one product.' %}
-            </p>
-        </div>
+    <section class="bg-white border border-gray-100 rounded-3xl shadow-sm p-5 sm:p-8">
+        <h2 class="text-sm font-black text-gray-950 mb-6 pb-4 border-b border-gray-50">{% translate "Add New Category" %}</h2>
 
         {% if form.errors %}
         <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-semibold space-y-1">
@@ -71,7 +57,7 @@
                 </span>
             </label>
             <div class="pt-4 border-t border-gray-100 flex items-center justify-end">
-                <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-7 py-3 rounded-xl transition-all shadow-md shadow-indigo-600/30 active:scale-95 uppercase tracking-wider">
+                <button type="submit" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-7 py-3 rounded-xl transition-all shadow-md shadow-indigo-600/30 active:scale-95 uppercase tracking-wider">
                     + {% translate "Create Category" %}
                 </button>
             </div>
@@ -79,14 +65,14 @@
     </section>
 
     <!-- Existing Categories -->
-    <div class="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm space-y-4">
+    <div class="bg-white border border-gray-200/80 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
         <h3 class="text-xs font-black uppercase tracking-wider text-gray-900">{% translate "Existing Categories" %}</h3>
         <p class="text-[10px] text-gray-400 -mt-2">{% translate 'Toggle the star for the homepage announcement slide, or the row icon to show/hide its "Newest In" row.' %}</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {% for cat in all_categories %}
-                <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl border {% if cat.is_featured_in_hero %}border-indigo-200 bg-indigo-50/40{% else %}border-gray-100{% endif %}">
-                    <div class="truncate">
-                        <span class="text-xs font-black text-gray-900">{{ cat.name }}</span>
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-2 p-2.5 rounded-xl border {% if cat.is_featured_in_hero %}border-indigo-200 bg-indigo-50/40{% else %}border-gray-100{% endif %}">
+                    <div class="min-w-0">
+                        <span class="text-xs font-black text-gray-900 break-words">{{ cat.name }}</span>
                         <span class="text-[10px] text-gray-400 font-bold uppercase block">/{{ cat.slug }}/</span>
                     </div>
                     <div class="flex items-center gap-1.5 shrink-0">
@@ -132,8 +118,6 @@
         </div>
         <p class="text-[10px] text-gray-400">{% translate "Need to rename a category? Use the full Django admin panel for that." %}</p>
     </div>
-
-</div>
 
 
 <!-- Auto-slug script -->

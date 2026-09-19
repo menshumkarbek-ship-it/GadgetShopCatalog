@@ -154,7 +154,10 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
         /* ── Global nav ───────────────────────────────────────────────────
-           44px bar, 12px links, frosted #fafafc once the page moves. */
+           52px bar, 14px links, frosted #fafafc once the page moves. Sits on
+           a hairline at rest and lifts onto a soft shadow once the page
+           scrolls, so the bar always reads as separate from the content
+           passing under it. */
         .globalnav {
             position: sticky;
             top: 0;
@@ -162,11 +165,31 @@
             background-color: rgba(255, 255, 255, .82);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
-            transition: background-color .3s;
+            box-shadow: 0 1px 0 rgba(0, 0, 0, .07);
+            transition: background-color .3s, box-shadow .3s;
         }
-        .globalnav.is-scrolled { background-color: rgba(250, 250, 252, .94); }
-        .globalnav-inner { height: 44px; }
-        .globalnav a, .globalnav button, .globalnav select { font-size: 12px; letter-spacing: -0.01em; }
+        .globalnav.is-scrolled {
+            background-color: rgba(250, 250, 252, .94);
+            box-shadow: 0 1px 0 rgba(0, 0, 0, .05), 0 4px 16px rgba(0, 0, 0, .07);
+        }
+        .globalnav-inner { height: 52px; }
+        .globalnav a, .globalnav button, .globalnav select { font-size: 14px; letter-spacing: -0.01em; }
+        .globalnav-brand { font-size: 17px; }
+
+        /* Phones and tablets: a little more bar and a little more type, so the
+           nav doesn't read as a thin strip on a small screen, and the menu
+           button is a comfortable tap target. */
+        @media (max-width: 1023px) {
+            .globalnav-inner { height: 56px; }
+            .globalnav a, .globalnav button, .globalnav select { font-size: 15px; }
+            .globalnav-brand { font-size: 18px; }
+            #mobile-menu-toggle { font-size: 18px; }
+        }
+
+        /* The dropdown's rows are full-width tap targets, not bar links, so
+           they take the body size. Needs the id to outrank `.globalnav a`
+           above, which otherwise shrinks them to the bar's size. */
+        #mobile-menu a { font-size: 17px; }
 
         /* The management panel keeps its own look; it only needs the body
            font reset above, not the storefront's type scale. */
@@ -178,7 +201,7 @@
         <div class="wrap">
             <div class="globalnav-inner flex items-center justify-between gap-4">
 
-                <a href="{% url 'shop:home' %}" class="font-semibold text-ink hover:opacity-70 transition-opacity truncate min-w-0" style="font-size:14px;">
+                <a href="{% url 'shop:home' %}" class="globalnav-brand font-semibold text-ink hover:opacity-70 transition-opacity truncate min-w-0">
                     {{ store_name }}
                 </a>
 
@@ -211,7 +234,7 @@
                     </form>
 
                     {% if request.user.is_authenticated and is_admin_user %}
-                        <a href="{% url 'shop:create_product' %}" class="hidden sm:inline-flex items-center gap-1.5 text-deepgray hover:text-ink transition-colors" title="{% translate 'Settings' %}">
+                        <a href="{% url 'shop:management_home' %}" class="hidden sm:inline-flex items-center gap-1.5 text-deepgray hover:text-ink transition-colors" title="{% translate 'Settings' %}">
                             <i class="fa-solid fa-gear"></i>
                             <span>{% translate "Settings" %}</span>
                         </a>
@@ -230,7 +253,7 @@
                 <a href="{% url 'shop:about_us' %}" class="block py-2 t-body-sm {% if request.resolver_match.url_name == 'about_us' %}text-ink{% else %}text-midgray{% endif %}">{% translate "About Us" %}</a>
                 <a href="{% url 'shop:contact_us' %}" class="block py-2 t-body-sm {% if request.resolver_match.url_name == 'contact_us' %}text-ink{% else %}text-midgray{% endif %}">{% translate "Contact" %}</a>
                 {% if request.user.is_authenticated and is_admin_user %}
-                    <a href="{% url 'shop:create_product' %}" class="block py-2 t-body-sm text-midgray">{% translate "Settings" %}</a>
+                    <a href="{% url 'shop:management_home' %}" class="block py-2 t-body-sm text-midgray">{% translate "Settings" %}</a>
                 {% endif %}
             </div>
         </div>

@@ -1,3 +1,4 @@
+import re
 import tempfile
 from datetime import timedelta
 from decimal import Decimal
@@ -5,11 +6,13 @@ from io import StringIO
 
 from django.contrib.auth.models import User, Group
 from django.core.management import call_command
+from django.db import connection
 from django.test import TestCase, override_settings
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
-from django.utils import timezone
+from django.utils import timezone, translation
 
-from .models import Category, Product, Sale
+from .models import Category, HomePageContent, Product, Sale
 from .seed.catalog import CATEGORIES, PRODUCTS
 
 
@@ -81,18 +84,20 @@ class StorefrontTests(TestCase):
     def test_anonymous_visitor_sees_no_settings_link(self):
         response = self.client.get(reverse('shop:home'))
 
-        self.assertNotContains(response, reverse('shop:create_product'))
+        self.assertNotContains(response, reverse('shop:management_home'))
 
     def test_staff_sees_settings_link_and_sign_out_lives_inside_it(self):
         staff = User.objects.create_user(username='manager', password='manager-password-123', is_staff=True)
         self.client.force_login(staff)
 
         home = self.client.get(reverse('shop:home'))
-        self.assertContains(home, reverse('shop:create_product'))
+        # Settings opens the panel's front door — on a phone that is the
+        # section list — rather than dropping the admin into one section.
+        self.assertContains(home, reverse('shop:management_home'))
         # Sign Out moved off the navbar into the Settings hub.
         self.assertNotContains(home, reverse('admin:logout'))
 
-        hub = self.client.get(reverse('shop:create_product'))
+        hub = self.client.get(reverse('shop:management_home'))
         self.assertContains(hub, reverse('admin:logout'))
 
     def test_manager_group_member_can_reach_add_product_page(self):
@@ -462,6 +467,348 @@ class StorefrontTests(TestCase):
         self.assertEqual(response.context['total_revenue'], Decimal('650.00'))
         self.assertContains(response, 'Kept Phone')
         self.assertContains(response, 'Purged Phone')
+
+
+class ManagementPanelTests(TestCase):
+    """The in-app management panel: its sidebar, the homepage section editor,
+    the removed-listings page, and the merged sales page."""
+
+    def setUp(self):
+        self.category = Category.objects.create(name='Phones', slug='phones')
+        self.staff = User.objects.create_user(
+            username='manager', password='manager-password-123', is_staff=True
+        )
+        self.client.force_login(self.staff)
+
+    def make_product(self, name, slug, price):
+        return Product.objects.create(
+            category=self.category, brand='Example', name=name, slug=slug,
+            price=Decimal(price), description='A tested product.',
+        )
+
+    # --- sidebar -------------------------------------------------------
+
+    def test_every_management_page_renders_with_the_shared_sidebar(self):
+        pages = [
+            ('shop:create_product', 'products'),
+            ('shop:create_category', 'categories'),
+            ('shop:removed_products', 'removed'),
+            ('shop:sales_report', 'sales_month'),
+            ('shop:sales_archive', 'sales_all'),
+            ('shop:manage_homepage', 'homepage'),
+            ('shop:manage_about', 'about'),
+            ('shop:manage_contacts', 'contacts'),
+        ]
+        for name, active in pages:
+            with self.subTest(page=name):
+                response = self.client.get(reverse(name))
+                self.assertEqual(response.status_code, 200)
+                # The lit link is chosen from this key, so it has to survive.
+                self.assertEqual(response.context['active'], active)
+                # Every page can reach every other one from the sidebar.
+                for other, _unused in pages:
+                    self.assertContains(response, reverse(other))
+
+    def test_section_pages_drill_down_on_phones(self):
+        """Below `lg` a section page shows only its own content: the section
+        list is hidden and a Back link leads to the panel's front door. From
+        `lg` up the same list is the sidebar beside the page."""
+        for name in ('shop:create_product', 'shop:sales_archive', 'shop:manage_contacts'):
+            with self.subTest(page=name):
+                html = self.client.get(reverse(name)).content.decode()
+
+                menu = re.search(r'id="section-menu"[^>]*class="([^"]*)"', html)
+                self.assertIsNotNone(menu)
+                self.assertIn('hidden', menu.group(1))
+                self.assertIn('lg:block', menu.group(1))
+
+                content = re.search(r'id="section-content"[^>]*class="([^"]*)"', html)
+                self.assertIsNotNone(content)
+                self.assertNotIn('hidden', content.group(1))
+
+                self.assertContains(
+                    self.client.get(reverse(name)),
+                    f'href="{reverse("shop:management_home")}"',
+                )
+
+    def test_management_home_is_the_section_list_on_phones(self):
+        """The front door passes no `active` key, so below `lg` it is the
+        full-width section list and nothing else; from `lg` up the list is
+        the sidebar and an overview of the same sections sits beside it."""
+        response = self.client.get(reverse('shop:management_home'))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn('active', response.context)
+        html = response.content.decode()
+
+        menu = re.search(r'id="section-menu"[^>]*class="([^"]*)"', html)
+        self.assertIsNotNone(menu)
+        self.assertNotIn('hidden', menu.group(1))
+
+        content = re.search(r'id="section-content"[^>]*class="([^"]*)"', html)
+        self.assertIsNotNone(content)
+        self.assertIn('hidden', content.group(1))
+        self.assertIn('lg:block', content.group(1))
+
+        # Every section is reachable from here, in both layouts.
+        for group in response.context['management_groups']:
+            for item in group['items']:
+                self.assertContains(response, item['url'])
+
+    def test_management_home_requires_a_manager(self):
+        self.client.logout()
+        response = self.client.get(reverse('shop:management_home'))
+        self.assertEqual(response.status_code, 302)
+
+    def test_every_nav_link_is_defined_once_for_both_layouts(self):
+        """The sidebar and the collapsed row read one list, so a page added to
+        the panel shows up in both without being spelled out twice."""
+        response = self.client.get(reverse('shop:manage_about'))
+
+        keys = [item['key'] for group in response.context['management_groups']
+                for item in group['items']]
+        self.assertEqual(
+            keys,
+            ['products', 'categories', 'removed', 'sales_month', 'sales_all',
+             'homepage', 'about', 'contacts'],
+        )
+        # Every view's `active` key has to be one of them, or nothing lights up.
+        self.assertIn(response.context['active'], keys)
+
+    def test_sidebar_badge_counts_removed_listings_only_on_the_panel(self):
+        self.make_product('Gone', 'gone', '100.00')
+        self.client.post(reverse('shop:remove_product', args=[Product.all_objects.get(slug='gone').id]))
+
+        panel = self.client.get(reverse('shop:manage_about'))
+        self.assertEqual(panel.context['removed_count'], 1)
+
+        # The storefront renders no sidebar, so it must not pay for the count.
+        self.assertNotIn('removed_count', self.client.get(reverse('shop:home')).context)
+
+    # --- homepage sections ---------------------------------------------
+
+    def test_homepage_bands_render_from_the_editable_content(self):
+        content = HomePageContent.get_solo()
+        content.promise_card_heading = 'We check every device'
+        content.invite_heading = 'Ask us for any model'
+        content.save()
+
+        response = self.client.get(reverse('shop:home'))
+
+        self.assertContains(response, 'We check every device')
+        self.assertContains(response, 'Ask us for any model')
+
+    def post_homepage_form(self, **overrides):
+        """POST the homepage editor the way the browser does: every field
+        present, blank ones included. Django's construct_instance keeps a
+        model default for a field left out of the data entirely, so a test
+        that posts a subset would never exercise clearing one."""
+        from .forms import HomePageContentForm
+
+        data = {name: '' for name in HomePageContentForm.Meta.fields}
+        data.update(overrides)
+        return self.client.post(reverse('shop:manage_homepage'), data, follow=True)
+
+    def test_staff_can_rewrite_the_homepage_bands(self):
+        response = self.post_homepage_form(
+            promise_heading='Why us',
+            promise_card_heading='Honest prices',
+            promise_text='Everything on the shelf.',
+            promise_button_text='See the catalog',
+            promise_stat_label='phones ready',
+            promise_stat_caption='New stock weekly',
+            invite_eyebrow='Cannot find it',
+            invite_heading='We will order it',
+            invite_text='Tell us the model.',
+            invite_button_text='Message us',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        content = HomePageContent.get_solo()
+        self.assertEqual(content.promise_card_heading, 'Honest prices')
+        self.assertEqual(content.invite_heading, 'We will order it')
+        # A translation cleared in the form falls back to the base language
+        # rather than blanking that line on the live page.
+        self.assertEqual(content.promise_card_heading_ru, '')
+        self.assertEqual(content.translated_promise_card_heading, 'Honest prices')
+        with translation.override('ru'):
+            self.assertEqual(content.translated_promise_card_heading, 'Honest prices')
+
+    def test_a_kept_translation_still_wins_over_the_base_language(self):
+        self.post_homepage_form(
+            promise_card_heading='Honest prices',
+            promise_card_heading_ru='Честные цены',
+        )
+
+        content = HomePageContent.get_solo()
+        with translation.override('ru'):
+            self.assertEqual(content.translated_promise_card_heading, 'Честные цены')
+
+    def test_homepage_band_defaults_are_translated_not_english(self):
+        content = HomePageContent.get_solo()
+        self.assertTrue(content.promise_card_heading_ru)
+        self.assertTrue(content.invite_heading_ky)
+
+        with translation.override('ru'):
+            self.assertEqual(
+                content.translated_promise_card_heading, content.promise_card_heading_ru
+            )
+
+    def test_clearing_a_button_label_hides_that_button(self):
+        content = HomePageContent.get_solo()
+        content.promise_button_text = ''
+        content.promise_button_text_ru = ''
+        content.promise_button_text_ky = ''
+        content.save()
+
+        response = self.client.get(reverse('shop:home'))
+
+        self.assertNotContains(response, 'Browse the catalog')
+
+    def test_management_panel_speaks_russian(self):
+        """The panel's own chrome is translated, not just the storefront —
+        a fuzzy or missing catalog entry would silently fall back to English."""
+        response = self.client.get(reverse('shop:manage_homepage'), headers={'accept-language': 'ru'})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Блоки главной страницы')
+        self.assertContains(response, 'Удалённые')
+
+    def test_regular_user_cannot_edit_the_homepage(self):
+        self.client.force_login(User.objects.create_user(username='shopper', password='shopper-pass-123'))
+
+        response = self.client.get(reverse('shop:manage_homepage'))
+
+        self.assertRedirects(response, reverse('shop:product_list'))
+
+    # --- removed listings ----------------------------------------------
+
+    def test_removed_page_lists_every_removal_and_labels_how_it_happened(self):
+        sold = self.make_product('Sold Phone', 'sold-phone', '250.00')
+        deleted = self.make_product('Mistake', 'mistake', '100.00')
+        self.client.post(reverse('shop:sell_product', args=[sold.id]))
+        self.client.post(reverse('shop:remove_product', args=[deleted.id]))
+
+        response = self.client.get(reverse('shop:removed_products'))
+
+        by_pk = {p.pk: p for p in response.context['removed_products']}
+        self.assertTrue(by_pk[sold.pk].was_sold)
+        self.assertFalse(by_pk[deleted.pk].was_sold)
+        self.assertEqual(response.context['sold_count'], 1)
+        self.assertEqual(response.context['deleted_count'], 1)
+
+    def test_removed_page_search_narrows_the_list_and_its_tallies(self):
+        keep = self.make_product('Galaxy Phone', 'galaxy', '250.00')
+        other = self.make_product('Laptop', 'laptop', '900.00')
+        self.client.post(reverse('shop:remove_product', args=[keep.id]))
+        self.client.post(reverse('shop:remove_product', args=[other.id]))
+
+        response = self.client.get(reverse('shop:removed_products'), {'search': 'galaxy'})
+
+        self.assertEqual([p.pk for p in response.context['removed_products']], [keep.pk])
+        self.assertEqual(response.context['shown_count'], 1)
+        # The sidebar badge keeps showing everything that is actually removed.
+        self.assertEqual(response.context['removed_count'], 2)
+
+    def test_restoring_from_the_removed_page_comes_back_to_it(self):
+        product = self.make_product('Phone', 'phone', '250.00')
+        self.client.post(reverse('shop:remove_product', args=[product.id]))
+
+        response = self.client.post(
+            reverse('shop:restore_product', args=[product.id]), {'next': 'removed'}
+        )
+
+        self.assertRedirects(response, reverse('shop:removed_products'))
+        self.assertTrue(Product.objects.filter(pk=product.pk).exists())
+
+    def test_a_catalog_action_without_a_next_still_lands_on_products(self):
+        product = self.make_product('Phone', 'phone', '250.00')
+
+        response = self.client.post(reverse('shop:remove_product', args=[product.id]))
+
+        self.assertRedirects(response, reverse('shop:create_product'))
+
+    def test_removed_listings_are_annotated_without_a_query_each(self):
+        for index in range(5):
+            product = self.make_product(f'Phone {index}', f'phone-{index}', '250.00')
+            self.client.post(reverse('shop:sell_product', args=[product.id]))
+
+        # One query for the listings, one for the sales behind them — not one
+        # sale lookup per listing.
+        with CaptureQueriesContext(connection) as queries:
+            response = self.client.get(reverse('shop:removed_products'))
+        self.assertEqual(len(response.context['removed_products']), 5)
+        sale_queries = [q for q in queries.captured_queries if '"shop_sale"' in q['sql']]
+        self.assertEqual(len(sale_queries), 1)
+
+    # --- merged sales page ----------------------------------------------
+
+    def test_all_time_view_is_staff_only_though_it_has_no_decorator_of_its_own(self):
+        """sales_archive delegates straight to the decorated sales_report, so
+        its access check has to come along with it."""
+        self.client.force_login(User.objects.create_user(username='shopper', password='shopper-pass-123'))
+
+        response = self.client.get(reverse('shop:sales_archive'))
+
+        self.assertRedirects(response, reverse('shop:product_list'))
+
+    def test_month_view_and_all_time_view_share_one_page(self):
+        product = self.make_product('Phone', 'phone', '250.00')
+        self.client.post(reverse('shop:sell_product', args=[product.id]))
+
+        month = self.client.get(reverse('shop:sales_report'))
+        self.assertEqual(month.context['period'], 'month')
+        self.assertEqual(month.context['total_count'], 1)
+
+        all_time = self.client.get(reverse('shop:sales_archive'))
+        self.assertEqual(all_time.context['period'], 'all')
+        self.assertEqual(all_time.context['total_count'], 1)
+        self.assertEqual(all_time.templates[0].name, month.templates[0].name)
+
+    def test_all_time_view_includes_sales_outside_the_current_month(self):
+        product = self.make_product('Phone', 'phone', '250.00')
+        self.client.post(reverse('shop:sell_product', args=[product.id]))
+        old = Sale.objects.get()
+        Sale.objects.filter(pk=old.pk).update(sold_at=timezone.now() - timedelta(days=400))
+
+        self.assertEqual(self.client.get(reverse('shop:sales_report')).context['total_count'], 0)
+        self.assertEqual(self.client.get(reverse('shop:sales_archive')).context['total_count'], 1)
+
+    def test_all_time_view_can_be_searched(self):
+        keep = self.make_product('Galaxy Phone', 'galaxy', '250.00')
+        other = self.make_product('Laptop', 'laptop', '900.00')
+        self.client.post(reverse('shop:sell_product', args=[keep.id]))
+        self.client.post(reverse('shop:sell_product', args=[other.id]))
+
+        response = self.client.get(reverse('shop:sales_archive'), {'search': 'galaxy'})
+
+        self.assertEqual(response.context['total_count'], 1)
+        self.assertEqual(response.context['total_revenue'], Decimal('250.00'))
+
+    def test_breakdowns_group_by_one_column_not_by_sale_date(self):
+        first = self.make_product('Phone One', 'phone-one', '100.00')
+        second = self.make_product('Phone Two', 'phone-two', '150.00')
+        self.client.post(reverse('shop:sell_product', args=[first.id]))
+        self.client.post(reverse('shop:sell_product', args=[second.id]))
+
+        response = self.client.get(reverse('shop:sales_archive'))
+
+        by_category = list(response.context['by_category'])
+        self.assertEqual(len(by_category), 1)
+        self.assertEqual(by_category[0]['count'], 2)
+        self.assertEqual(by_category[0]['total'], Decimal('250.00'))
+
+    def test_striking_a_sale_from_the_all_time_view_returns_to_it(self):
+        product = self.make_product('Phone', 'phone', '250.00')
+        self.client.post(reverse('shop:sell_product', args=[product.id]))
+        sale = Sale.objects.get()
+
+        response = self.client.post(
+            reverse('shop:discard_sale', args=[sale.id]), {'period': 'all'}
+        )
+
+        self.assertRedirects(response, reverse('shop:sales_archive'))
+        self.assertFalse(Sale.objects.exists())
+
 
 
 class SeedCatalogTests(TestCase):
