@@ -103,7 +103,7 @@
                         <!-- Deleting a category takes its products with it, so the
                              button shows the count and goes through the password
                              gate before anything is touched. -->
-                        <form method="POST" action="{% url 'shop:delete_category' cat.id %}" data-confirm-delete="{% blocktranslate with name=cat.name total=cat.product_count %}The category {{ name }} will be deleted together with everything filed under it — products, including any sitting in Recently removed: {{ total }}. Their photos go too. Sales already recorded stay in the report.{% endblocktranslate %}">
+                        <form method="POST" action="{% url 'shop:delete_category' cat.id %}" data-confirm-delete="{% blocktranslate with name=cat.name total=cat.product_count %}The category {{ name }} will be deleted together with everything filed under it — products, including any sitting in Removed: {{ total }}. Their photos go too. Sales already recorded stay in the report.{% endblocktranslate %}">
                             {% csrf_token %}
                             <button type="submit" title="{% translate 'Delete category and its products' %}" class="flex items-center gap-1.5 text-[10px] font-bold uppercase px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-colors">
                                 <i class="fa-solid fa-trash"></i>

@@ -332,13 +332,8 @@ def create_product(request, product_id=None):
     known_brands = Product.objects.exclude(brand='').values_list('brand', flat=True).distinct().order_by('brand')
     gallery_images = product_instance.gallery_images.all() if product_instance else []
 
-    # Recently removed listings, so an accidental removal can be undone from
-    # the same page it happened on. Capped at 10 — this is an undo affordance,
-    # not an archive browser.
-    removed_products = _annotate_removal_kind(Product.all_objects.filter(
-        deleted_at__isnull=False
-    ).select_related('category').order_by('-deleted_at')[:10])
-
+    # Removed listings are deliberately not shown here: this page is for
+    # what is on sale. Undoing a removal happens on the Removed page.
     context = {
         'form': form,
         'product_instance': product_instance,
@@ -346,7 +341,6 @@ def create_product(request, product_id=None):
         'known_brands': known_brands,
         'gallery_images': gallery_images,
         'search_query': search_query,
-        'removed_products': removed_products,
         'active': 'products',
     }
     return render(request, 'shop/product/create.html', context)
@@ -400,7 +394,7 @@ def _after_catalog_action(request):
 
 def _remove_from_catalog(product):
     # Soft delete: the row and its photos stay, so a mis-click can be undone
-    # from "Recently removed" instead of being gone for good.
+    # from the Removed page instead of being gone for good.
     product.deleted_at = timezone.now()
     product.save(update_fields=['deleted_at'])
 
@@ -430,7 +424,7 @@ def sell_product(request, product_id):
 
     messages.success(
         request,
-        _('"%(name)s" was marked as sold and removed from the catalog. You can undo this from "Recently removed".')
+        _('"%(name)s" was marked as sold and removed from the catalog. You can undo this from "Removed".')
         % {'name': product.name},
     )
     return _after_catalog_action(request)
@@ -449,7 +443,7 @@ def remove_product(request, product_id):
 
     messages.success(
         request,
-        _('"%(name)s" was removed from the catalog (not counted as a sale). You can undo this from "Recently removed".')
+        _('"%(name)s" was removed from the catalog (not counted as a sale). You can undo this from "Removed".')
         % {'name': product.name},
     )
     return _after_catalog_action(request)
@@ -494,7 +488,7 @@ def purge_product(request, product_id):
     Delete a removed listing for good: the row, its gallery rows, and the
     image files behind them, which nothing else cleans up.
 
-    Only reachable for a listing already sitting in "Recently removed", so a
+    Only reachable for a listing already sitting in "Removed", so a
     permanent delete always costs two deliberate clicks. Any Sale it recorded
     is deliberately left standing — Sale.product is SET_NULL and every figure
     the report reads is snapshotted on the Sale itself, so past months keep
@@ -521,7 +515,7 @@ def delete_category(request, category_id):
     Delete a category and everything filed under it.
 
     Product.category cascades, so the listings go with it — including any
-    parked in "Recently removed", which stop being restorable. Their image
+    parked in "Removed", which stop being restorable. Their image
     files are erased first, since the cascade only takes the rows. Sales
     already recorded survive: Sale.product is SET_NULL and the report reads
     the snapshot on the Sale itself.
@@ -549,8 +543,8 @@ def delete_category(request, category_id):
 def discard_sale(request, sale_id):
     """
     Strike a row from the sales report — the product was marked sold by
-    mistake. The product itself stays removed; restore it from "Recently
-    removed" if it should be back on sale.
+    mistake. The product itself stays removed; restore it from "Removed"
+    if it should be back on sale.
     """
     sale = get_object_or_404(Sale, id=sale_id)
     sale.delete()
@@ -863,9 +857,9 @@ def removed_products(request):
     Every listing taken off the catalog, newest removal first, with restore
     and permanent delete on each.
 
-    The Products page keeps a short strip of the most recent removals as an
-    undo affordance for the click that just happened; this is the full list,
-    searchable, for finding one that scrolled off it weeks ago.
+    This is the only place removed listings appear in the panel: the
+    Products page shows what is on sale and nothing else, so undoing a
+    removal — whether it happened a moment or weeks ago — starts here.
     """
     removed = Product.all_objects.filter(
         deleted_at__isnull=False

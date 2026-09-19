@@ -664,11 +664,11 @@ msgstr "Показать блок «Новинки» на главной стр�
 #, python-format
 msgid ""
 "The category %(name)s will be deleted together with everything filed under "
-"it — products, including any sitting in Recently removed: %(total)s. Their "
+"it — products, including any sitting in Removed: %(total)s. Their "
 "photos go too. Sales already recorded stay in the report."
 msgstr ""
 "Категория %(name)s будет удалена вместе со всем, что в ней лежит. Товаров, "
-"включая находящиеся в «Недавно удалённых»: %(total)s. Их фотографии тоже "
+"включая находящиеся в «Удалённых»: %(total)s. Их фотографии тоже "
 "будут стёрты. Уже записанные продажи останутся в отчёте."
 
 #: .\shop\templates\shop\product\category_create.html:108
@@ -803,10 +803,10 @@ msgstr "Изменить"
 #: .\shop\templates\shop\product\create.html:81
 msgid ""
 "Mark this product as sold? It leaves the catalog and is counted in the sales "
-"report. You can undo this from &quot;Recently removed&quot;."
+"report. You can undo this from &quot;Removed&quot;."
 msgstr ""
 "Отметить товар как проданный? Он исчезнет из каталога и попадёт в отчёт о "
-"продажах. Отменить можно в разделе &quot;Недавно удалённые&quot;."
+"продажах. Отменить можно в разделе &quot;Удалённые&quot;."
 
 #: .\shop\templates\shop\product\create.html:83
 msgid "Mark as sold"
@@ -822,10 +822,10 @@ msgstr "Продано"
 #: .\shop\templates\shop\product\create.html:87
 msgid ""
 "Remove this product from the catalog without recording a sale? You can undo "
-"this from &quot;Recently removed&quot;."
+"this from &quot;Removed&quot;."
 msgstr ""
 "Удалить товар из каталога без записи о продаже? Отменить можно в разделе "
-"&quot;Недавно удалённые&quot;."
+"&quot;Удалённые&quot;."
 
 #: .\shop\templates\shop\product\create.html:89
 msgid "Delete without recording a sale"
@@ -838,19 +838,6 @@ msgstr "По этому запросу товаров не найдено."
 #: .\shop\templates\shop\product\create.html:101
 msgid "No active products available in inventory."
 msgstr "В наличии нет активных товаров."
-
-#: .\shop\templates\shop\product\create.html:112
-msgid "Recently removed"
-msgstr "Недавно удалённые"
-
-#: .\shop\templates\shop\product\create.html:115
-#, python-format
-msgid "See all %(counter)s removed"
-msgid_plural "See all %(counter)s removed"
-msgstr[0] "Смотреть %(counter)s удалённый"
-msgstr[1] "Смотреть все %(counter)s удалённых"
-msgstr[2] "Смотреть все %(counter)s удалённых"
-msgstr[3] "Смотреть все %(counter)s удалённых"
 
 #: .\shop\templates\shop\product\create.html:127
 #: .\shop\templates\shop\product\removed_products.html:25
@@ -1471,19 +1458,19 @@ msgstr "Пожалуйста, исправьте ошибки ввода ниж�
 #, python-format
 msgid ""
 "\"%(name)s\" was marked as sold and removed from the catalog. You can undo "
-"this from \"Recently removed\"."
+"this from \"Removed\"."
 msgstr ""
 "«%(name)s» отмечен как проданный и убран из каталога. Отменить можно в "
-"разделе «Недавно удалённые»."
+"разделе «Удалённые»."
 
 #: .\shop\views.py:452
 #, python-format
 msgid ""
 "\"%(name)s\" was removed from the catalog (not counted as a sale). You can "
-"undo this from \"Recently removed\"."
+"undo this from \"Removed\"."
 msgstr ""
 "«%(name)s» удалён из каталога (не засчитан как продажа). Отменить можно в "
-"разделе «Недавно удалённые»."
+"разделе «Удалённые»."
 
 #: .\shop\views.py:476
 #, python-format

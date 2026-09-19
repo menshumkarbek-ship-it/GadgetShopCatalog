@@ -260,10 +260,15 @@ class StorefrontTests(TestCase):
         self.assertIsNotNone(product.deleted_at)
         self.assertFalse(Sale.objects.exists())
 
-        # The undo list says which kind of removal it was.
-        response = self.client.get(reverse('shop:create_product'))
+        # The Removed page says which kind of removal it was.
+        response = self.client.get(reverse('shop:removed_products'))
         removed = {p.pk: p for p in response.context['removed_products']}
         self.assertFalse(removed[product.pk].was_sold)
+
+        # The Products page is only for listings on sale.
+        response = self.client.get(reverse('shop:create_product'))
+        self.assertNotIn('removed_products', response.context)
+        self.assertNotContains(response, 'Added by mistake')
 
     def test_restoring_a_deleted_product_leaves_earlier_sales_alone(self):
         staff = User.objects.create_user(username='manager', password='manager-password-123', is_staff=True)
@@ -407,7 +412,7 @@ class StorefrontTests(TestCase):
 
         response = self.client.post(reverse('shop:purge_product', args=[product.id]))
 
-        # Permanent delete is only reachable from "Recently removed", so no
+        # Permanent delete is only reachable from "Removed", so no
         # active listing can be erased in a single click.
         self.assertEqual(response.status_code, 404)
         self.assertTrue(Product.all_objects.filter(pk=product.pk).exists())

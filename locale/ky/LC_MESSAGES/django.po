@@ -664,11 +664,11 @@ msgstr "«Жаңылар» блогун башкы баракчада көрсө
 #, python-format
 msgid ""
 "The category %(name)s will be deleted together with everything filed under "
-"it — products, including any sitting in Recently removed: %(total)s. Their "
+"it — products, including any sitting in Removed: %(total)s. Their "
 "photos go too. Sales already recorded stay in the report."
 msgstr ""
 "%(name)s категориясы анын ичиндегилердин баары менен бирге өчүрүлөт. "
-"Товарлар, «Жакында өчүрүлгөндөрдү» кошкондо: %(total)s. Алардын сүрөттөрү да "
+"Товарлар, «Өчүрүлгөндөрдү» кошкондо: %(total)s. Алардын сүрөттөрү да "
 "өчүрүлөт. Буга чейин жазылган сатуулар отчётто калат."
 
 #: .\shop\templates\shop\product\category_create.html:108
@@ -800,10 +800,10 @@ msgstr "Өзгөртүү"
 #: .\shop\templates\shop\product\create.html:81
 msgid ""
 "Mark this product as sold? It leaves the catalog and is counted in the sales "
-"report. You can undo this from &quot;Recently removed&quot;."
+"report. You can undo this from &quot;Removed&quot;."
 msgstr ""
 "Товарды сатылды деп белгилейсизби? Ал каталогдон чыгат жана сатуу отчётуна "
-"кирет. &quot;Жакында өчүрүлгөндөр&quot; бөлүмүнөн кайтарса болот."
+"кирет. &quot;Өчүрүлгөндөр&quot; бөлүмүнөн кайтарса болот."
 
 #: .\shop\templates\shop\product\create.html:83
 msgid "Mark as sold"
@@ -819,10 +819,10 @@ msgstr "Сатылды"
 #: .\shop\templates\shop\product\create.html:87
 msgid ""
 "Remove this product from the catalog without recording a sale? You can undo "
-"this from &quot;Recently removed&quot;."
+"this from &quot;Removed&quot;."
 msgstr ""
-"Товарды сатуу катары жазбай каталогдон өчүрөсүзбү? &quot;Жакында "
-"өчүрүлгөндөр&quot; бөлүмүнөн кайтарса болот."
+"Товарды сатуу катары жазбай каталогдон өчүрөсүзбү? &quot;Өчүрүлгөндөр&quot; "
+"бөлүмүнөн кайтарса болот."
 
 #: .\shop\templates\shop\product\create.html:89
 msgid "Delete without recording a sale"
@@ -835,16 +835,6 @@ msgstr "Бул сурам боюнча товар табылган жок."
 #: .\shop\templates\shop\product\create.html:101
 msgid "No active products available in inventory."
 msgstr "Кампада активдүү товар жок."
-
-#: .\shop\templates\shop\product\create.html:112
-msgid "Recently removed"
-msgstr "Жакында өчүрүлгөндөр"
-
-#: .\shop\templates\shop\product\create.html:115
-#, python-format
-msgid "See all %(counter)s removed"
-msgid_plural "See all %(counter)s removed"
-msgstr[0] "Бардык %(counter)s өчүрүлгөндү көрүү"
 
 #: .\shop\templates\shop\product\create.html:127
 #: .\shop\templates\shop\product\removed_products.html:25
@@ -1463,19 +1453,19 @@ msgstr "Төмөндөгү киргизүү каталарын оңдоңуз."
 #, python-format
 msgid ""
 "\"%(name)s\" was marked as sold and removed from the catalog. You can undo "
-"this from \"Recently removed\"."
+"this from \"Removed\"."
 msgstr ""
-"«%(name)s» сатылды деп белгиленип, каталогдон алынды. «Жакында өчүрүлгөндөр» "
+"«%(name)s» сатылды деп белгиленип, каталогдон алынды. «Өчүрүлгөндөр» "
 "бөлүмүнөн кайтарса болот."
 
 #: .\shop\views.py:452
 #, python-format
 msgid ""
 "\"%(name)s\" was removed from the catalog (not counted as a sale). You can "
-"undo this from \"Recently removed\"."
+"undo this from \"Removed\"."
 msgstr ""
-"«%(name)s» каталогдон өчүрүлдү (сатуу катары эсептелген жок). «Жакында "
-"өчүрүлгөндөр» бөлүмүнөн кайтарса болот."
+"«%(name)s» каталогдон өчүрүлдү (сатуу катары эсептелген жок). «Өчүрүлгөндөр» "
+"бөлүмүнөн кайтарса болот."
 
 #: .\shop\views.py:476
 #, python-format
