@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-22 13:13+0600\n"
+"POT-Creation-Date: 2026-09-22 13:22+0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -382,22 +382,18 @@ msgstr ""
 "командой в магазине."
 
 #: .\shop\templates\shop\pages\about.html:76
-#: .\shop\templates\shop\pages\contact.html:123
 msgid "Visit Us"
 msgstr "Посетите нас"
 
 #: .\shop\templates\shop\pages\about.html:88
-#: .\shop\templates\shop\pages\contact.html:133
 msgid "Address"
 msgstr "Адрес"
 
 #: .\shop\templates\shop\pages\about.html:95
-#: .\shop\templates\shop\pages\contact.html:140
 msgid "Opening hours"
 msgstr "Часы работы"
 
 #: .\shop\templates\shop\pages\about.html:104
-#: .\shop\templates\shop\pages\contact.html:149
 msgid "Get directions"
 msgstr "Как добраться"
 
@@ -406,7 +402,6 @@ msgid "Contact us"
 msgstr "Связаться с нами"
 
 #: .\shop\templates\shop\pages\about.html:114
-#: .\shop\templates\shop\pages\contact.html:156
 msgid "Our store"
 msgstr "Наш магазин"
 
@@ -532,27 +527,15 @@ msgstr ""
 "Instagram не поддерживает готовые сообщения: текст вашего запроса "
 "автоматически скопирован в буфер обмена — вставьте его, когда откроется чат."
 
-#: .\shop\templates\shop\pages\contact.html:124
-msgid "Or come and see it in person."
-msgstr "Или приходите и посмотрите вживую."
-
-#: .\shop\templates\shop\pages\contact.html:126
-msgid ""
-"Everything in the catalog is on the shelf. Drop in to hold a device, compare "
-"a few side by side, and talk it through with the team."
-msgstr ""
-"Всё из каталога стоит на полке. Заходите, чтобы подержать устройство в "
-"руках, сравнить несколько рядом и обсудить с командой."
-
-#: .\shop\templates\shop\pages\contact.html:166
+#: .\shop\templates\shop\pages\contact.html:121
 msgid "Quick answers"
 msgstr "Коротко о главном"
 
-#: .\shop\templates\shop\pages\contact.html:170
+#: .\shop\templates\shop\pages\contact.html:125
 msgid "Is a device I see on the site still available?"
 msgstr "Устройство с сайта ещё в наличии?"
 
-#: .\shop\templates\shop\pages\contact.html:173
+#: .\shop\templates\shop\pages\contact.html:128
 msgid ""
 "The catalog is updated as devices sell, so if it's listed, it's on the "
 "shelf. Send us the link through any channel above and we'll confirm straight "
@@ -561,11 +544,11 @@ msgstr ""
 "Каталог обновляется по мере продаж: если устройство на сайте, оно на полке. "
 "Отправьте ссылку в любой канал выше — сразу подтвердим."
 
-#: .\shop\templates\shop\pages\contact.html:177
+#: .\shop\templates\shop\pages\contact.html:132
 msgid "How do I ask about a specific device?"
 msgstr "Как спросить о конкретном устройстве?"
 
-#: .\shop\templates\shop\pages\contact.html:180
+#: .\shop\templates\shop\pages\contact.html:135
 msgid ""
 "Open its page and tap Enquire. The product link is added to your message "
 "automatically, so we know exactly which one you mean."
@@ -573,11 +556,11 @@ msgstr ""
 "Откройте его страницу и нажмите «Узнать об этом устройстве». Ссылка на товар "
 "добавится в сообщение автоматически, и мы точно поймём, о каком речь."
 
-#: .\shop\templates\shop\pages\contact.html:184
+#: .\shop\templates\shop\pages\contact.html:139
 msgid "Can I see a device before buying?"
 msgstr "Можно посмотреть устройство перед покупкой?"
 
-#: .\shop\templates\shop\pages\contact.html:187
+#: .\shop\templates\shop\pages\contact.html:142
 msgid ""
 "Of course. Shortlist online, then visit the store to hold it and compare it "
 "with anything else on the shelf."
@@ -585,11 +568,11 @@ msgstr ""
 "Конечно. Выберите онлайн, а затем приходите в магазин — подержать в руках и "
 "сравнить с чем угодно на полке."
 
-#: .\shop\templates\shop\pages\contact.html:191
+#: .\shop\templates\shop\pages\contact.html:146
 msgid "What if the device I want isn't on the site?"
 msgstr "А если нужного устройства нет на сайте?"
 
-#: .\shop\templates\shop\pages\contact.html:194
+#: .\shop\templates\shop\pages\contact.html:149
 msgid ""
 "Stock changes every week. Tell us the model you're after and we'll order it "
 "in, or let you know the moment it arrives."
@@ -1632,29 +1615,29 @@ msgstr "Технические характеристики для этого т
 msgid "%(brand)s %(name)s — available in store."
 msgstr "%(brand)s %(name)s — в наличии в магазине."
 
-#: .\shop\views.py:267
+#: .\shop\views.py:262
 #, python-format
 msgid "Hi! I'm interested in the %(name)s (%(url)s). Is it still available?"
 msgstr "Здравствуйте! Меня интересует %(name)s (%(url)s). Он ещё в наличии?"
 
-#: .\shop\views.py:272
+#: .\shop\views.py:268
 #, python-format
 msgid "Hi! I have a question about a product at %(site_name)s."
 msgstr "Здравствуйте! У меня есть вопрос о товаре в %(site_name)s."
 
-#: .\shop\views.py:337
+#: .\shop\views.py:330
 msgid "Product successfully updated!"
 msgstr "Товар успешно обновлён!"
 
-#: .\shop\views.py:339
+#: .\shop\views.py:332
 msgid "Product successfully cataloged!"
 msgstr "Товар успешно добавлен в каталог!"
 
-#: .\shop\views.py:342 .\shop\views.py:618
+#: .\shop\views.py:335 .\shop\views.py:611
 msgid "Please correct the entry errors down below."
 msgstr "Пожалуйста, исправьте ошибки ввода ниже."
 
-#: .\shop\views.py:456
+#: .\shop\views.py:449
 #, python-format
 msgid ""
 "\"%(name)s\" was marked as sold and removed from the catalog. You can undo "
@@ -1663,7 +1646,7 @@ msgstr ""
 "«%(name)s» отмечен как проданный и убран из каталога. Отменить можно в "
 "разделе «Удалённые»."
 
-#: .\shop\views.py:475
+#: .\shop\views.py:468
 #, python-format
 msgid ""
 "\"%(name)s\" was removed from the catalog (not counted as a sale). You can "
@@ -1672,31 +1655,31 @@ msgstr ""
 "«%(name)s» удалён из каталога (не засчитан как продажа). Отменить можно в "
 "разделе «Удалённые»."
 
-#: .\shop\views.py:499
+#: .\shop\views.py:492
 #, python-format
 msgid "\"%(name)s\" is back in the catalog."
 msgstr "«%(name)s» снова в каталоге."
 
-#: .\shop\views.py:534
+#: .\shop\views.py:527
 #, python-format
 msgid "\"%(name)s\" was permanently deleted, along with its photos."
 msgstr "«%(name)s» удалён навсегда вместе с фотографиями."
 
-#: .\shop\views.py:563
+#: .\shop\views.py:556
 #, python-format
 msgid "Category \"%(name)s\" was deleted, along with its products: %(count)s."
 msgstr "Категория «%(name)s» удалена вместе с товарами: %(count)s."
 
-#: .\shop\views.py:582
+#: .\shop\views.py:575
 #, python-format
 msgid "\"%(name)s\" was struck from the sales report."
 msgstr "«%(name)s» вычеркнут из отчёта о продажах."
 
-#: .\shop\views.py:604
+#: .\shop\views.py:597
 msgid "Photo removed from the gallery."
 msgstr "Фото удалено из галереи."
 
-#: .\shop\views.py:615
+#: .\shop\views.py:608
 msgid ""
 "Category created! It now appears in the catalog filter and will get its own "
 "homepage row once it has products."
@@ -1704,39 +1687,39 @@ msgstr ""
 "Категория создана! Теперь она отображается в фильтре каталога и получит "
 "собственный блок на главной странице, как только в ней появятся товары."
 
-#: .\shop\views.py:645
+#: .\shop\views.py:638
 #, python-format
 msgid "\"%(name)s\" added to the homepage announcement slideshow."
 msgstr "«%(name)s» добавлена в слайд-шоу анонсов на главной."
 
-#: .\shop\views.py:647
+#: .\shop\views.py:640
 #, python-format
 msgid "\"%(name)s\" removed from the homepage announcement slideshow."
 msgstr "«%(name)s» удалена из слайд-шоу анонсов на главной."
 
-#: .\shop\views.py:661
+#: .\shop\views.py:654
 #, python-format
 msgid "\"%(name)s\" now has a \"Newest In\" row on the homepage."
 msgstr "У «%(name)s» теперь есть блок «Новинки» на главной странице."
 
-#: .\shop\views.py:663
+#: .\shop\views.py:656
 #, python-format
 msgid "\"%(name)s\"'s \"Newest In\" row is hidden from the homepage."
 msgstr "Блок «Новинки» для «%(name)s» скрыт с главной страницы."
 
-#: .\shop\views.py:682
+#: .\shop\views.py:675
 msgid "Contact channels updated!"
 msgstr "Каналы связи обновлены!"
 
-#: .\shop\views.py:685 .\shop\views.py:708 .\shop\views.py:847
+#: .\shop\views.py:678 .\shop\views.py:701 .\shop\views.py:840
 msgid "Please correct the entry errors below."
 msgstr "Пожалуйста, исправьте ошибки ввода ниже."
 
-#: .\shop\views.py:705
+#: .\shop\views.py:698
 msgid "About page updated!"
 msgstr "Страница «О нас» обновлена!"
 
-#: .\shop\views.py:844
+#: .\shop\views.py:837
 msgid "Homepage sections updated!"
 msgstr "Блоки главной страницы обновлены!"
 

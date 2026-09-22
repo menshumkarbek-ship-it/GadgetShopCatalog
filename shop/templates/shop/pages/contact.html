@@ -115,78 +115,33 @@
     </div>
 </section>
 
-<!-- Visit the store: where, when, and how to get there. -->
-{% if about.translated_store_address_line1 or about.translated_store_address_line2 or contact_settings.translated_opening_hours or contact_settings.map_url or about.store_image %}
-<section class="band band-white">
-    <div class="wrap grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-        <div>
-            <p class="t-body-sm text-midgray">{% translate "Visit Us" %}</p>
-            <h2 class="t-heading text-ink mt-3">{% translate "Or come and see it in person." %}</h2>
-            <p class="t-body-sm text-midgray mt-6 max-w-xl">
-                {% translate "Everything in the catalog is on the shelf. Drop in to hold a device, compare a few side by side, and talk it through with the team." %}
-            </p>
-
-            {% if about.translated_store_address_line1 or about.translated_store_address_line2 or contact_settings.translated_opening_hours %}
-            <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-xl">
-                {% if about.translated_store_address_line1 or about.translated_store_address_line2 %}
-                <div>
-                    <p class="t-caption text-midgray"><i class="fa-solid fa-location-dot mr-1.5"></i>{% translate "Address" %}</p>
-                    {% if about.translated_store_address_line1 %}<p class="t-body-sm text-ink mt-1">{{ about.translated_store_address_line1 }}</p>{% endif %}
-                    {% if about.translated_store_address_line2 %}<p class="t-body-sm text-ink">{{ about.translated_store_address_line2 }}</p>{% endif %}
-                </div>
-                {% endif %}
-                {% if contact_settings.translated_opening_hours %}
-                <div>
-                    <p class="t-caption text-midgray"><i class="fa-regular fa-clock mr-1.5"></i>{% translate "Opening hours" %}</p>
-                    <p class="t-body-sm text-ink mt-1 whitespace-pre-line figures">{{ contact_settings.translated_opening_hours }}</p>
-                </div>
-                {% endif %}
-            </div>
-            {% endif %}
-
-            {% if contact_settings.map_url %}
-            <div class="mt-8">
-                <a href="{{ contact_settings.map_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-blue">{% translate "Get directions" %}</a>
-            </div>
-            {% endif %}
-        </div>
-
-        {% if about.store_image %}
-        <div class="card overflow-hidden bg-canvas">
-            <img src="{{ about.store_image.url }}" alt="{% translate 'Our store' %}" class="w-full h-full object-cover" style="aspect-ratio: 4 / 3;">
-        </div>
-        {% endif %}
-    </div>
-</section>
-{% endif %}
-
 <!-- Quick answers. Native disclosure rows, each its own flat card. -->
-<section class="band band-gray">
+<section class="band band-white">
     <div class="wrap">
         <h2 class="t-subheading text-ink">{% translate "Quick answers" %}</h2>
         <div class="mt-10 max-w-3xl space-y-3">
-            <details class="card bg-paper faq group">
+            <details class="card bg-canvas faq group">
                 <summary class="t-body-sm text-ink font-semibold p-6 sm:p-7 flex items-center justify-between gap-6 cursor-pointer list-none">
                     {% translate "Is a device I see on the site still available?" %}
                     <i class="fa-solid fa-chevron-down text-midgray text-sm shrink-0 transition-transform group-open:rotate-180"></i>
                 </summary>
                 <p class="t-body-sm text-midgray px-6 sm:px-7 pb-6 sm:pb-7 -mt-2">{% translate "The catalog is updated as devices sell, so if it's listed, it's on the shelf. Send us the link through any channel above and we'll confirm straight away." %}</p>
             </details>
-            <details class="card bg-paper faq group">
+            <details class="card bg-canvas faq group">
                 <summary class="t-body-sm text-ink font-semibold p-6 sm:p-7 flex items-center justify-between gap-6 cursor-pointer list-none">
                     {% translate "How do I ask about a specific device?" %}
                     <i class="fa-solid fa-chevron-down text-midgray text-sm shrink-0 transition-transform group-open:rotate-180"></i>
                 </summary>
                 <p class="t-body-sm text-midgray px-6 sm:px-7 pb-6 sm:pb-7 -mt-2">{% translate "Open its page and tap Enquire. The product link is added to your message automatically, so we know exactly which one you mean." %}</p>
             </details>
-            <details class="card bg-paper faq group">
+            <details class="card bg-canvas faq group">
                 <summary class="t-body-sm text-ink font-semibold p-6 sm:p-7 flex items-center justify-between gap-6 cursor-pointer list-none">
                     {% translate "Can I see a device before buying?" %}
                     <i class="fa-solid fa-chevron-down text-midgray text-sm shrink-0 transition-transform group-open:rotate-180"></i>
                 </summary>
                 <p class="t-body-sm text-midgray px-6 sm:px-7 pb-6 sm:pb-7 -mt-2">{% translate "Of course. Shortlist online, then visit the store to hold it and compare it with anything else on the shelf." %}</p>
             </details>
-            <details class="card bg-paper faq group">
+            <details class="card bg-canvas faq group">
                 <summary class="t-body-sm text-ink font-semibold p-6 sm:p-7 flex items-center justify-between gap-6 cursor-pointer list-none">
                     {% translate "What if the device I want isn't on the site?" %}
                     <i class="fa-solid fa-chevron-down text-midgray text-sm shrink-0 transition-transform group-open:rotate-180"></i>

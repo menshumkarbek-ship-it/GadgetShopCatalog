@@ -494,12 +494,12 @@ class StorefrontTests(TestCase):
         product_queries = [q for q in queries.captured_queries if '"shop_product"' in q['sql']]
         self.assertEqual(len(product_queries), 1)
 
-    def test_contact_page_shows_hours_and_directions_only_when_set(self):
+    def test_about_page_shows_hours_and_directions_only_when_set(self):
         settings_obj = ContactSettings.get_solo()
         settings_obj.whatsapp_number = '996700123456'
         settings_obj.save()
 
-        response = self.client.get(reverse('shop:contact_us'), HTTP_ACCEPT_LANGUAGE='en')
+        response = self.client.get(reverse('shop:about_us'), HTTP_ACCEPT_LANGUAGE='en')
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, 'Opening hours')
         self.assertNotContains(response, 'Get directions')
@@ -509,14 +509,14 @@ class StorefrontTests(TestCase):
         settings_obj.map_url = 'https://maps.example.com/store'
         settings_obj.save()
 
-        response = self.client.get(reverse('shop:contact_us'), HTTP_ACCEPT_LANGUAGE='en')
+        response = self.client.get(reverse('shop:about_us'), HTTP_ACCEPT_LANGUAGE='en')
         self.assertContains(response, 'Mon-Sat 10:00-20:00')
         self.assertContains(response, 'https://maps.example.com/store')
 
         # The hours follow the visitor's language, falling back to English.
-        response = self.client.get(reverse('shop:contact_us'), HTTP_ACCEPT_LANGUAGE='ru')
+        response = self.client.get(reverse('shop:about_us'), HTTP_ACCEPT_LANGUAGE='ru')
         self.assertContains(response, 'Пн-Сб 10:00-20:00')
-        response = self.client.get(reverse('shop:contact_us'), HTTP_ACCEPT_LANGUAGE='ky')
+        response = self.client.get(reverse('shop:about_us'), HTTP_ACCEPT_LANGUAGE='ky')
         self.assertContains(response, 'Mon-Sat 10:00-20:00')
 
 

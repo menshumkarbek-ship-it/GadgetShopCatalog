@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-22 13:13+0600\n"
+"POT-Creation-Date: 2026-09-22 13:22+0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -379,22 +379,18 @@ msgstr ""
 "талкуулаңыз."
 
 #: .\shop\templates\shop\pages\about.html:76
-#: .\shop\templates\shop\pages\contact.html:123
 msgid "Visit Us"
 msgstr "Бизге келиңиз"
 
 #: .\shop\templates\shop\pages\about.html:88
-#: .\shop\templates\shop\pages\contact.html:133
 msgid "Address"
 msgstr "Дарек"
 
 #: .\shop\templates\shop\pages\about.html:95
-#: .\shop\templates\shop\pages\contact.html:140
 msgid "Opening hours"
 msgstr "Иш убактысы"
 
 #: .\shop\templates\shop\pages\about.html:104
-#: .\shop\templates\shop\pages\contact.html:149
 msgid "Get directions"
 msgstr "Кантип жетүү"
 
@@ -403,7 +399,6 @@ msgid "Contact us"
 msgstr "Биз менен байланышуу"
 
 #: .\shop\templates\shop\pages\about.html:114
-#: .\shop\templates\shop\pages\contact.html:156
 msgid "Our store"
 msgstr "Биздин дүкөн"
 
@@ -530,27 +525,15 @@ msgstr ""
 "Instagram даяр билдирүүлөрдү колдобойт: суроо текстиңиз автоматтык түрдө "
 "алмашуу буферине көчүрүлдү — чат ачылганда чаптаңыз."
 
-#: .\shop\templates\shop\pages\contact.html:124
-msgid "Or come and see it in person."
-msgstr "Же келип, өз көзүңүз менен көрүңүз."
-
-#: .\shop\templates\shop\pages\contact.html:126
-msgid ""
-"Everything in the catalog is on the shelf. Drop in to hold a device, compare "
-"a few side by side, and talk it through with the team."
-msgstr ""
-"Каталогдогунун баары текчеде. Келип, түзмөктү колуңузга алып, бир нечесин "
-"жанаша салыштырып, команда менен талкуулаңыз."
-
-#: .\shop\templates\shop\pages\contact.html:166
+#: .\shop\templates\shop\pages\contact.html:121
 msgid "Quick answers"
 msgstr "Кыска жооптор"
 
-#: .\shop\templates\shop\pages\contact.html:170
+#: .\shop\templates\shop\pages\contact.html:125
 msgid "Is a device I see on the site still available?"
 msgstr "Сайттагы түзмөк дагы эле барбы?"
 
-#: .\shop\templates\shop\pages\contact.html:173
+#: .\shop\templates\shop\pages\contact.html:128
 msgid ""
 "The catalog is updated as devices sell, so if it's listed, it's on the "
 "shelf. Send us the link through any channel above and we'll confirm straight "
@@ -559,11 +542,11 @@ msgstr ""
 "Каталог сатылган сайын жаңырат: сайтта болсо, текчеде бар. Шилтемени "
 "жогорудагы каалаган канал аркылуу жибериңиз — дароо тастыктайбыз."
 
-#: .\shop\templates\shop\pages\contact.html:177
+#: .\shop\templates\shop\pages\contact.html:132
 msgid "How do I ask about a specific device?"
 msgstr "Белгилүү бир түзмөк тууралуу кантип сурайм?"
 
-#: .\shop\templates\shop\pages\contact.html:180
+#: .\shop\templates\shop\pages\contact.html:135
 msgid ""
 "Open its page and tap Enquire. The product link is added to your message "
 "automatically, so we know exactly which one you mean."
@@ -572,11 +555,11 @@ msgstr ""
 "Товардын шилтемеси билдирүүгө автоматтык түрдө кошулат, ошондо кайсынысы "
 "экенин так билебиз."
 
-#: .\shop\templates\shop\pages\contact.html:184
+#: .\shop\templates\shop\pages\contact.html:139
 msgid "Can I see a device before buying?"
 msgstr "Сатып алардан мурун түзмөктү көрсө болобу?"
 
-#: .\shop\templates\shop\pages\contact.html:187
+#: .\shop\templates\shop\pages\contact.html:142
 msgid ""
 "Of course. Shortlist online, then visit the store to hold it and compare it "
 "with anything else on the shelf."
@@ -584,11 +567,11 @@ msgstr ""
 "Албетте. Онлайн тандап, анан дүкөнгө келиңиз — колуңузга алып, текчедеги "
 "башкалар менен салыштырыңыз."
 
-#: .\shop\templates\shop\pages\contact.html:191
+#: .\shop\templates\shop\pages\contact.html:146
 msgid "What if the device I want isn't on the site?"
 msgstr "Мага керек түзмөк сайтта жок болсочу?"
 
-#: .\shop\templates\shop\pages\contact.html:194
+#: .\shop\templates\shop\pages\contact.html:149
 msgid ""
 "Stock changes every week. Tell us the model you're after and we'll order it "
 "in, or let you know the moment it arrives."
@@ -1628,29 +1611,29 @@ msgstr "Бул товар үчүн техникалык мүнөздөмөлөр
 msgid "%(brand)s %(name)s — available in store."
 msgstr "%(brand)s %(name)s — дүкөндө бар."
 
-#: .\shop\views.py:267
+#: .\shop\views.py:262
 #, python-format
 msgid "Hi! I'm interested in the %(name)s (%(url)s). Is it still available?"
 msgstr "Салам! Мени %(name)s (%(url)s) кызыктырат. Ал дагы эле барбы?"
 
-#: .\shop\views.py:272
+#: .\shop\views.py:268
 #, python-format
 msgid "Hi! I have a question about a product at %(site_name)s."
 msgstr "Салам! Менде %(site_name)s дүкөнүндөгү товар боюнча суроо бар."
 
-#: .\shop\views.py:337
+#: .\shop\views.py:330
 msgid "Product successfully updated!"
 msgstr "Товар ийгиликтүү жаңыртылды!"
 
-#: .\shop\views.py:339
+#: .\shop\views.py:332
 msgid "Product successfully cataloged!"
 msgstr "Товар каталогго ийгиликтүү кошулду!"
 
-#: .\shop\views.py:342 .\shop\views.py:618
+#: .\shop\views.py:335 .\shop\views.py:611
 msgid "Please correct the entry errors down below."
 msgstr "Төмөндөгү киргизүү каталарын оңдоңуз."
 
-#: .\shop\views.py:456
+#: .\shop\views.py:449
 #, python-format
 msgid ""
 "\"%(name)s\" was marked as sold and removed from the catalog. You can undo "
@@ -1659,7 +1642,7 @@ msgstr ""
 "«%(name)s» сатылды деп белгиленип, каталогдон алынды. «Өчүрүлгөндөр» "
 "бөлүмүнөн кайтарса болот."
 
-#: .\shop\views.py:475
+#: .\shop\views.py:468
 #, python-format
 msgid ""
 "\"%(name)s\" was removed from the catalog (not counted as a sale). You can "
@@ -1668,31 +1651,31 @@ msgstr ""
 "«%(name)s» каталогдон өчүрүлдү (сатуу катары эсептелген жок). «Өчүрүлгөндөр» "
 "бөлүмүнөн кайтарса болот."
 
-#: .\shop\views.py:499
+#: .\shop\views.py:492
 #, python-format
 msgid "\"%(name)s\" is back in the catalog."
 msgstr "«%(name)s» кайра каталогдо."
 
-#: .\shop\views.py:534
+#: .\shop\views.py:527
 #, python-format
 msgid "\"%(name)s\" was permanently deleted, along with its photos."
 msgstr "«%(name)s» сүрөттөрү менен бирге биротоло өчүрүлдү."
 
-#: .\shop\views.py:563
+#: .\shop\views.py:556
 #, python-format
 msgid "Category \"%(name)s\" was deleted, along with its products: %(count)s."
 msgstr "«%(name)s» категориясы товарлары менен бирге өчүрүлдү: %(count)s."
 
-#: .\shop\views.py:582
+#: .\shop\views.py:575
 #, python-format
 msgid "\"%(name)s\" was struck from the sales report."
 msgstr "«%(name)s» сатуу отчётунан чийилди."
 
-#: .\shop\views.py:604
+#: .\shop\views.py:597
 msgid "Photo removed from the gallery."
 msgstr "Сүрөт галереядан өчүрүлдү."
 
-#: .\shop\views.py:615
+#: .\shop\views.py:608
 msgid ""
 "Category created! It now appears in the catalog filter and will get its own "
 "homepage row once it has products."
@@ -1700,39 +1683,39 @@ msgstr ""
 "Категория түзүлдү! Ал эми каталогдун фильтринде көрүнөт жана ичинде товарлар "
 "пайда болушу менен башкы баракта өз алдынча блок алат."
 
-#: .\shop\views.py:645
+#: .\shop\views.py:638
 #, python-format
 msgid "\"%(name)s\" added to the homepage announcement slideshow."
 msgstr "«%(name)s» башкы баракчадагы жарнама слайд-шоусуна кошулду."
 
-#: .\shop\views.py:647
+#: .\shop\views.py:640
 #, python-format
 msgid "\"%(name)s\" removed from the homepage announcement slideshow."
 msgstr "«%(name)s» башкы баракчадагы жарнама слайд-шоусунан алынып салынды."
 
-#: .\shop\views.py:661
+#: .\shop\views.py:654
 #, python-format
 msgid "\"%(name)s\" now has a \"Newest In\" row on the homepage."
 msgstr "«%(name)s» эми башкы баракчада «Жаңылар» блогуна ээ."
 
-#: .\shop\views.py:663
+#: .\shop\views.py:656
 #, python-format
 msgid "\"%(name)s\"'s \"Newest In\" row is hidden from the homepage."
 msgstr "«%(name)s» үчүн «Жаңылар» блогу башкы баракчадан жашырылды."
 
-#: .\shop\views.py:682
+#: .\shop\views.py:675
 msgid "Contact channels updated!"
 msgstr "Байланыш каналдары жаңыртылды!"
 
-#: .\shop\views.py:685 .\shop\views.py:708 .\shop\views.py:847
+#: .\shop\views.py:678 .\shop\views.py:701 .\shop\views.py:840
 msgid "Please correct the entry errors below."
 msgstr "Төмөндөгү киргизүү каталарын оңдоңуз."
 
-#: .\shop\views.py:705
+#: .\shop\views.py:698
 msgid "About page updated!"
 msgstr "«Биз жөнүндө» баракчасы жаңыртылды!"
 
-#: .\shop\views.py:844
+#: .\shop\views.py:837
 msgid "Homepage sections updated!"
 msgstr "Башкы барактын блоктору жаңырды!"
 

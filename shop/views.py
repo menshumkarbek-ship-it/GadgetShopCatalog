@@ -250,11 +250,6 @@ def about_us(request):
 
 
 def contact_us(request):
-    # The store's address lives with its story on the About page; the
-    # Contact page shows it again beside the opening hours, because
-    # "where and when" is what someone about to set off is asking.
-    about = AboutPageContent.get_solo()
-
     product_slug = request.GET.get('product')
     inquiry_product = None
     if product_slug:
@@ -269,12 +264,10 @@ def contact_us(request):
         }
     else:
         product_url = None
-        inquiry_message = _("Hi! I have a question about a product at %(site_name)s.") % {
-            'site_name': about.translated_site_name,
-        }
+        site_name = AboutPageContent.get_solo().translated_site_name
+        inquiry_message = _("Hi! I have a question about a product at %(site_name)s.") % {'site_name': site_name}
 
     context = {
-        'about': about,
         'inquiry_product': inquiry_product,
         'inquiry_product_url': product_url,
         'inquiry_message': inquiry_message,
