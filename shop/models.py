@@ -70,6 +70,20 @@ class ContactSettings(models.Model):
         help_text="Instagram username without the @, e.g. techvault.shop"
     )
 
+    # The "visit the store" half of the Contact page. The address itself
+    # lives on AboutPageContent (it is part of the shop's story there too);
+    # these are the two things a customer checks before setting off.
+    opening_hours = models.TextField(
+        blank=True,
+        help_text="One line per range, e.g. 'Mon–Sat 10:00–20:00' then 'Sun 11:00–18:00'. Leave blank to hide."
+    )
+    map_url = models.URLField(
+        max_length=500, blank=True,
+        help_text="Link to the store on Google Maps or 2GIS. Powers the Directions button; leave blank to hide it."
+    )
+    opening_hours_ru = models.TextField(blank=True, verbose_name="Opening Hours (Russian)")
+    opening_hours_ky = models.TextField(blank=True, verbose_name="Opening Hours (Kyrgyz)")
+
     class Meta:
         verbose_name = "Contact Settings"
         verbose_name_plural = "Contact Settings"
@@ -91,6 +105,8 @@ class ContactSettings(models.Model):
     def get_solo(cls):
         obj, _ = cls.objects.get_or_create(pk=1)
         return obj
+
+    translated_opening_hours = translatable_property('opening_hours')
 
     @property
     def whatsapp_digits(self):

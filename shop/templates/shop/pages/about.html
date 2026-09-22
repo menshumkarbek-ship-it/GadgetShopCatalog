@@ -6,40 +6,71 @@
 
 {% block content %}
 
+<!-- Statement hero: eyebrow, one large line, one paragraph. Nothing else
+     competes with it — the reference opens every page this way. -->
 <section class="band band-white">
     <div class="wrap text-center">
         {% if about.translated_badge_text %}
         <p class="t-body-sm text-ember">{{ about.translated_badge_text }}</p>
         {% endif %}
-        <h1 class="t-heading-lg text-ink mt-3">{{ about.translated_heading }}</h1>
+        <h1 class="t-heading-lg text-ink mt-3 max-w-4xl mx-auto">{{ about.translated_heading }}</h1>
         <p class="t-body text-midgray mt-7 max-w-2xl mx-auto whitespace-pre-line">{{ about.translated_intro_text }}</p>
     </div>
 </section>
 
-<!-- What we carry. Three flat cards on the gray canvas, no strokes. -->
+<!-- The shop in figures. Counted from live stock, so the numbers are the
+     shelves, not a claim. Hidden while the catalog is empty. -->
+{% if in_stock_count %}
 <section class="band band-gray">
     <div class="wrap">
-        <h2 class="t-subheading text-ink">{% translate "What We Offer" %}</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            <div class="card bg-paper p-8 sm:p-10">
+                <p class="t-heading text-ink figures">{{ in_stock_count }}</p>
+                <p class="t-body-sm text-ink mt-3">{% translate "Devices in stock" %}</p>
+                <p class="t-caption text-midgray mt-1">{% translate "On the shelf today, each with its full spec sheet." %}</p>
+            </div>
+            <div class="card bg-paper p-8 sm:p-10">
+                <p class="t-heading text-ink figures">{{ category_count }}</p>
+                <p class="t-body-sm text-ink mt-3">{% translate "Categories" %}</p>
+                <p class="t-caption text-midgray mt-1">{% translate "From phones to laptops, tablets and accessories." %}</p>
+            </div>
+            <div class="card bg-paper p-8 sm:p-10">
+                <p class="t-heading text-ink figures">{{ brand_count }}</p>
+                <p class="t-body-sm text-ink mt-3">{% translate "Brands" %}</p>
+                <p class="t-caption text-midgray mt-1">{% translate "The names you already trust, side by side." %}</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- How we work: three flat cards, an icon each, no strokes. -->
+<section class="band band-white">
+    <div class="wrap">
+        <h2 class="t-subheading text-ink">{% translate "How we work" %}</h2>
         <div class="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-5">
-            <div class="card bg-paper p-8">
-                <h3 class="t-body-lg text-ink">{% translate "Phones" %}</h3>
-                <p class="t-body-sm text-midgray mt-3">{% translate "Flagship and everyday smartphones from the brands you trust." %}</p>
+            <div class="card bg-canvas p-8">
+                <i class="fa-solid fa-tag text-ink text-2xl"></i>
+                <h3 class="t-body-lg text-ink mt-6">{% translate "The price on the tag" %}</h3>
+                <p class="t-body-sm text-midgray mt-3">{% translate "What a listing says is what you pay at the counter. No call-to-ask, no surprises." %}</p>
             </div>
-            <div class="card bg-paper p-8">
-                <h3 class="t-body-lg text-ink">{% translate "Laptops" %}</h3>
-                <p class="t-body-sm text-midgray mt-3">{% translate "From lightweight ultrabooks to high-performance workstations." %}</p>
+            <div class="card bg-canvas p-8">
+                <i class="fa-solid fa-list-check text-ink text-2xl"></i>
+                <h3 class="t-body-lg text-ink mt-6">{% translate "Every spec, up front" %}</h3>
+                <p class="t-body-sm text-midgray mt-3">{% translate "Each device carries its full specification sheet, so you can compare before you decide." %}</p>
             </div>
-            <div class="card bg-paper p-8">
-                <h3 class="t-body-lg text-ink">{% translate "Tablets" %}</h3>
-                <p class="t-body-sm text-midgray mt-3">{% translate "Portable displays built for work, study, and creativity." %}</p>
+            <div class="card bg-canvas p-8">
+                <i class="fa-solid fa-store text-ink text-2xl"></i>
+                <h3 class="t-body-lg text-ink mt-6">{% translate "See it in person" %}</h3>
+                <p class="t-body-sm text-midgray mt-3">{% translate "Shortlist online, then hold the device and talk it through with the team in store." %}</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Visit us. Text in a narrow column against the store photo. -->
-{% if about.translated_visit_heading or about.translated_visit_text or about.translated_store_address_line1 or about.translated_store_address_line2 %}
-<section class="band band-white">
+<!-- Visit us: the store photo beside where and when to find it. -->
+{% if about.translated_visit_heading or about.translated_visit_text or about.translated_store_address_line1 or about.translated_store_address_line2 or contact_settings.translated_opening_hours or about.store_image %}
+<section class="band band-gray">
     <div class="wrap grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <div>
             <p class="t-body-sm text-midgray">{% translate "Visit Us" %}</p>
@@ -50,17 +81,36 @@
             <p class="t-body-sm text-midgray mt-6 max-w-xl whitespace-pre-line">{{ about.translated_visit_text }}</p>
             {% endif %}
 
-            {% if about.translated_store_address_line1 or about.translated_store_address_line2 %}
-            <div class="mt-8">
-                <p class="t-caption text-midgray">{% translate "Physical Address" %}</p>
-                {% if about.translated_store_address_line1 %}<p class="t-body-sm text-ink mt-1">{{ about.translated_store_address_line1 }}</p>{% endif %}
-                {% if about.translated_store_address_line2 %}<p class="t-body-sm text-ink">{{ about.translated_store_address_line2 }}</p>{% endif %}
+            {% if about.translated_store_address_line1 or about.translated_store_address_line2 or contact_settings.translated_opening_hours %}
+            <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-xl">
+                {% if about.translated_store_address_line1 or about.translated_store_address_line2 %}
+                <div>
+                    <p class="t-caption text-midgray"><i class="fa-solid fa-location-dot mr-1.5"></i>{% translate "Address" %}</p>
+                    {% if about.translated_store_address_line1 %}<p class="t-body-sm text-ink mt-1">{{ about.translated_store_address_line1 }}</p>{% endif %}
+                    {% if about.translated_store_address_line2 %}<p class="t-body-sm text-ink">{{ about.translated_store_address_line2 }}</p>{% endif %}
+                </div>
+                {% endif %}
+                {% if contact_settings.translated_opening_hours %}
+                <div>
+                    <p class="t-caption text-midgray"><i class="fa-regular fa-clock mr-1.5"></i>{% translate "Opening hours" %}</p>
+                    <p class="t-body-sm text-ink mt-1 whitespace-pre-line figures">{{ contact_settings.translated_opening_hours }}</p>
+                </div>
+                {% endif %}
             </div>
             {% endif %}
+
+            <div class="mt-8 flex flex-wrap items-center gap-4">
+                {% if contact_settings.map_url %}
+                <a href="{{ contact_settings.map_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost">{% translate "Get directions" %}</a>
+                {% endif %}
+                {% if contact_settings.has_any_channel %}
+                <a href="{% url 'shop:contact_us' %}" class="link-arrow">{% translate "Contact us" %} &rsaquo;</a>
+                {% endif %}
+            </div>
         </div>
 
         {% if about.store_image %}
-        <div class="card overflow-hidden bg-canvas">
+        <div class="card overflow-hidden bg-paper">
             <img src="{{ about.store_image.url }}" alt="{% translate 'Our store' %}" class="w-full h-full object-cover" style="aspect-ratio: 4 / 3;">
         </div>
         {% endif %}
@@ -68,18 +118,21 @@
 </section>
 {% endif %}
 
-<!-- Closing call to action on the gray canvas. -->
+<!-- Closing call to action. -->
 {% if about.translated_cta_heading or about.translated_cta_text %}
-<section class="band band-gray">
+<section class="band band-white">
     <div class="wrap text-center">
         {% if about.translated_cta_heading %}
-        <h2 class="t-heading text-ink">{{ about.translated_cta_heading }}</h2>
+        <h2 class="t-heading text-ink max-w-3xl mx-auto">{{ about.translated_cta_heading }}</h2>
         {% endif %}
         {% if about.translated_cta_text %}
         <p class="t-body-sm text-midgray mt-6 max-w-xl mx-auto whitespace-pre-line">{{ about.translated_cta_text }}</p>
         {% endif %}
-        <div class="mt-8">
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
             <a href="{% url 'shop:product_list' %}" class="btn btn-blue">{% translate "Browse the catalog" %}</a>
+            {% if contact_settings.has_any_channel %}
+            <a href="{% url 'shop:contact_us' %}" class="btn btn-ghost">{% translate "Get in touch" %}</a>
+            {% endif %}
         </div>
     </div>
 </section>

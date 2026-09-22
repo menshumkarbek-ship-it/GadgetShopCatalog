@@ -224,10 +224,37 @@ def product_specs(request, product_slug):
 # ==========================================
 
 def about_us(request):
-    return render(request, 'shop/pages/about.html', {'about': AboutPageContent.get_solo()})
+    """
+    The shop's story, with the catalog itself as the evidence: the figures
+    band is counted from live stock, so the page never claims a range the
+    shelves don't back up.
+    """
+    # One pass over the in-stock catalog gives all three figures — no
+    # separate COUNTs.
+    categories_in_stock = set()
+    brands = set()
+    in_stock_count = 0
+    for category_id, brand in Product.objects.filter(is_sold=False).values_list('category_id', 'brand'):
+        categories_in_stock.add(category_id)
+        if brand:
+            brands.add(brand.strip().lower())
+        in_stock_count += 1
+
+    context = {
+        'about': AboutPageContent.get_solo(),
+        'in_stock_count': in_stock_count,
+        'category_count': len(categories_in_stock),
+        'brand_count': len(brands),
+    }
+    return render(request, 'shop/pages/about.html', context)
 
 
 def contact_us(request):
+    # The store's address lives with its story on the About page; the
+    # Contact page shows it again beside the opening hours, because
+    # "where and when" is what someone about to set off is asking.
+    about = AboutPageContent.get_solo()
+
     product_slug = request.GET.get('product')
     inquiry_product = None
     if product_slug:
@@ -242,10 +269,12 @@ def contact_us(request):
         }
     else:
         product_url = None
-        site_name = AboutPageContent.get_solo().translated_site_name
-        inquiry_message = _("Hi! I have a question about a product at %(site_name)s.") % {'site_name': site_name}
+        inquiry_message = _("Hi! I have a question about a product at %(site_name)s.") % {
+            'site_name': about.translated_site_name,
+        }
 
     context = {
+        'about': about,
         'inquiry_product': inquiry_product,
         'inquiry_product_url': product_url,
         'inquiry_message': inquiry_message,

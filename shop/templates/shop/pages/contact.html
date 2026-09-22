@@ -6,21 +6,19 @@
 
 {% block content %}
 
-<section class="band-tight band-white">
-    <div class="wrap">
-        <p class="t-body-sm text-midgray">{% translate "Get in Touch" %}</p>
-        <h1 class="t-heading text-ink mt-3">{% translate "Contact" %}</h1>
-        <p class="t-body-sm text-midgray mt-6 max-w-xl">
-            {% translate "Have a question about a product or want to arrange an in-store visit? Reach us directly through any channel below." %}
+<!-- Statement hero, like the About page. If the visitor arrived from a
+     product's Enquire button, that product sits under the heading so the
+     channel they pick next is clearly about it. -->
+<section class="band band-white">
+    <div class="wrap text-center">
+        <p class="t-body-sm text-ember">{% translate "Get in Touch" %}</p>
+        <h1 class="t-heading-lg text-ink mt-3">{% translate "We're here to help." %}</h1>
+        <p class="t-body text-midgray mt-7 max-w-2xl mx-auto">
+            {% translate "A question about a device, a price, or a visit? Pick whichever channel you already use — a real person answers." %}
         </p>
-    </div>
-</section>
-
-<section class="band band-gray">
-    <div class="wrap">
 
         {% if inquiry_product %}
-        <div class="card bg-paper p-7 flex items-center gap-6 mb-10">
+        <div class="mt-10 card bg-canvas p-6 sm:p-7 flex items-center gap-6 text-left max-w-2xl mx-auto">
             {% if inquiry_product.image %}
             <div class="w-20 h-20 shrink-0 flex items-center justify-center">
                 <img src="{{ inquiry_product.image.url }}" alt="{{ inquiry_product.translated_name }}" style="mix-blend-mode: multiply;" class="w-full h-full object-contain">
@@ -28,91 +26,181 @@
             {% endif %}
             <div class="min-w-0">
                 <p class="t-caption text-midgray">{% translate "Asking about" %}</p>
-                <p class="t-body-lg text-ink truncate">{{ inquiry_product.translated_name }}</p>
-                <p class="t-caption text-midgray mt-1">{% translate "Pick a channel below — the product link will be included automatically." %}</p>
+                <p class="t-body-lg text-ink truncate">{{ inquiry_product.brand }} {{ inquiry_product.translated_name }}</p>
+                <p class="t-caption text-midgray mt-1">{% translate "Pick a channel below — the product link is included in your message automatically." %}</p>
             </div>
         </div>
         {% endif %}
+    </div>
+</section>
+
+<!-- Channels. One tile each on the gray canvas: icon, what it's good for,
+     the handle, and the arrow. The whole tile is the link. -->
+<section class="band band-gray">
+    <div class="wrap">
 
         {% if not contact_settings.has_any_channel %}
         <div class="card bg-paper p-10 text-center">
             <p class="t-body-lg text-ink">{% translate "No contact channels have been configured yet." %}</p>
-            <p class="t-body-sm text-midgray mt-3">{% translate "An admin can add WhatsApp, Telegram, Instagram, phone, and email from the admin panel." %}</p>
+            <p class="t-body-sm text-midgray mt-3">{% translate "An admin can add WhatsApp, Telegram, Instagram, phone, and email from the management panel." %}</p>
         </div>
         {% else %}
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <h2 class="t-subheading text-ink">{% translate "Message us" %}</h2>
+        <div class="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
 
             {% if contact_settings.whatsapp_number %}
             <a href="https://wa.me/{{ contact_settings.whatsapp_digits }}?text={{ inquiry_message|urlencode }}" target="_blank" rel="noopener noreferrer"
-               class="card bg-paper p-7 flex items-center gap-5 group">
-                <i class="fa-brands fa-whatsapp text-ink text-2xl w-7 text-center shrink-0"></i>
-                <div class="min-w-0">
-                    <p class="t-body-sm text-ink font-semibold">{% translate "WhatsApp" %}</p>
-                    <p class="t-caption text-midgray truncate figures">+{{ contact_settings.whatsapp_digits }}</p>
-                </div>
-                <span class="link-arrow ml-auto shrink-0">&rsaquo;</span>
+               class="card bg-paper p-8 flex flex-col group">
+                <span class="w-12 h-12 rounded-full bg-canvas flex items-center justify-center text-ink text-xl"><i class="fa-brands fa-whatsapp"></i></span>
+                <h3 class="t-body-lg text-ink mt-6">{% translate "WhatsApp" %}</h3>
+                <p class="t-caption text-midgray mt-1">{% translate "Usually the quickest reply. Opens a chat with your message ready to send." %}</p>
+                <p class="t-body-sm text-ink mt-5 figures truncate">+{{ contact_settings.whatsapp_digits }}</p>
+                <span class="link-arrow mt-auto pt-3">{% translate "Open WhatsApp" %} &rsaquo;</span>
             </a>
             {% endif %}
 
             {% if contact_settings.telegram_username %}
             <a href="https://t.me/{{ contact_settings.telegram_handle }}?text={{ inquiry_message|urlencode }}" target="_blank" rel="noopener noreferrer"
-               class="card bg-paper p-7 flex items-center gap-5 group">
-                <i class="fa-brands fa-telegram text-ink text-2xl w-7 text-center shrink-0"></i>
-                <div class="min-w-0">
-                    <p class="t-body-sm text-ink font-semibold">{% translate "Telegram" %}</p>
-                    <p class="t-caption text-midgray truncate">@{{ contact_settings.telegram_handle }}</p>
-                </div>
-                <span class="link-arrow ml-auto shrink-0">&rsaquo;</span>
+               class="card bg-paper p-8 flex flex-col group">
+                <span class="w-12 h-12 rounded-full bg-canvas flex items-center justify-center text-ink text-xl"><i class="fa-brands fa-telegram"></i></span>
+                <h3 class="t-body-lg text-ink mt-6">{% translate "Telegram" %}</h3>
+                <p class="t-caption text-midgray mt-1">{% translate "Just as quick. Opens a chat with your message ready to send." %}</p>
+                <p class="t-body-sm text-ink mt-5 truncate">@{{ contact_settings.telegram_handle }}</p>
+                <span class="link-arrow mt-auto pt-3">{% translate "Open Telegram" %} &rsaquo;</span>
+            </a>
+            {% endif %}
+
+            {% if contact_settings.phone_number %}
+            <a href="tel:{{ contact_settings.phone_digits }}" class="card bg-paper p-8 flex flex-col group">
+                <span class="w-12 h-12 rounded-full bg-canvas flex items-center justify-center text-ink text-xl"><i class="fa-solid fa-phone"></i></span>
+                <h3 class="t-body-lg text-ink mt-6">{% translate "Phone" %}</h3>
+                <p class="t-caption text-midgray mt-1">{% translate "Call or text us during opening hours." %}</p>
+                <p class="t-body-sm text-ink mt-5 figures truncate">{{ contact_settings.phone_number }}</p>
+                <span class="link-arrow mt-auto pt-3">{% translate "Call now" %} &rsaquo;</span>
+            </a>
+            {% endif %}
+
+            {% if contact_settings.email %}
+            <a href="mailto:{{ contact_settings.email }}?subject={{ 'Product Inquiry'|urlencode }}&body={{ inquiry_message|urlencode }}"
+               class="card bg-paper p-8 flex flex-col group">
+                <span class="w-12 h-12 rounded-full bg-canvas flex items-center justify-center text-ink text-xl"><i class="fa-solid fa-envelope"></i></span>
+                <h3 class="t-body-lg text-ink mt-6">{% translate "Email" %}</h3>
+                <p class="t-caption text-midgray mt-1">{% translate "For longer questions, or anything you'd like in writing." %}</p>
+                <p class="t-body-sm text-ink mt-5 truncate">{{ contact_settings.email }}</p>
+                <span class="link-arrow mt-auto pt-3">{% translate "Write to us" %} &rsaquo;</span>
             </a>
             {% endif %}
 
             {% if contact_settings.instagram_username %}
             <a href="https://instagram.com/{{ contact_settings.instagram_handle }}" target="_blank" rel="noopener noreferrer"
                data-copy-text="{{ inquiry_message }}"
-               class="js-instagram-link card bg-paper p-7 flex items-center gap-5 group">
-                <i class="fa-brands fa-instagram text-ink text-2xl w-7 text-center shrink-0"></i>
-                <div class="min-w-0">
-                    <p class="t-body-sm text-ink font-semibold">{% translate "Instagram" %}</p>
-                    <p class="t-caption text-midgray truncate">@{{ contact_settings.instagram_handle }}</p>
-                </div>
-                <span class="link-arrow ml-auto shrink-0">&rsaquo;</span>
-            </a>
-            {% endif %}
-
-            {% if contact_settings.phone_number %}
-            <a href="tel:{{ contact_settings.phone_digits }}" class="card bg-paper p-7 flex items-center gap-5 group">
-                <i class="fa-solid fa-phone text-ink text-xl w-7 text-center shrink-0"></i>
-                <div class="min-w-0">
-                    <p class="t-body-sm text-ink font-semibold">{% translate "Phone" %}</p>
-                    <p class="t-caption text-midgray truncate figures">{{ contact_settings.phone_number }}</p>
-                </div>
-                <span class="link-arrow ml-auto shrink-0">&rsaquo;</span>
-            </a>
-            {% endif %}
-
-            {% if contact_settings.email %}
-            <a href="mailto:{{ contact_settings.email }}?subject={{ 'Product Inquiry'|urlencode }}&body={{ inquiry_message|urlencode }}"
-               class="card bg-paper p-7 flex items-center gap-5 group sm:col-span-2">
-                <i class="fa-solid fa-envelope text-ink text-xl w-7 text-center shrink-0"></i>
-                <div class="min-w-0">
-                    <p class="t-body-sm text-ink font-semibold">{% translate "Email" %}</p>
-                    <p class="t-caption text-midgray truncate">{{ contact_settings.email }}</p>
-                </div>
-                <span class="link-arrow ml-auto shrink-0">&rsaquo;</span>
+               class="js-instagram-link card bg-paper p-8 flex flex-col group">
+                <span class="w-12 h-12 rounded-full bg-canvas flex items-center justify-center text-ink text-xl"><i class="fa-brands fa-instagram"></i></span>
+                <h3 class="t-body-lg text-ink mt-6">{% translate "Instagram" %}</h3>
+                <p class="t-caption text-midgray mt-1">{% translate "See what just came in, and message us there if you prefer." %}</p>
+                <p class="t-body-sm text-ink mt-5 truncate">@{{ contact_settings.instagram_handle }}</p>
+                <span class="link-arrow mt-auto pt-3">{% translate "Open Instagram" %} &rsaquo;</span>
             </a>
             {% endif %}
 
         </div>
 
         {% if contact_settings.instagram_username %}
-        <p class="t-caption text-midgray mt-6 max-w-2xl">
-            {% translate "Instagram doesn't support pre-filled direct messages: your inquiry text is copied to your clipboard automatically so you can paste it once the chat opens." %}
+        <p class="t-caption text-midgray mt-8 max-w-2xl">
+            {% translate "Instagram doesn't support pre-filled messages: your inquiry text is copied to your clipboard automatically so you can paste it once the chat opens." %}
         </p>
         {% endif %}
         {% endif %}
 
     </div>
 </section>
+
+<!-- Visit the store: where, when, and how to get there. -->
+{% if about.translated_store_address_line1 or about.translated_store_address_line2 or contact_settings.translated_opening_hours or contact_settings.map_url or about.store_image %}
+<section class="band band-white">
+    <div class="wrap grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div>
+            <p class="t-body-sm text-midgray">{% translate "Visit Us" %}</p>
+            <h2 class="t-heading text-ink mt-3">{% translate "Or come and see it in person." %}</h2>
+            <p class="t-body-sm text-midgray mt-6 max-w-xl">
+                {% translate "Everything in the catalog is on the shelf. Drop in to hold a device, compare a few side by side, and talk it through with the team." %}
+            </p>
+
+            {% if about.translated_store_address_line1 or about.translated_store_address_line2 or contact_settings.translated_opening_hours %}
+            <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-xl">
+                {% if about.translated_store_address_line1 or about.translated_store_address_line2 %}
+                <div>
+                    <p class="t-caption text-midgray"><i class="fa-solid fa-location-dot mr-1.5"></i>{% translate "Address" %}</p>
+                    {% if about.translated_store_address_line1 %}<p class="t-body-sm text-ink mt-1">{{ about.translated_store_address_line1 }}</p>{% endif %}
+                    {% if about.translated_store_address_line2 %}<p class="t-body-sm text-ink">{{ about.translated_store_address_line2 }}</p>{% endif %}
+                </div>
+                {% endif %}
+                {% if contact_settings.translated_opening_hours %}
+                <div>
+                    <p class="t-caption text-midgray"><i class="fa-regular fa-clock mr-1.5"></i>{% translate "Opening hours" %}</p>
+                    <p class="t-body-sm text-ink mt-1 whitespace-pre-line figures">{{ contact_settings.translated_opening_hours }}</p>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {% if contact_settings.map_url %}
+            <div class="mt-8">
+                <a href="{{ contact_settings.map_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-blue">{% translate "Get directions" %}</a>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if about.store_image %}
+        <div class="card overflow-hidden bg-canvas">
+            <img src="{{ about.store_image.url }}" alt="{% translate 'Our store' %}" class="w-full h-full object-cover" style="aspect-ratio: 4 / 3;">
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Quick answers. Native disclosure rows, each its own flat card. -->
+<section class="band band-gray">
+    <div class="wrap">
+        <h2 class="t-subheading text-ink">{% translate "Quick answers" %}</h2>
+        <div class="mt-10 max-w-3xl space-y-3">
+            <details class="card bg-paper faq group">
+                <summary class="t-body-sm text-ink font-semibold p-6 sm:p-7 flex items-center justify-between gap-6 cursor-pointer list-none">
+                    {% translate "Is a device I see on the site still available?" %}
+                    <i class="fa-solid fa-chevron-down text-midgray text-sm shrink-0 transition-transform group-open:rotate-180"></i>
+                </summary>
+                <p class="t-body-sm text-midgray px-6 sm:px-7 pb-6 sm:pb-7 -mt-2">{% translate "The catalog is updated as devices sell, so if it's listed, it's on the shelf. Send us the link through any channel above and we'll confirm straight away." %}</p>
+            </details>
+            <details class="card bg-paper faq group">
+                <summary class="t-body-sm text-ink font-semibold p-6 sm:p-7 flex items-center justify-between gap-6 cursor-pointer list-none">
+                    {% translate "How do I ask about a specific device?" %}
+                    <i class="fa-solid fa-chevron-down text-midgray text-sm shrink-0 transition-transform group-open:rotate-180"></i>
+                </summary>
+                <p class="t-body-sm text-midgray px-6 sm:px-7 pb-6 sm:pb-7 -mt-2">{% translate "Open its page and tap Enquire. The product link is added to your message automatically, so we know exactly which one you mean." %}</p>
+            </details>
+            <details class="card bg-paper faq group">
+                <summary class="t-body-sm text-ink font-semibold p-6 sm:p-7 flex items-center justify-between gap-6 cursor-pointer list-none">
+                    {% translate "Can I see a device before buying?" %}
+                    <i class="fa-solid fa-chevron-down text-midgray text-sm shrink-0 transition-transform group-open:rotate-180"></i>
+                </summary>
+                <p class="t-body-sm text-midgray px-6 sm:px-7 pb-6 sm:pb-7 -mt-2">{% translate "Of course. Shortlist online, then visit the store to hold it and compare it with anything else on the shelf." %}</p>
+            </details>
+            <details class="card bg-paper faq group">
+                <summary class="t-body-sm text-ink font-semibold p-6 sm:p-7 flex items-center justify-between gap-6 cursor-pointer list-none">
+                    {% translate "What if the device I want isn't on the site?" %}
+                    <i class="fa-solid fa-chevron-down text-midgray text-sm shrink-0 transition-transform group-open:rotate-180"></i>
+                </summary>
+                <p class="t-body-sm text-midgray px-6 sm:px-7 pb-6 sm:pb-7 -mt-2">{% translate "Stock changes every week. Tell us the model you're after and we'll order it in, or let you know the moment it arrives." %}</p>
+            </details>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Hide the default disclosure marker everywhere, WebKit included. */
+    .faq > summary::-webkit-details-marker { display: none; }
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {

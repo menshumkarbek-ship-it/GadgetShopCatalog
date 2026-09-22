@@ -12,7 +12,7 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone, translation
 
-from .models import Category, HomePageContent, Product, Sale
+from .models import Category, ContactSettings, HomePageContent, Product, Sale
 from .seed.catalog import CATEGORIES, PRODUCTS
 
 
@@ -472,6 +472,52 @@ class StorefrontTests(TestCase):
         self.assertEqual(response.context['total_revenue'], Decimal('650.00'))
         self.assertContains(response, 'Kept Phone')
         self.assertContains(response, 'Purged Phone')
+
+    def test_about_page_counts_stock_categories_and_brands(self):
+        laptops = Category.objects.create(name='Laptops', slug='laptops')
+        Category.objects.create(name='Empty', slug='empty')
+        self.make_product('Older Phone', 'older-phone', '400.00')
+        self.make_product('Newest Phone', 'newest-phone', '500.00')
+        Product.objects.create(category=laptops, brand='Other', name='Laptop', slug='laptop', price=Decimal('900.00'))
+        sold = self.make_product('Sold Phone', 'sold-phone', '100.00')
+        sold.is_sold = True
+        sold.save(update_fields=['is_sold'])
+
+        with CaptureQueriesContext(connection) as queries:
+            response = self.client.get(reverse('shop:about_us'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['in_stock_count'], 3)
+        self.assertEqual(response.context['category_count'], 2)
+        self.assertEqual(response.context['brand_count'], 2)
+        # One catalog pass serves all three figures.
+        product_queries = [q for q in queries.captured_queries if '"shop_product"' in q['sql']]
+        self.assertEqual(len(product_queries), 1)
+
+    def test_contact_page_shows_hours_and_directions_only_when_set(self):
+        settings_obj = ContactSettings.get_solo()
+        settings_obj.whatsapp_number = '996700123456'
+        settings_obj.save()
+
+        response = self.client.get(reverse('shop:contact_us'), HTTP_ACCEPT_LANGUAGE='en')
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'Opening hours')
+        self.assertNotContains(response, 'Get directions')
+
+        settings_obj.opening_hours = 'Mon-Sat 10:00-20:00'
+        settings_obj.opening_hours_ru = 'Пн-Сб 10:00-20:00'
+        settings_obj.map_url = 'https://maps.example.com/store'
+        settings_obj.save()
+
+        response = self.client.get(reverse('shop:contact_us'), HTTP_ACCEPT_LANGUAGE='en')
+        self.assertContains(response, 'Mon-Sat 10:00-20:00')
+        self.assertContains(response, 'https://maps.example.com/store')
+
+        # The hours follow the visitor's language, falling back to English.
+        response = self.client.get(reverse('shop:contact_us'), HTTP_ACCEPT_LANGUAGE='ru')
+        self.assertContains(response, 'Пн-Сб 10:00-20:00')
+        response = self.client.get(reverse('shop:contact_us'), HTTP_ACCEPT_LANGUAGE='ky')
+        self.assertContains(response, 'Mon-Sat 10:00-20:00')
 
 
 class ManagementPanelTests(TestCase):

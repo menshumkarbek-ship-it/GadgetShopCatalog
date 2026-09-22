@@ -148,7 +148,10 @@ class CategoryCreateForm(forms.ModelForm):
 class ContactSettingsForm(forms.ModelForm):
     class Meta:
         model = ContactSettings
-        fields = ['email', 'phone_number', 'whatsapp_number', 'telegram_username', 'instagram_username']
+        fields = [
+            'email', 'phone_number', 'whatsapp_number', 'telegram_username', 'instagram_username',
+            'opening_hours', 'opening_hours_ru', 'opening_hours_ky', 'map_url',
+        ]
         widgets = {
             'email': forms.EmailInput(attrs={
                 'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
@@ -169,6 +172,22 @@ class ContactSettingsForm(forms.ModelForm):
             'instagram_username': forms.TextInput(attrs={
                 'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
                 'placeholder': _('techvault.shop (no @)')
+            }),
+            'opening_hours': forms.Textarea(attrs={
+                'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
+                'rows': 3, 'placeholder': _('Mon–Sat 10:00–20:00 / Sun 11:00–18:00')
+            }),
+            'opening_hours_ru': forms.Textarea(attrs={
+                'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
+                'rows': 3, 'placeholder': 'Пн–Сб 10:00–20:00 / Вс 11:00–18:00'
+            }),
+            'opening_hours_ky': forms.Textarea(attrs={
+                'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
+                'rows': 3, 'placeholder': 'Дш–Иш 10:00–20:00 / Жк 11:00–18:00'
+            }),
+            'map_url': forms.URLInput(attrs={
+                'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
+                'placeholder': 'https://maps.app.goo.gl/…'
             }),
         }
 
