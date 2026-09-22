@@ -135,10 +135,6 @@ class AboutPageContent(models.Model):
     from the in-app management panel. Singleton like ContactSettings: only
     one row ever exists (enforced via save()).
     """
-    site_name = models.CharField(
-        max_length=60, default="TechVault",
-        help_text="The store/market name shown in the navbar, browser tab, and footer across the whole site."
-    )
     badge_text = models.CharField(
         max_length=100, blank=True, default="Enterprise Architecture",
         help_text="Small pill label above the page heading, e.g. 'Family Owned Since 2010'."
@@ -186,8 +182,6 @@ class AboutPageContent(models.Model):
     # Per-language overrides for every field above. Each defaults to blank
     # and falls back to the base (English) field when empty, so filling
     # these in is entirely optional per language.
-    site_name_ru = models.CharField(max_length=60, blank=True, verbose_name="Store / Market Name (Russian)")
-    site_name_ky = models.CharField(max_length=60, blank=True, verbose_name="Store / Market Name (Kyrgyz)")
     badge_text_ru = models.CharField(max_length=100, blank=True, verbose_name="Badge Text (Russian)")
     badge_text_ky = models.CharField(max_length=100, blank=True, verbose_name="Badge Text (Kyrgyz)")
     heading_ru = models.CharField(max_length=150, blank=True, verbose_name="Page Heading (Russian)")
@@ -230,7 +224,6 @@ class AboutPageContent(models.Model):
         obj, _ = cls.objects.get_or_create(pk=1)
         return obj
 
-    translated_site_name = translatable_property('site_name')
     translated_badge_text = translatable_property('badge_text')
     translated_heading = translatable_property('heading')
     translated_intro_text = translatable_property('intro_text')
@@ -263,6 +256,16 @@ class HomePageContent(models.Model):
     hardcoded template text, so handing them to the admin doesn't leave
     either language suddenly reading English.
     """
+
+    # --- The store's name: navbar, browser tab, footer, link previews ---
+    # Edited with the homepage because that is where a visitor first meets
+    # it, though it is shown on every page.
+    site_name = models.CharField(
+        max_length=60, default="TechVault",
+        help_text="The store/market name shown in the navbar, browser tab, and footer across the whole site."
+    )
+    site_name_ru = models.CharField(max_length=60, blank=True, verbose_name="Store / Market Name (Russian)")
+    site_name_ky = models.CharField(max_length=60, blank=True, verbose_name="Store / Market Name (Kyrgyz)")
 
     # --- Band 1: the promise, between the hero and the category rows ---
     promise_heading = models.CharField(
@@ -382,6 +385,7 @@ class HomePageContent(models.Model):
         obj, _ = cls.objects.get_or_create(pk=1)
         return obj
 
+    translated_site_name = translatable_property('site_name')
     translated_promise_heading = translatable_property('promise_heading')
     translated_promise_card_heading = translatable_property('promise_card_heading')
     translated_promise_text = translatable_property('promise_text')

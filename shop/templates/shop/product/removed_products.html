@@ -65,7 +65,7 @@
                 <div class="flex items-center gap-2 sm:gap-1.5 shrink-0">
                     <!-- Restoring a sold listing also drops the sale it recorded,
                          so the report stops counting a sale that was undone. -->
-                    <form method="POST" action="{% url 'shop:restore_product' p.id %}" class="flex-1 sm:flex-none">
+                    <form method="POST" action="{% url 'shop:restore_product' p.id %}" class="flex-1 sm:flex-none" data-after="refresh">
                         {% csrf_token %}
                         <input type="hidden" name="next" value="removed">
                         <button type="submit" class="w-full text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-2 sm:px-2.5 sm:py-1.5 rounded-lg transition-colors whitespace-nowrap">
@@ -73,7 +73,7 @@
                         </button>
                     </form>
                     <!-- Second, deliberate step: this one cannot be undone. -->
-                    <form method="POST" action="{% url 'shop:purge_product' p.id %}" data-confirm-delete="{% blocktranslate with name=p.name %}{{ name }} and its photos will be erased for good and cannot be restored. Sales already recorded for it stay in the report.{% endblocktranslate %}">
+                    <form method="POST" action="{% url 'shop:purge_product' p.id %}" data-after="refresh" data-confirm-delete="{% blocktranslate with name=p.name %}{{ name }} and its photos will be erased for good and cannot be restored. Sales already recorded for it stay in the report.{% endblocktranslate %}">
                         {% csrf_token %}
                         <input type="hidden" name="next" value="removed">
                         <button type="submit" title="{% translate 'Delete permanently' %}" class="text-[11px] font-bold text-red-700 bg-red-50 hover:bg-red-100 px-3.5 py-2 sm:px-2.5 sm:py-1.5 rounded-lg transition-colors">

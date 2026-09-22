@@ -143,7 +143,7 @@
         </div>
         {% endif %}
 
-        <form method="POST" enctype="multipart/form-data" class="space-y-5">
+        <form method="POST" enctype="multipart/form-data" class="space-y-5" data-after="{% if product_instance %}stay{% else %}reset{% endif %}">
             {% csrf_token %}
 
             <!-- Row 1: Brand & Category -->
@@ -222,16 +222,16 @@
                 {% if gallery_images %}
                 <div class="grid grid-cols-4 sm:grid-cols-6 gap-2">
                     {% for photo in gallery_images %}
-                    <div class="relative group">
+                    <div class="relative group" data-row="photo-{{ photo.id }}">
                         <div class="w-full aspect-square bg-white rounded-lg border border-gray-200 overflow-hidden">
                             <img src="{{ photo.image.url }}" class="w-full h-full object-contain p-1">
                         </div>
-                        <form method="POST" action="{% url 'shop:delete_product_image' photo.id %}" onsubmit="return confirm('{% translate "Remove this photo?" %}');" class="absolute -top-1.5 -right-1.5">
-                            {% csrf_token %}
-                            <button type="submit" title="{% translate 'Remove photo' %}" class="w-5 h-5 rounded-full bg-red-600 hover:bg-red-500 text-white text-[10px] flex items-center justify-center shadow-md transition-colors">
-                                <i class="fa-solid fa-xmark"></i>
-                            </button>
-                        </form>
+                        <!-- A button, not a form: this sits inside the product
+                             form, and forms cannot nest. It posts on its own. -->
+                        <button type="button" data-post="{% url 'shop:delete_product_image' photo.id %}" data-confirm="{% translate 'Remove this photo?' %}" data-after="remove-row"
+                                title="{% translate 'Remove photo' %}" class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-600 hover:bg-red-500 text-white text-[10px] flex items-center justify-center shadow-md transition-colors">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
                     </div>
                     {% endfor %}
                 </div>
@@ -257,7 +257,9 @@
 
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    // Runs at once rather than on DOMContentLoaded: the panel swaps this
+    // content in without a page load, and re-runs the script then.
+    (function () {
         // Auto-slug script
         const nameInput = document.querySelector('input[name="name"]');
         const slugInput = document.querySelector('input[name="slug"]');
@@ -270,6 +272,6 @@
             });
             slugInput.addEventListener('input', function() { slugInput.dataset.touched = "true"; });
         }
-    });
+    })();
 </script>
 {% endblock %}

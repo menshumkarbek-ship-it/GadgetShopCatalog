@@ -302,33 +302,35 @@
         // Deletes that cannot be undone ask once before submitting. The warning
         // rides on the form as data-confirm-delete so the text can be built (and
         // escaped) by the template rather than quoted into an inline handler.
-        document.querySelectorAll('form[data-confirm-delete]').forEach(function (form) {
-            form.addEventListener('submit', function (event) {
-                if (!window.confirm(form.dataset.confirmDelete)) {
-                    event.preventDefault();
-                }
-            });
-        });
+        // Listened for at the document, in the capture phase, so it also covers
+        // forms the management panel swaps in later and always runs before the
+        // panel's own submit handling.
+        document.addEventListener('submit', function (event) {
+            const form = event.target.closest && event.target.closest('form[data-confirm-delete]');
+            if (form && !window.confirm(form.dataset.confirmDelete)) {
+                event.preventDefault();
+            }
+        }, true);
 
         // Per-language field tabs (EN/RU/KY): shared by every management form
         // that lets an admin enter translated content field-by-field. Each
         // group is a `.lang-tabs[data-group="X"]` button row next to
         // `.lang-field[data-group="X"][data-lang="..."]` input wrappers.
-        document.querySelectorAll('.lang-tab-btn').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                const tabs = btn.closest('.lang-tabs');
-                const group = tabs.dataset.group;
-                const lang = btn.dataset.lang;
-                tabs.querySelectorAll('.lang-tab-btn').forEach(function (b) {
-                    const active = b.dataset.lang === lang;
-                    b.classList.toggle('bg-indigo-600', active);
-                    b.classList.toggle('text-white', active);
-                    b.classList.toggle('bg-gray-100', !active);
-                    b.classList.toggle('text-gray-500', !active);
-                });
-                document.querySelectorAll('.lang-field[data-group="' + group + '"]').forEach(function (f) {
-                    f.classList.toggle('hidden', f.dataset.lang !== lang);
-                });
+        document.addEventListener('click', function (event) {
+            const btn = event.target.closest && event.target.closest('.lang-tab-btn');
+            if (!btn) return;
+            const tabs = btn.closest('.lang-tabs');
+            const group = tabs.dataset.group;
+            const lang = btn.dataset.lang;
+            tabs.querySelectorAll('.lang-tab-btn').forEach(function (b) {
+                const active = b.dataset.lang === lang;
+                b.classList.toggle('bg-indigo-600', active);
+                b.classList.toggle('text-white', active);
+                b.classList.toggle('bg-gray-100', !active);
+                b.classList.toggle('text-gray-500', !active);
+            });
+            document.querySelectorAll('.lang-field[data-group="' + group + '"]').forEach(function (f) {
+                f.classList.toggle('hidden', f.dataset.lang !== lang);
             });
         });
     </script>

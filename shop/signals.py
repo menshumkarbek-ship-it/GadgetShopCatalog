@@ -4,7 +4,7 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
 from .context_processors import CONTACT_SETTINGS_CACHE_KEY, SITE_IDENTITY_CACHE_KEY
-from .models import AboutPageContent, Category, ContactSettings
+from .models import Category, ContactSettings, HomePageContent
 
 
 @receiver([post_save, post_delete], sender=Category)
@@ -22,7 +22,7 @@ def invalidate_contact_settings_cache(sender, **kwargs):
     cache.delete(CONTACT_SETTINGS_CACHE_KEY)
 
 
-@receiver(post_save, sender=AboutPageContent)
+@receiver(post_save, sender=HomePageContent)
 def invalidate_site_identity_cache(sender, **kwargs):
     """The store name is cached per active language, so renaming the store
     has to clear every language's entry, not just the current one."""

@@ -190,7 +190,6 @@ class AboutPageContentForm(forms.ModelForm):
     class Meta:
         model = AboutPageContent
         fields = [
-            'site_name', 'site_name_ru', 'site_name_ky',
             'badge_text', 'badge_text_ru', 'badge_text_ky',
             'heading', 'heading_ru', 'heading_ky',
             'intro_text', 'intro_text_ru', 'intro_text_ky',
@@ -205,10 +204,6 @@ class AboutPageContentForm(forms.ModelForm):
             'cta_text', 'cta_text_ru', 'cta_text_ky',
         ]
         widgets = {
-            'site_name': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': 'TechVault'}),
-            'site_name_ru': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the name above if left blank')}),
-            'site_name_ky': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the name above if left blank')}),
-
             'badge_text': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Family Owned Since 2010')}),
             'badge_text_ru': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the text above if left blank')}),
             'badge_text_ky': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the text above if left blank')}),
@@ -269,6 +264,7 @@ class HomePageContentForm(forms.ModelForm):
     class Meta:
         model = HomePageContent
         fields = [
+            'site_name', 'site_name_ru', 'site_name_ky',
             'promise_heading', 'promise_heading_ru', 'promise_heading_ky',
             'promise_card_heading', 'promise_card_heading_ru', 'promise_card_heading_ky',
             'promise_text', 'promise_text_ru', 'promise_text_ky',
@@ -281,6 +277,10 @@ class HomePageContentForm(forms.ModelForm):
             'invite_button_text', 'invite_button_text_ru', 'invite_button_text_ky',
         ]
         widgets = {
+            'site_name': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': 'TechVault'}),
+            'site_name_ru': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the name above if left blank')}),
+            'site_name_ky': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the name above if left blank')}),
+
             'promise_heading': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Why shop here')}),
             'promise_heading_ru': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': FALLBACK_HEADING_HINT}),
             'promise_heading_ky': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': FALLBACK_HEADING_HINT}),

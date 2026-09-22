@@ -18,7 +18,7 @@
             </div>
         </div>
 
-        <form method="POST" class="p-5 sm:p-6 space-y-6">
+        <form method="POST" class="p-5 sm:p-6 space-y-6" data-after="append" data-target="#category-list">
             {% csrf_token %}
 
             {% if form.errors %}
@@ -107,7 +107,7 @@
                 <h3 class="text-sm font-black text-gray-950">{% translate "Existing Categories" %}</h3>
                 <p class="text-[11px] text-gray-400">{% translate "Switch a category's slide or row on and off; changes apply to the homepage at once." %}</p>
             </div>
-            <span class="shrink-0 rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-black text-gray-600 tabular-nums">{{ all_categories|length }}</span>
+            <span data-count="categories" class="shrink-0 rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-black text-gray-600 tabular-nums">{{ all_categories|length }}</span>
         </div>
 
         <!-- Column labels for the two switches, so each row can stay quiet -->
@@ -118,57 +118,11 @@
             <span></span>
         </div>
 
-        <ul class="divide-y divide-gray-100">
+        <ul id="category-list" class="divide-y divide-gray-100">
             {% for cat in all_categories %}
-            <li class="grid grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[minmax(0,1fr)_5rem_5rem_3rem] gap-x-3 gap-y-3 items-center px-5 sm:px-6 py-3.5">
-                <div class="min-w-0 flex items-center gap-3">
-                    <span class="w-9 h-9 shrink-0 rounded-xl {% if cat.is_featured_in_hero %}bg-indigo-50 text-indigo-600{% else %}bg-gray-100 text-gray-400{% endif %} flex items-center justify-center"><i class="fa-solid fa-folder"></i></span>
-                    <div class="min-w-0">
-                        <p class="text-sm font-bold text-gray-900 truncate">{{ cat.name }}</p>
-                        <p class="text-[11px] text-gray-400 truncate">
-                            <span class="font-mono">/catalog/{{ cat.slug }}/</span>
-                            &middot; {% blocktranslate count counter=cat.product_count %}{{ counter }} product{% plural %}{{ counter }} products{% endblocktranslate %}
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Delete: takes its products with it, so it names the count
-                     and goes through the confirm gate first. -->
-                <form method="POST" action="{% url 'shop:delete_category' cat.id %}" class="sm:order-last justify-self-end"
-                      data-confirm-delete="{% blocktranslate with name=cat.name total=cat.product_count %}The category {{ name }} will be deleted together with everything filed under it — products, including any sitting in Removed: {{ total }}. Their photos go too. Sales already recorded stay in the report.{% endblocktranslate %}">
-                    {% csrf_token %}
-                    <button type="submit" title="{% translate 'Delete category and its products' %}" class="w-9 h-9 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition-colors">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                </form>
-
-                <!-- The two switches. On phones they sit on their own line
-                     with their labels beside them. -->
-                <div class="col-span-2 sm:col-span-1 sm:contents">
-                    <div class="flex items-center gap-6 sm:contents">
-                        <form method="POST" action="{% url 'shop:toggle_category_hero' cat.id %}" class="flex items-center gap-2 sm:justify-center">
-                            {% csrf_token %}
-                            <button type="submit" role="switch" aria-checked="{% if cat.is_featured_in_hero %}true{% else %}false{% endif %}"
-                                    title="{% if cat.is_featured_in_hero %}{% translate 'Remove from homepage slideshow' %}{% else %}{% translate 'Add to homepage slideshow' %}{% endif %}"
-                                    class="switch-btn {% if cat.is_featured_in_hero %}is-on{% endif %}">
-                                <span class="switch-btn-knob"></span>
-                            </button>
-                            <span class="sm:hidden text-[11px] font-bold text-gray-500">{% translate "Slide" %}</span>
-                        </form>
-                        <form method="POST" action="{% url 'shop:toggle_category_newest' cat.id %}" class="flex items-center gap-2 sm:justify-center">
-                            {% csrf_token %}
-                            <button type="submit" role="switch" aria-checked="{% if cat.show_newest_row %}true{% else %}false{% endif %}"
-                                    title="{% if cat.show_newest_row %}{% translate 'Hide the Newest In row from the homepage' %}{% else %}{% translate 'Show the Newest In row on the homepage' %}{% endif %}"
-                                    class="switch-btn {% if cat.show_newest_row %}is-on{% endif %}">
-                                <span class="switch-btn-knob"></span>
-                            </button>
-                            <span class="sm:hidden text-[11px] font-bold text-gray-500">{% translate "Row" %}</span>
-                        </form>
-                    </div>
-                </div>
-            </li>
+                {% include 'shop/product/_category_row.html' with cat=cat %}
             {% empty %}
-            <li class="px-6 py-10 text-center">
+            <li data-empty class="px-6 py-10 text-center">
                 <p class="text-sm font-bold text-gray-700">{% translate "No categories yet." %}</p>
                 <p class="text-xs text-gray-400 mt-1">{% translate "Create the first one above." %}</p>
             </li>
@@ -201,7 +155,9 @@
 
 <!-- Auto-slug script -->
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    // Runs at once rather than on DOMContentLoaded: the panel swaps this
+    // content in without a page load, and re-runs the script then.
+    (function () {
         const nameInput = document.querySelector('input[name="name"]');
         const slugInput = document.querySelector('input[name="slug"]');
 
@@ -213,6 +169,6 @@
             });
             slugInput.addEventListener('input', function() { slugInput.dataset.touched = "true"; });
         }
-    });
+    })();
 </script>
 {% endblock %}

@@ -70,8 +70,20 @@
                 <button type="button" class="lang-tab-btn px-4 py-1.5 rounded-lg text-xs font-black bg-gray-100 text-gray-500" data-lang="ky">KY</button>
             </div>
 
-            {% for lang, heading_field, card_heading_field, text_field, button_field, stat_label_field, stat_caption_field, eyebrow_field, invite_heading_field, invite_text_field, invite_button_field in homepage_lang_fields %}
+            {% for lang, name_field, heading_field, card_heading_field, text_field, button_field, stat_label_field, stat_caption_field, eyebrow_field, invite_heading_field, invite_text_field, invite_button_field in homepage_lang_fields %}
             <div class="lang-field space-y-8 {% if not forloop.first %}hidden{% endif %}" data-group="home-page" data-lang="{{ lang }}">
+
+                <!-- ── The store's name, shown on every page ── -->
+                <div class="space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2 sm:flex-wrap">
+                        <h2 class="text-[11px] font-black uppercase tracking-wider text-indigo-600">{% translate "Store Name" %}</h2>
+                        {% if forloop.first %}<span class="text-[10px] text-gray-400 leading-relaxed">{% translate "Shown in the navbar, browser tab, and footer across the whole site." %}</span>{% endif %}
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">{% translate "Store / Market Name" %}</label>
+                        {{ name_field }}
+                    </div>
+                </div>
 
                 <!-- ── Section 1: the promise, above the product rows ── -->
                 <div class="space-y-4">

@@ -53,12 +53,12 @@ def site_identity(request):
     key is per-language rather than global.
     """
     from django.utils.translation import get_language
-    from .models import AboutPageContent
+    from .models import HomePageContent
 
     cache_key = f'{SITE_IDENTITY_CACHE_KEY}:{get_language() or "en"}'
     store_name = cache.get(cache_key)
     if store_name is None:
-        store_name = AboutPageContent.get_solo().translated_site_name
+        store_name = HomePageContent.get_solo().translated_site_name
         cache.set(cache_key, store_name, SETTINGS_CACHE_TIMEOUT)
     return {'store_name': store_name}
 

@@ -584,6 +584,65 @@ class ManagementPanelTests(TestCase):
 
         self.assertRedirects(response, reverse('shop:create_product') + '?category=phones')
 
+    # --- background actions ------------------------------------------
+
+    AJAX = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
+
+    def test_actions_posted_in_the_background_answer_with_json_not_a_redirect(self):
+        product = self.make_product('Phone', 'phone', '250.00')
+
+        response = self.client.post(reverse('shop:sell_product', args=[product.id]), {'category': 'phones'}, **self.AJAX)
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['ok'])
+        self.assertEqual(data['removed_count'], 1)
+        self.assertEqual(data['messages'][0]['level'], 'success')
+        self.assertIn('Phone', data['messages'][0]['text'])
+        # The flash was handed over in the JSON, so it must not show up on
+        # the next full page as well.
+        self.assertNotContains(self.client.get(reverse('shop:create_product')), 'was marked as sold')
+
+        # The same post without the header still redirects, as before.
+        product = self.make_product('Other', 'other', '250.00')
+        response = self.client.post(reverse('shop:sell_product', args=[product.id]))
+        self.assertEqual(response.status_code, 302)
+
+    def test_adding_a_product_in_the_background_reports_errors_or_success(self):
+        response = self.client.post(reverse('shop:create_product'), {'name': ''}, **self.AJAX)
+
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertFalse(data['ok'])
+        self.assertIn('name', [error['field'] for error in data['errors']])
+        self.assertFalse(Product.objects.exists())
+
+        response = self.client.post(reverse('shop:create_product'), {
+            'name': 'Phone', 'slug': 'phone', 'brand': 'Example', 'category': self.category.id,
+            'price': '250.00', 'description': 'A phone.',
+        }, **self.AJAX)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()['ok'])
+        self.assertTrue(Product.objects.filter(slug='phone').exists())
+
+    def test_category_actions_in_the_background_hand_back_the_row(self):
+        response = self.client.post(reverse('shop:create_category'), {'name': 'Laptops', 'slug': 'laptops'}, **self.AJAX)
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        laptops = Category.objects.get(slug='laptops')
+        self.assertIn(f'data-row="category-{laptops.id}"', data['html'])
+        self.assertEqual(data['category_count'], 2)
+
+        response = self.client.post(reverse('shop:toggle_category_hero', args=[laptops.id]), **self.AJAX)
+        data = response.json()
+        self.assertIn('aria-checked="true"', data['html'])
+        self.assertTrue(Category.objects.get(pk=laptops.pk).is_featured_in_hero)
+
+        response = self.client.post(reverse('shop:delete_category', args=[laptops.id]), **self.AJAX)
+        self.assertTrue(response.json()['ok'])
+        self.assertEqual(response.json()['category_count'], 1)
+
     # --- sidebar -------------------------------------------------------
 
     def test_every_management_page_renders_with_the_shared_sidebar(self):
@@ -708,6 +767,7 @@ class ManagementPanelTests(TestCase):
         from .forms import HomePageContentForm
 
         data = {name: '' for name in HomePageContentForm.Meta.fields}
+        data['site_name'] = 'TechVault'  # required; the only field that is
         data.update(overrides)
         return self.client.post(reverse('shop:manage_homepage'), data, follow=True)
 

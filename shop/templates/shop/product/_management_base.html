@@ -71,7 +71,7 @@
                     <!-- The storefront is one click away in the global nav, so
                          the only thing left down here is the way out. -->
                     <div class="pt-3 border-t border-gray-100">
-                        <form method="POST" action="{% url 'admin:logout' %}">
+                        <form method="POST" action="{% url 'admin:logout' %}" data-reload>
                             {% csrf_token %}
                             <button type="submit" class="w-full flex items-center gap-3 lg:gap-2.5 px-3 py-3 lg:py-2 rounded-xl text-[15px] lg:text-xs font-bold text-gray-500 hover:text-red-600 hover:bg-red-50/60 transition-colors">
                                 <i class="fa-solid fa-right-from-bracket w-4 text-center text-xs lg:text-[11px] text-gray-400"></i>
@@ -114,4 +114,205 @@
         </div>
     </div>
 </div>
+
+<!-- Confirmations for actions done in the background, bottom right. -->
+<div id="panel-toasts" class="fixed bottom-4 right-4 z-[60] flex flex-col gap-2 w-[min(92vw,22rem)] pointer-events-none" aria-live="polite"></div>
+
+<script>
+    // ── Background actions ─────────────────────────────────────────────
+    // Every POST inside the panel is sent with fetch and answered with JSON
+    // (see _panel_response in views.py), so a Sold, a Delete, a switch, or
+    // a saved form updates the page in place instead of reloading it — the
+    // admin keeps their place, and keeps typing.
+    //
+    // What happens after a successful post is the form's `data-after`:
+    //   remove-row   the form's [data-row] (all copies of it) disappears
+    //   replace-row  it is swapped for the fresh row the server sent back
+    //   append       the row sent back is added to `data-target`, form cleared
+    //   reset        the form is cleared for the next entry
+    //   refresh      the content column is fetched again and swapped in
+    //   (none)       the form stays as it is — a toast says it saved
+    // A form with a file chosen refreshes regardless, so the new picture is
+    // seen. `data-reload` opts a form out entirely (sign out).
+    (function () {
+        const root = document.querySelector('.product-management');
+        if (!root) return;
+        const NETWORK_ERROR = "{% translate 'Could not reach the server. Check the connection and try again.' %}";
+
+        function toast(list) {
+            const host = document.getElementById('panel-toasts');
+            (list || []).forEach(function (m) {
+                const bad = m.level === 'error' || m.level === 'warning';
+                const el = document.createElement('div');
+                el.className = 'pointer-events-auto flex items-start gap-3 rounded-2xl px-4 py-3 shadow-lg text-xs font-bold transition-opacity duration-500 ' + (bad ? 'bg-red-600 text-white' : 'bg-gray-950 text-white');
+                el.innerHTML = '<i class="fa-solid ' + (bad ? 'fa-circle-exclamation' : 'fa-circle-check') + ' mt-0.5 shrink-0"></i><span class="min-w-0 flex-1"></span>';
+                el.querySelector('span').textContent = m.text;
+                host.appendChild(el);
+                setTimeout(function () { el.classList.add('opacity-0'); setTimeout(function () { el.remove(); }, 500); }, 4500);
+            });
+        }
+
+        function csrfToken() {
+            const input = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            return input ? input.value : '';
+        }
+
+        function clearErrors(form) {
+            form.querySelectorAll('.js-form-errors').forEach(function (el) { el.remove(); });
+            form.querySelectorAll('.js-field-error').forEach(function (el) { el.classList.remove('js-field-error', 'ring-2', 'ring-red-400'); });
+        }
+
+        function showErrors(form, errors) {
+            clearErrors(form);
+            if (!errors || !errors.length) return;
+            const box = document.createElement('div');
+            box.className = 'js-form-errors flex items-start gap-3 p-4 rounded-xl bg-red-50 text-red-700 text-xs font-semibold';
+            box.innerHTML = '<i class="fa-solid fa-circle-exclamation mt-0.5"></i><div class="space-y-0.5"></div>';
+            const list = box.lastElementChild;
+            errors.forEach(function (e) {
+                const p = document.createElement('p');
+                const label = document.createElement('strong');
+                label.textContent = e.label || e.field;
+                p.appendChild(label);
+                p.appendChild(document.createTextNode(': ' + e.messages.join(' ')));
+                list.appendChild(p);
+                form.querySelectorAll('[name="' + e.field + '"]').forEach(function (input) {
+                    input.classList.add('js-field-error', 'ring-2', 'ring-red-400');
+                });
+            });
+            form.prepend(box);
+            box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function setBadge(key, value) {
+            document.querySelectorAll('[data-badge="' + key + '"]').forEach(function (el) {
+                el.textContent = value;
+                el.classList.toggle('hidden', !value);
+            });
+        }
+
+        function setCount(key, value) {
+            document.querySelectorAll('[data-count="' + key + '"]').forEach(function (el) { el.textContent = value; });
+        }
+
+        // Inline scripts arrive inert with innerHTML; they run once re-created.
+        function runScripts(container) {
+            container.querySelectorAll('script').forEach(function (old) {
+                const fresh = document.createElement('script');
+                fresh.textContent = old.textContent;
+                old.replaceWith(fresh);
+            });
+        }
+
+        function refreshSection() {
+            const y = window.scrollY;
+            return fetch(location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
+                .then(function (r) { return r.text(); })
+                .then(function (html) {
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                    ['section-content', 'section-menu'].forEach(function (id) {
+                        const fresh = doc.getElementById(id), current = document.getElementById(id);
+                        if (fresh && current) {
+                            current.innerHTML = fresh.innerHTML;
+                            runScripts(current);
+                        }
+                    });
+                    window.scrollTo(0, y);
+                });
+        }
+
+        function resetForm(form) {
+            form.reset();
+            form.querySelectorAll('input[type="file"]').forEach(function (i) { i.value = ''; });
+            const slug = form.querySelector('input[name="slug"]');
+            if (slug) delete slug.dataset.touched;
+            const first = form.querySelector('input:not([type="hidden"]):not([type="checkbox"]):not([type="file"]), textarea, select');
+            form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (first) first.focus({ preventScroll: true });
+        }
+
+        function removeRow(el) {
+            const row = el.closest('[data-row]');
+            if (!row) return;
+            document.querySelectorAll('[data-row="' + row.dataset.row + '"]').forEach(function (r) { r.remove(); });
+        }
+
+        function afterSuccess(el, data) {
+            if (data.removed_count !== undefined) setBadge('removed', data.removed_count);
+            if (data.category_count !== undefined) setCount('categories', data.category_count);
+            const mode = el.dataset.after || 'stay';
+            const hasFiles = Array.prototype.some.call(el.querySelectorAll('input[type="file"]'), function (i) { return i.files && i.files.length; });
+            if (mode === 'remove-row') { removeRow(el); return; }
+            if (mode === 'replace-row' && data.html) {
+                const row = el.closest('[data-row]');
+                if (row) row.outerHTML = data.html;
+                return;
+            }
+            if (mode === 'append' && data.html) {
+                const target = document.querySelector(el.dataset.target);
+                if (target) {
+                    target.querySelectorAll('[data-empty]').forEach(function (e) { e.remove(); });
+                    target.insertAdjacentHTML('beforeend', data.html);
+                }
+                resetForm(el);
+                return;
+            }
+            if (mode === 'reset') { resetForm(el); return; }
+            if (mode === 'refresh' || hasFiles) return refreshSection();
+        }
+
+        function send(el, url, body) {
+            const buttons = el.matches('button') ? [el] : Array.from(el.querySelectorAll('button, input[type="submit"]'));
+            buttons.forEach(function (b) { b.disabled = true; });
+            el.setAttribute('aria-busy', 'true');
+            return fetch(url, { method: 'POST', body: body, headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
+                .then(function (r) {
+                    const type = r.headers.get('content-type') || '';
+                    if (type.indexOf('application/json') === -1) {
+                        // Not one of ours — most likely the session ended and
+                        // this is the login page. Go there properly.
+                        window.location.href = r.url;
+                        return null;
+                    }
+                    return r.json();
+                })
+                .then(function (data) {
+                    if (!data) return;
+                    toast(data.messages);
+                    if (!data.ok) { if (el.matches('form')) showErrors(el, data.errors); return; }
+                    if (el.matches('form')) clearErrors(el);
+                    return afterSuccess(el, data);
+                })
+                .catch(function () { toast([{ level: 'error', text: NETWORK_ERROR }]); })
+                .finally(function () {
+                    buttons.forEach(function (b) { b.disabled = false; });
+                    el.removeAttribute('aria-busy');
+                });
+        }
+
+        root.addEventListener('submit', function (event) {
+            const form = event.target;
+            if (!(form instanceof HTMLFormElement)) return;
+            if (form.method.toLowerCase() !== 'post' || form.hasAttribute('data-reload')) return;
+            if (event.defaultPrevented) return;  // a confirm said no
+            event.preventDefault();
+            const body = new FormData(form);
+            const submitter = event.submitter;
+            if (submitter && submitter.name) body.append(submitter.name, submitter.value);
+            send(form, form.getAttribute('action') || location.href, body);
+        });
+
+        // A lone button that posts somewhere (used where a form can't be
+        // nested inside another form, e.g. removing a gallery photo).
+        root.addEventListener('click', function (event) {
+            const btn = event.target.closest && event.target.closest('button[data-post]');
+            if (!btn) return;
+            event.preventDefault();
+            if (btn.dataset.confirm && !window.confirm(btn.dataset.confirm)) return;
+            const body = new FormData();
+            body.append('csrfmiddlewaretoken', csrfToken());
+            send(btn, btn.dataset.post, body);
+        });
+    })();
+</script>
 {% endblock %}

@@ -1,6 +1,8 @@
 from datetime import date, timedelta
 
+from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -265,7 +267,7 @@ def contact_us(request):
         }
     else:
         product_url = None
-        site_name = AboutPageContent.get_solo().translated_site_name
+        site_name = HomePageContent.get_solo().translated_site_name
         inquiry_message = _("Hi! I have a question about a product at %(site_name)s.") % {'site_name': site_name}
 
     context = {
@@ -279,6 +281,44 @@ def contact_us(request):
 # ==========================================
 # 🛠️ CATALOG MANAGEMENT (staff/manager only, via Django admin login)
 # ==========================================
+
+def _wants_json(request):
+    return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+
+def _panel_response(request, redirect_response, ok=True, **payload):
+    """
+    Every action in the management panel is posted in the background by the
+    panel's script, so the page updates in place instead of reloading. Those
+    posts are answered with JSON: whether it worked, the flash messages to
+    show (consumed here so they don't reappear on the next full page), and
+    whatever the page needs to update itself — a rendered row, a count.
+
+    A plain post — no script, or JavaScript off — gets the redirect the
+    panel always used, so nothing depends on the script being there.
+    """
+    if not _wants_json(request):
+        return redirect_response
+    flashes = [{'level': message.level_tag, 'text': str(message)} for message in messages.get_messages(request)]
+    return JsonResponse({'ok': ok, 'messages': flashes, **payload}, status=200 if ok else 400)
+
+
+def _form_errors(form):
+    """A form's errors as the panel script expects them: one entry per
+    field, labelled, so it can list them and mark the inputs."""
+    return [
+        {
+            'field': name,
+            'label': str(form.fields[name].label or name.replace('_', ' ').title()) if name in form.fields else '',
+            'messages': [str(error) for error in errors],
+        }
+        for name, errors in form.errors.items()
+    ]
+
+
+def _removed_count():
+    return Product.all_objects.filter(deleted_at__isnull=False).count()
+
 
 def is_admin_or_manager(user):
     return user.is_authenticated and (
@@ -331,9 +371,11 @@ def create_product(request, product_id=None):
                 messages.success(request, _("Product successfully updated!"))
             else:
                 messages.success(request, _("Product successfully cataloged!"))
-            return redirect('shop:product_list')
+            return _panel_response(request, redirect('shop:product_list'))
         else:
             messages.error(request, _("Please correct the entry errors down below."))
+            if _wants_json(request):
+                return _panel_response(request, None, ok=False, errors=_form_errors(form))
     else:
         form = ProductCreateForm(instance=product_instance)
 
@@ -480,7 +522,7 @@ def sell_product(request, product_id):
         _('"%(name)s" was marked as sold and removed from the catalog. You can undo this from "Removed".')
         % {'name': product.name},
     )
-    return _after_catalog_action(request)
+    return _panel_response(request, _after_catalog_action(request), removed_count=_removed_count())
 
 
 @login_required
@@ -499,7 +541,7 @@ def remove_product(request, product_id):
         _('"%(name)s" was removed from the catalog (not counted as a sale). You can undo this from "Removed".')
         % {'name': product.name},
     )
-    return _after_catalog_action(request)
+    return _panel_response(request, _after_catalog_action(request), removed_count=_removed_count())
 
 
 @login_required
@@ -521,7 +563,7 @@ def restore_product(request, product_id):
     product.save(update_fields=['deleted_at'])
 
     messages.success(request, _('"%(name)s" is back in the catalog.') % {'name': product.name})
-    return _after_catalog_action(request)
+    return _panel_response(request, _after_catalog_action(request), removed_count=_removed_count())
 
 
 def _delete_product_files(product):
@@ -557,7 +599,7 @@ def purge_product(request, product_id):
         request,
         _('"%(name)s" was permanently deleted, along with its photos.') % {'name': name},
     )
-    return _after_catalog_action(request)
+    return _panel_response(request, _after_catalog_action(request), removed_count=_removed_count())
 
 
 @login_required
@@ -587,7 +629,7 @@ def delete_category(request, category_id):
         _('Category "%(name)s" was deleted, along with its products: %(count)s.')
         % {'name': name, 'count': len(products)},
     )
-    return redirect('shop:create_category')
+    return _panel_response(request, redirect('shop:create_category'), category_count=Category.objects.count(), removed_count=_removed_count())
 
 
 @login_required
@@ -608,13 +650,13 @@ def discard_sale(request, sale_id):
     if request.POST.get('period') == 'all':
         # Struck from the all-time view, so go back to it rather than
         # dropping the admin into whatever month the sale happened to be in.
-        return redirect('shop:sales_archive')
+        return _panel_response(request, redirect('shop:sales_archive'))
 
     url = reverse('shop:sales_report')
     month, year = request.POST.get('month'), request.POST.get('year')
     if month and year:
         url += f'?month={month}&year={year}'
-    return redirect(url)
+    return _panel_response(request, redirect(url))
 
 
 @login_required
@@ -626,7 +668,14 @@ def delete_product_image(request, image_id):
     gallery_image.image.delete(save=False)
     gallery_image.delete()
     messages.success(request, _("Photo removed from the gallery."))
-    return redirect('shop:update_product', product_id=product_id)
+    return _panel_response(request, redirect('shop:update_product', product_id=product_id))
+
+
+def _category_row_html(request, category_id):
+    """One row of the Categories list, freshly rendered — what a background
+    create or toggle hands back so the page can drop it in."""
+    category = Category.objects.annotate(product_count=Count('products')).get(pk=category_id)
+    return render_to_string('shop/product/_category_row.html', {'cat': category}, request=request)
 
 
 @login_required
@@ -635,11 +684,16 @@ def create_category(request):
     if request.method == 'POST':
         form = CategoryCreateForm(request.POST)
         if form.is_valid():
-            form.save()
+            category = form.save()
             messages.success(request, _("Category created! It now appears in the catalog filter and will get its own homepage row once it has products."))
-            return redirect('shop:create_category')
+            return _panel_response(
+                request, redirect('shop:create_category'),
+                html=_category_row_html(request, category.id), category_count=Category.objects.count(),
+            )
         else:
             messages.error(request, _("Please correct the entry errors down below."))
+            if _wants_json(request):
+                return _panel_response(request, None, ok=False, errors=_form_errors(form))
     else:
         form = CategoryCreateForm()
 
@@ -669,8 +723,7 @@ def toggle_category_hero(request, category_id):
         messages.success(request, _('"%(name)s" added to the homepage announcement slideshow.') % {'name': category.name})
     else:
         messages.success(request, _('"%(name)s" removed from the homepage announcement slideshow.') % {'name': category.name})
-
-    return redirect('shop:create_category')
+    return _panel_response(request, redirect('shop:create_category'), html=_category_row_html(request, category.id))
 
 
 @login_required
@@ -685,8 +738,7 @@ def toggle_category_newest(request, category_id):
         messages.success(request, _('"%(name)s" now has a "Newest In" row on the homepage.') % {'name': category.name})
     else:
         messages.success(request, _('"%(name)s"\'s "Newest In" row is hidden from the homepage.') % {'name': category.name})
-
-    return redirect('shop:create_category')
+    return _panel_response(request, redirect('shop:create_category'), html=_category_row_html(request, category.id))
 
 
 @login_required
@@ -704,9 +756,11 @@ def manage_contacts(request):
         if form.is_valid():
             form.save()
             messages.success(request, _("Contact channels updated!"))
-            return redirect('shop:manage_contacts')
+            return _panel_response(request, redirect('shop:manage_contacts'))
         else:
             messages.error(request, _("Please correct the entry errors below."))
+            if _wants_json(request):
+                return _panel_response(request, None, ok=False, errors=_form_errors(form))
     else:
         form = ContactSettingsForm(instance=settings_obj)
 
@@ -727,9 +781,11 @@ def manage_about(request):
         if form.is_valid():
             form.save()
             messages.success(request, _("About page updated!"))
-            return redirect('shop:manage_about')
+            return _panel_response(request, redirect('shop:manage_about'))
         else:
             messages.error(request, _("Please correct the entry errors below."))
+            if _wants_json(request):
+                return _panel_response(request, None, ok=False, errors=_form_errors(form))
     else:
         form = AboutPageContentForm(instance=content_obj)
 
@@ -740,7 +796,7 @@ def manage_about(request):
     about_lang_fields = [
         (
             lang,
-            form[f'site_name{suffix}'], form[f'badge_text{suffix}'], form[f'heading{suffix}'],
+            form[f'badge_text{suffix}'], form[f'heading{suffix}'],
             form[f'intro_text{suffix}'], form[f'visit_heading{suffix}'], form[f'visit_text{suffix}'],
             form[f'store_address_line1{suffix}'], form[f'store_address_line2{suffix}'],
             form[f'opening_hours{suffix}'],
@@ -867,9 +923,11 @@ def manage_homepage(request):
         if form.is_valid():
             form.save()
             messages.success(request, _("Homepage sections updated!"))
-            return redirect('shop:manage_homepage')
+            return _panel_response(request, redirect('shop:manage_homepage'))
         else:
             messages.error(request, _("Please correct the entry errors below."))
+            if _wants_json(request):
+                return _panel_response(request, None, ok=False, errors=_form_errors(form))
     else:
         form = HomePageContentForm(instance=content_obj)
 
@@ -880,6 +938,7 @@ def manage_homepage(request):
     homepage_lang_fields = [
         (
             lang,
+            form[f'site_name{suffix}'],
             form[f'promise_heading{suffix}'], form[f'promise_card_heading{suffix}'],
             form[f'promise_text{suffix}'], form[f'promise_button_text{suffix}'],
             form[f'promise_stat_label{suffix}'], form[f'promise_stat_caption{suffix}'],

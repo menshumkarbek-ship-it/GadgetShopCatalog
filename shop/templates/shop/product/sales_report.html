@@ -164,7 +164,7 @@
                     </div>
                     <div class="shrink-0 flex flex-col items-end gap-1.5">
                         <span class="text-xs font-black text-gray-950 tabular-nums whitespace-nowrap">{{ sale.price }} {% translate "som" %}</span>
-                        <form method="POST" action="{% url 'shop:discard_sale' sale.id %}" data-confirm-delete="{% translate 'Strike this sale from the report? The product stays removed from the catalog; restore it from the Removed page if it should be back on sale.' %}">
+                        <form method="POST" action="{% url 'shop:discard_sale' sale.id %}" data-after="refresh" data-confirm-delete="{% translate 'Strike this sale from the report? The product stays removed from the catalog; restore it from the Removed page if it should be back on sale.' %}">
                             {% csrf_token %}
                             <input type="hidden" name="period" value="{{ period }}">
                             <input type="hidden" name="month" value="{{ selected_month }}">
@@ -218,7 +218,7 @@
                                 <td class="py-2 pr-3 text-right font-black text-gray-950 tabular-nums whitespace-nowrap">{{ sale.price }} {% translate "som" %}</td>
                                 <td class="py-2 pl-3 text-right">
                                     <!-- Marked sold by mistake: strike the row, the product stays removed. -->
-                                    <form method="POST" action="{% url 'shop:discard_sale' sale.id %}" data-confirm-delete="{% translate 'Strike this sale from the report? The product stays removed from the catalog; restore it from the Removed page if it should be back on sale.' %}">
+                                    <form method="POST" action="{% url 'shop:discard_sale' sale.id %}" data-after="refresh" data-confirm-delete="{% translate 'Strike this sale from the report? The product stays removed from the catalog; restore it from the Removed page if it should be back on sale.' %}">
                                         {% csrf_token %}
                                         <input type="hidden" name="period" value="{{ period }}">
                                         <input type="hidden" name="month" value="{{ selected_month }}">
