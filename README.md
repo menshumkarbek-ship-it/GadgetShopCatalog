@@ -27,19 +27,14 @@ It includes a read-only Django REST API for the catalog.
 
 3. Copy `.env.example` to `.env` and update the values for your environment.
 
-4. Start PostgreSQL, then apply migrations and optionally seed the catalog:
+4. Start PostgreSQL, then apply migrations:
 
    ```powershell
    docker compose up -d db
    python manage.py migrate
-   python manage.py seed_catalog
    ```
 
-   `seed_catalog` fills the store with ~60 gadgets across eight categories (phones, laptops, tablets, headphones, smartwatches, monitors, speakers, accessories), each with a generated illustration you can replace with a real photo from the Settings page. It is safe to re-run: existing categories are reused and products already present (including ones you removed) are skipped. The data lives in `shop/seed/catalog.py`.
-
-   To seed a deployed store, set `SEED_CATALOG=1` in the host's environment for one deploy and then remove it — `build.sh` runs the command after migrations.
-
-5. Create a staff account so you can manage the catalog through the admin and the Settings page:
+5. Create a staff account so you can manage the catalog through the admin and the management panel:
 
    ```powershell
    python manage.py createsuperuser
@@ -84,17 +79,23 @@ The public Django API and schema documentation are available at `/api/`, `/api/s
 Tests also run automatically on every push and pull request to `main` (see `.github/workflows/ci.yml`),
 against PostgreSQL and the Python version pinned in `runtime.txt`.
 
+## The management panel
+
+Staff run the store from `/admin/` (the in-app panel, not Django's admin): products by category,
+categories with their homepage switches, removed listings, the sales report, and the copy on the
+homepage, About and Contact pages. Every action there is posted in the background and the page
+updates in place; the same forms still work as ordinary posts with scripts off.
+
 ## Removing products is reversible
 
-Removing a listing from **Manage Webpage** is how a sale gets recorded: it writes a `Sale` row
-(a snapshot of the name, brand, category, catalog code and price at that moment, which is what the
-monthly report reads) and then *soft*-deletes the product — the row and its photos are kept and
-`deleted_at` is stamped instead.
+Marking a listing **Sold** on the Products page is how a sale gets recorded: it writes a `Sale`
+row (a snapshot of the name, brand, category, catalog code and price at that moment, which is what
+the sales report reads) and then *soft*-deletes the product — the row and its photos are kept and
+`deleted_at` is stamped instead. **Delete** does the same without recording a sale.
 
-The listing disappears from the storefront, the catalog and the API immediately, but it stays under
-**Recently removed** on the management page for as long as it is among the 10 most recent removals.
-Restoring it puts it back and deletes the sale it recorded, so the month's revenue is not left
-inflated by a mis-click.
+The listing disappears from the storefront, the catalog and the API immediately, but it stays on
+the **Removed** page, where it can be restored or erased for good. Restoring it puts it back and
+deletes the sale it recorded, so the month's revenue is not left inflated by a mis-click.
 
 Because the row survives, a removed product keeps its slug and its per-category `#ID` reserved —
 a replacement listing with the same name gets `-2` appended rather than colliding.
@@ -125,4 +126,16 @@ backup in front of it, so before shipping a migration that drops or alters a col
 
 ## Configuration
 
-Never commit `.env`. Use `.env.example` as the template. In production, provide a strong `SECRET_KEY`, set `DEBUG=False`, configure `ALLOWED_HOSTS`, and use a real email backend if you re-introduce transactional email in the future.
+Never commit `.env`. Use `.env.example` as the template. In production, at minimum:
+
+- `SECRET_KEY` — long and random (`python -c "import secrets; print(secrets.token_urlsafe(64))"`).
+- `DEBUG=False`.
+- `ALLOWED_HOSTS` — the domain(s) the site answers on. `CSRF_TRUSTED_ORIGINS` is derived from it
+  unless set explicitly.
+- `DATABASE_URL` — the managed Postgres connection string.
+- `R2_*` — an S3-compatible bucket for uploaded images; without it uploads live on the host's disk
+  and vanish on redeploy.
+- `GOOGLE_SITE_VERIFICATION` — the Search Console token, if the site is verified there.
+
+Run `python manage.py check --deploy` with those set to confirm nothing is left at a development
+default.

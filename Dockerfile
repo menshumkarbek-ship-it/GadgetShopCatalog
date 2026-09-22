@@ -23,3 +23,11 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 # Copy absolute current directory workspace contents internally
 COPY . /app/
+
+# Production entrypoint. docker-compose overrides this with the dev server;
+# a host that runs the image as-is gets gunicorn, with static files already
+# collected so WhiteNoise can serve them.
+RUN SECRET_KEY=build-only DEBUG=True python manage.py collectstatic --no-input
+
+EXPOSE 8000
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "60"]

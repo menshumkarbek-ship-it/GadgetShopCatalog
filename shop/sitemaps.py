@@ -1,8 +1,11 @@
-from django.conf import settings
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
 
+
 class StaticViewSitemap(Sitemap):
+    """The storefront's fixed pages. The domain in each entry comes from the
+    request that asked for the sitemap (RequestSite), so nothing here has to
+    know where the site is deployed."""
     priority = 0.8
     changefreq = 'daily'
     protocol = 'https'
@@ -12,9 +15,3 @@ class StaticViewSitemap(Sitemap):
 
     def location(self, item):
         return reverse(item)
-
-    def get_urls(self, page=1, site=None, protocol=None):
-        urls = super().get_urls(page, site, protocol=self.protocol)
-        for url_info in urls:
-            url_info['location'] = url_info['location'].replace('example.com', settings.SITE_DOMAIN)
-        return urls

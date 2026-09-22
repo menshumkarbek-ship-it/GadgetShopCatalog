@@ -63,11 +63,11 @@ class ContactSettings(models.Model):
     )
     telegram_username = models.CharField(
         max_length=100, blank=True,
-        help_text="Telegram username without the @, e.g. techvault_support"
+        help_text="Telegram username without the @"
     )
     instagram_username = models.CharField(
         max_length=100, blank=True,
-        help_text="Instagram username without the @, e.g. techvault.shop"
+        help_text="Instagram username without the @"
     )
 
     class Meta:
@@ -136,13 +136,13 @@ class AboutPageContent(models.Model):
     one row ever exists (enforced via save()).
     """
     badge_text = models.CharField(
-        max_length=100, blank=True, default="Enterprise Architecture",
+        max_length=100, blank=True, default="",
         help_text="Small pill label above the page heading, e.g. 'Family Owned Since 2010'."
     )
-    heading = models.CharField(max_length=150, default="About TechVault")
+    heading = models.CharField(max_length=150, default="About us")
     intro_text = models.TextField(
         default=(
-            "TechVault is an online showcase for the phones, laptops, and tablets we carry. "
+            "An online showcase for the phones, laptops, and tablets we carry. "
             "Browse the full catalog, compare specifications, and find your next device before you visit us."
         ),
         help_text="The main story paragraph under the heading. Write about your shop, your market, and what makes you different."
@@ -156,11 +156,11 @@ class AboutPageContent(models.Model):
             "then stop by our store to see them up close and speak with our team."
         )
     )
-    store_address_line1 = models.CharField(max_length=200, blank=True, default="100 Tech Vault Plaza, Suite 404")
-    store_address_line2 = models.CharField(max_length=200, blank=True, default="Silicon District, CA 94016")
+    store_address_line1 = models.CharField(max_length=200, blank=True, default="")
+    store_address_line2 = models.CharField(max_length=200, blank=True, default="")
     store_image = models.ImageField(
         upload_to='about/', blank=True, null=True,
-        help_text="Optional photo of your storefront. Falls back to a generic map graphic if left empty."
+        help_text="Optional photo of your storefront. The section shows text only if left empty."
     )
     # The rest of the Visit Us section: the two things a customer checks
     # before setting off.
@@ -261,7 +261,7 @@ class HomePageContent(models.Model):
     # Edited with the homepage because that is where a visitor first meets
     # it, though it is shown on every page.
     site_name = models.CharField(
-        max_length=60, default="TechVault",
+        max_length=60, default="My Store",
         help_text="The store/market name shown in the navbar, browser tab, and footer across the whole site."
     )
     site_name_ru = models.CharField(max_length=60, blank=True, verbose_name="Store / Market Name (Russian)")

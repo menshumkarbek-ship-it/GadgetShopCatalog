@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-22 15:57+0600\n"
+"POT-Creation-Date: 2026-09-22 16:19+0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,32 +17,32 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: .\config\settings.py:148
+#: .\config\settings.py:144
 msgid "English"
 msgstr "Англисче"
 
-#: .\config\settings.py:149
+#: .\config\settings.py:145
 msgid "Russian"
 msgstr "Орусча"
 
-#: .\config\settings.py:150
+#: .\config\settings.py:146
 msgid "Kyrgyz"
 msgstr "Кыргызча"
 
-#: .\shop\context_processors.py:111 .\shop\templates\shop\base.html:214
+#: .\shop\context_processors.py:119 .\shop\templates\shop\base.html:214
 #: .\shop\templates\shop\base.html:253
 #: .\shop\templates\shop\product\_management_base.html:45
 #: .\shop\templates\shop\product\list.html:5
 msgid "Catalog"
 msgstr "Каталог"
 
-#: .\shop\context_processors.py:113 .\shop\templates\shop\product\create.html:6
+#: .\shop\context_processors.py:121 .\shop\templates\shop\product\create.html:6
 #: .\shop\templates\shop\product\create.html:8
 #: .\shop\templates\shop\product\create.html:9
 msgid "Products"
 msgstr "Товарлар"
 
-#: .\shop\context_processors.py:115 .\shop\templates\shop\pages\about.html:34
+#: .\shop\context_processors.py:123 .\shop\templates\shop\pages\about.html:34
 #: .\shop\templates\shop\product\category_create.html:6
 #: .\shop\templates\shop\product\category_create.html:7
 #: .\shop\templates\shop\product\create.html:80
@@ -51,31 +51,31 @@ msgstr "Товарлар"
 msgid "Categories"
 msgstr "Категориялар"
 
-#: .\shop\context_processors.py:117
+#: .\shop\context_processors.py:125
 #: .\shop\templates\shop\product\removed_products.html:6
 msgid "Removed"
 msgstr "Өчүрүлгөндөр"
 
-#: .\shop\context_processors.py:122 .\shop\context_processors.py:127
+#: .\shop\context_processors.py:130 .\shop\context_processors.py:135
 #: .\shop\templates\shop\product\sales_report.html:12
 msgid "Sales"
 msgstr "Сатуулар"
 
-#: .\shop\context_processors.py:132
+#: .\shop\context_processors.py:140
 msgid "Pages"
 msgstr "Барактар"
 
-#: .\shop\context_processors.py:134
+#: .\shop\context_processors.py:142
 #: .\shop\templates\shop\product\homepage_settings.html:6
 msgid "Homepage"
 msgstr "Башкы барак"
 
-#: .\shop\context_processors.py:136
+#: .\shop\context_processors.py:144
 #: .\shop\templates\shop\product\about_settings.html:6
 msgid "About Page"
 msgstr "«Биз жөнүндө» баракчасы"
 
-#: .\shop\context_processors.py:138
+#: .\shop\context_processors.py:146
 #: .\shop\templates\shop\product\contact_settings.html:6
 msgid "Contacts"
 msgstr "Байланыштар"
@@ -141,21 +141,25 @@ msgstr "мисалы, Кулакчындар, Повербанктар, Смар
 msgid "Optional — falls back to the name above if left blank"
 msgstr "Милдеттүү эмес — бош калса, жогорудагы аталыш колдонулат"
 
+#: .\shop\forms.py:164
+msgid "e.g. hello@yourstore.com"
+msgstr "мис. hello@yourstore.com"
+
 #: .\shop\forms.py:172
 msgid "996700123456 (country code, digits only)"
 msgstr "996700123456 (өлкө коду, сандар гана)"
 
-#: .\shop\forms.py:176
-msgid "techvault_support (no @)"
-msgstr "techvault_support (@ белгисиз)"
-
-#: .\shop\forms.py:180
-msgid "techvault.shop (no @)"
-msgstr "techvault.shop (@ белгисиз)"
+#: .\shop\forms.py:176 .\shop\forms.py:180
+msgid "username, without the @"
+msgstr "колдонуучу аты, @ белгисиз"
 
 #: .\shop\forms.py:207
 msgid "Family Owned Since 2010"
 msgstr "2010-жылдан бери үй-бүлөлүк бизнес"
+
+#: .\shop\forms.py:211
+msgid "e.g. About us"
+msgstr "мис. Биз жөнүндө"
 
 #: .\shop\forms.py:215
 msgid "Tell customers about your shop and your market..."
@@ -173,10 +177,18 @@ msgstr "Өз көзү менен көрүңүз"
 msgid "Invite customers to visit your store in person..."
 msgstr "Кардарларды дүкөнүңүзгө жеке келүүгө чакырыңыз..."
 
+#: .\shop\forms.py:227
+msgid "e.g. 12 Main Street"
+msgstr "мис. Башкы көчө, 12"
+
 #: .\shop\forms.py:228 .\shop\forms.py:229 .\shop\forms.py:232
 #: .\shop\forms.py:233
 msgid "Optional — falls back to the address above if left blank"
 msgstr "Милдеттүү эмес — бош калса, жогорудагы дарек колдонулат"
+
+#: .\shop\forms.py:231
+msgid "e.g. Bishkek"
+msgstr "мис. Бишкек"
 
 #: .\shop\forms.py:235
 msgid "Mon–Sat 10:00–20:00 / Sun 11:00–18:00"
@@ -193,6 +205,10 @@ msgstr "Кийинки түзмөгүңүздү табууга даярсызб�
 #: .\shop\forms.py:248
 msgid "Invite customers to browse or get in touch..."
 msgstr "Кардарларды каталогду көрүүгө же байланышууга чакырыңыз..."
+
+#: .\shop\forms.py:280
+msgid "e.g. My Store"
+msgstr "мис. Менин дүкөнүм"
 
 #: .\shop\forms.py:284
 msgid "Why shop here"
@@ -802,8 +818,8 @@ msgid "Current store photo"
 msgstr "Дүкөндүн учурдагы сүрөтү"
 
 #: .\shop\templates\shop\product\about_settings.html:105
-msgid "Optional. If left empty, a generic map graphic is shown instead."
-msgstr "Милдеттүү эмес. Бош калтырылса, жалпы карта көрсөтүлөт."
+msgid "Optional. If left empty, the section shows the text alone."
+msgstr "Милдеттүү эмес. Бош болсо, бөлүм текстти гана көрсөтөт."
 
 #: .\shop\templates\shop\product\about_settings.html:106
 msgid "The store photo is shared across all languages."
@@ -1645,34 +1661,34 @@ msgstr "Товарга кайтуу"
 msgid "No technical specifications have been provided for this product."
 msgstr "Бул товар үчүн техникалык мүнөздөмөлөр көрсөтүлгөн эмес."
 
-#: .\shop\views.py:212
+#: .\shop\views.py:200
 #, python-format
 msgid "%(brand)s %(name)s — available in store."
 msgstr "%(brand)s %(name)s — дүкөндө бар."
 
-#: .\shop\views.py:265
+#: .\shop\views.py:253
 #, python-format
 msgid "Hi! I'm interested in the %(name)s (%(url)s). Is it still available?"
 msgstr "Салам! Мени %(name)s (%(url)s) кызыктырат. Ал дагы эле барбы?"
 
-#: .\shop\views.py:271
+#: .\shop\views.py:259
 #, python-format
 msgid "Hi! I have a question about a product at %(site_name)s."
 msgstr "Салам! Менде %(site_name)s дүкөнүндөгү товар боюнча суроо бар."
 
-#: .\shop\views.py:371
+#: .\shop\views.py:359
 msgid "Product successfully updated!"
 msgstr "Товар ийгиликтүү жаңыртылды!"
 
-#: .\shop\views.py:373
+#: .\shop\views.py:361
 msgid "Product successfully cataloged!"
 msgstr "Товар каталогго ийгиликтүү кошулду!"
 
-#: .\shop\views.py:376 .\shop\views.py:694
+#: .\shop\views.py:364 .\shop\views.py:682
 msgid "Please correct the entry errors down below."
 msgstr "Төмөндөгү киргизүү каталарын оңдоңуз."
 
-#: .\shop\views.py:522
+#: .\shop\views.py:510
 #, python-format
 msgid ""
 "\"%(name)s\" was marked as sold and removed from the catalog. You can undo "
@@ -1681,7 +1697,7 @@ msgstr ""
 "«%(name)s» сатылды деп белгиленип, каталогдон алынды. «Өчүрүлгөндөр» "
 "бөлүмүнөн кайтарса болот."
 
-#: .\shop\views.py:541
+#: .\shop\views.py:529
 #, python-format
 msgid ""
 "\"%(name)s\" was removed from the catalog (not counted as a sale). You can "
@@ -1690,31 +1706,31 @@ msgstr ""
 "«%(name)s» каталогдон өчүрүлдү (сатуу катары эсептелген жок). «Өчүрүлгөндөр» "
 "бөлүмүнөн кайтарса болот."
 
-#: .\shop\views.py:565
+#: .\shop\views.py:553
 #, python-format
 msgid "\"%(name)s\" is back in the catalog."
 msgstr "«%(name)s» кайра каталогдо."
 
-#: .\shop\views.py:600
+#: .\shop\views.py:588
 #, python-format
 msgid "\"%(name)s\" was permanently deleted, along with its photos."
 msgstr "«%(name)s» сүрөттөрү менен бирге биротоло өчүрүлдү."
 
-#: .\shop\views.py:629
+#: .\shop\views.py:617
 #, python-format
 msgid "Category \"%(name)s\" was deleted, along with its products: %(count)s."
 msgstr "«%(name)s» категориясы товарлары менен бирге өчүрүлдү: %(count)s."
 
-#: .\shop\views.py:648
+#: .\shop\views.py:636
 #, python-format
 msgid "\"%(name)s\" was struck from the sales report."
 msgstr "«%(name)s» сатуу отчётунан чийилди."
 
-#: .\shop\views.py:670
+#: .\shop\views.py:658
 msgid "Photo removed from the gallery."
 msgstr "Сүрөт галереядан өчүрүлдү."
 
-#: .\shop\views.py:688
+#: .\shop\views.py:676
 msgid ""
 "Category created! It now appears in the catalog filter and will get its own "
 "homepage row once it has products."
@@ -1722,39 +1738,39 @@ msgstr ""
 "Категория түзүлдү! Ал эми каталогдун фильтринде көрүнөт жана ичинде товарлар "
 "пайда болушу менен башкы баракта өз алдынча блок алат."
 
-#: .\shop\views.py:723
+#: .\shop\views.py:711
 #, python-format
 msgid "\"%(name)s\" added to the homepage announcement slideshow."
 msgstr "«%(name)s» башкы баракчадагы жарнама слайд-шоусуна кошулду."
 
-#: .\shop\views.py:725
+#: .\shop\views.py:713
 #, python-format
 msgid "\"%(name)s\" removed from the homepage announcement slideshow."
 msgstr "«%(name)s» башкы баракчадагы жарнама слайд-шоусунан алынып салынды."
 
-#: .\shop\views.py:738
+#: .\shop\views.py:726
 #, python-format
 msgid "\"%(name)s\" now has a \"Newest In\" row on the homepage."
 msgstr "«%(name)s» эми башкы баракчада «Жаңылар» блогуна ээ."
 
-#: .\shop\views.py:740
+#: .\shop\views.py:728
 #, python-format
 msgid "\"%(name)s\"'s \"Newest In\" row is hidden from the homepage."
 msgstr "«%(name)s» үчүн «Жаңылар» блогу башкы баракчадан жашырылды."
 
-#: .\shop\views.py:758
+#: .\shop\views.py:746
 msgid "Contact channels updated!"
 msgstr "Байланыш каналдары жаңыртылды!"
 
-#: .\shop\views.py:761 .\shop\views.py:786 .\shop\views.py:928
+#: .\shop\views.py:749 .\shop\views.py:774 .\shop\views.py:916
 msgid "Please correct the entry errors below."
 msgstr "Төмөндөгү киргизүү каталарын оңдоңуз."
 
-#: .\shop\views.py:783
+#: .\shop\views.py:771
 msgid "About page updated!"
 msgstr "«Биз жөнүндө» баракчасы жаңыртылды!"
 
-#: .\shop\views.py:925
+#: .\shop\views.py:913
 msgid "Homepage sections updated!"
 msgstr "Башкы барактын блоктору жаңырды!"
 

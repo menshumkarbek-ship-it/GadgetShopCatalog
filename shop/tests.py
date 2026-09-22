@@ -1,19 +1,15 @@
 import re
-import tempfile
 from datetime import timedelta
 from decimal import Decimal
-from io import StringIO
 
 from django.contrib.auth.models import User, Group
-from django.core.management import call_command
 from django.db import connection
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone, translation
 
 from .models import AboutPageContent, Category, ContactSettings, HomePageContent, Product, Sale
-from .seed.catalog import CATEGORIES, PRODUCTS
 
 
 class StorefrontTests(TestCase):
@@ -971,62 +967,3 @@ class ManagementPanelTests(TestCase):
 
         self.assertRedirects(response, reverse('shop:sales_archive'))
         self.assertFalse(Sale.objects.exists())
-
-
-
-class SeedCatalogTests(TestCase):
-    """`manage.py seed_catalog` runs on a live store from build.sh, so it must
-    be safe against whatever the owner already has in there."""
-
-    def seed(self):
-        out = StringIO()
-        call_command('seed_catalog', '--no-images', stdout=out)
-        return out.getvalue()
-
-    def test_seeds_every_category_and_is_idempotent(self):
-        self.seed()
-        first_products = Product.objects.count()
-        first_categories = Category.objects.count()
-        self.assertEqual(first_categories, len(CATEGORIES))
-        self.assertEqual(first_products, len(PRODUCTS))
-        self.assertFalse(Product.objects.filter(category__isnull=True).exists())
-
-        output = self.seed()
-
-        self.assertEqual(Product.objects.count(), first_products)
-        self.assertEqual(Category.objects.count(), first_categories)
-        self.assertIn('0 products added', output)
-
-    def test_reuses_the_owners_existing_categories_instead_of_duplicating(self):
-        # A live store already had headphones under a Russian name and a
-        # transliterated slug, and monitors under a slug we don't list.
-        existing_headphones = Category.objects.create(name='Наушники', slug='naushniki')
-        existing_monitors = Category.objects.create(name='Monitor', slug='ekrany')
-
-        self.seed()
-
-        self.assertEqual(Category.objects.filter(name__in=['Headphones', 'Наушники']).count(), 1)
-        self.assertEqual(Category.objects.count(), len(CATEGORIES))
-        self.assertTrue(Product.objects.filter(category=existing_headphones, brand='Sony').exists())
-        self.assertTrue(Product.objects.filter(category=existing_monitors, brand='LG').exists())
-        existing_headphones.refresh_from_db()
-        self.assertEqual(existing_headphones.name, 'Наушники')  # never renamed
-        self.assertEqual(existing_headphones.name_ky, 'Кулакчындар')  # only filled in
-
-    def test_a_product_the_owner_removed_does_not_come_back(self):
-        self.seed()
-        product = Product.objects.get(slug='sony-wh-1000xm5')
-        product.deleted_at = timezone.now()
-        product.save()
-
-        self.seed()
-
-        self.assertFalse(Product.objects.filter(slug='sony-wh-1000xm5').exists())
-        self.assertEqual(Product.all_objects.filter(slug='sony-wh-1000xm5').count(), 1)
-
-    def test_generated_illustration_becomes_the_product_photo(self):
-        with override_settings(MEDIA_ROOT=tempfile.mkdtemp()):
-            call_command('seed_catalog', stdout=StringIO())
-            product = Product.objects.get(slug='apple-iphone-16-pro')
-            self.assertTrue(product.image)
-            self.assertTrue(product.image.name.endswith('_nobg.png'))

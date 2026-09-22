@@ -161,7 +161,7 @@ class ContactSettingsForm(forms.ModelForm):
         widgets = {
             'email': forms.EmailInput(attrs={
                 'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
-                'placeholder': 'support@example.com'
+                'placeholder': _('e.g. hello@yourstore.com')
             }),
             'phone_number': forms.TextInput(attrs={
                 'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
@@ -173,11 +173,11 @@ class ContactSettingsForm(forms.ModelForm):
             }),
             'telegram_username': forms.TextInput(attrs={
                 'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
-                'placeholder': _('techvault_support (no @)')
+                'placeholder': _('username, without the @')
             }),
             'instagram_username': forms.TextInput(attrs={
                 'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
-                'placeholder': _('techvault.shop (no @)')
+                'placeholder': _('username, without the @')
             }),
         }
 
@@ -208,7 +208,7 @@ class AboutPageContentForm(forms.ModelForm):
             'badge_text_ru': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the text above if left blank')}),
             'badge_text_ky': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the text above if left blank')}),
 
-            'heading': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': 'About TechVault'}),
+            'heading': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('e.g. About us')}),
             'heading_ru': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the heading above if left blank')}),
             'heading_ky': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the heading above if left blank')}),
 
@@ -224,11 +224,11 @@ class AboutPageContentForm(forms.ModelForm):
             'visit_text_ru': forms.Textarea(attrs={'class': TEXTAREA_CLASS, 'placeholder': _('Optional — falls back to the text above if left blank'), 'rows': 3}),
             'visit_text_ky': forms.Textarea(attrs={'class': TEXTAREA_CLASS, 'placeholder': _('Optional — falls back to the text above if left blank'), 'rows': 3}),
 
-            'store_address_line1': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': '100 Tech Vault Plaza, Suite 404'}),
+            'store_address_line1': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('e.g. 12 Main Street')}),
             'store_address_line1_ru': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the address above if left blank')}),
             'store_address_line1_ky': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the address above if left blank')}),
 
-            'store_address_line2': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': 'Silicon District, CA 94016'}),
+            'store_address_line2': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('e.g. Bishkek')}),
             'store_address_line2_ru': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the address above if left blank')}),
             'store_address_line2_ky': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the address above if left blank')}),
 
@@ -277,7 +277,7 @@ class HomePageContentForm(forms.ModelForm):
             'invite_button_text', 'invite_button_text_ru', 'invite_button_text_ky',
         ]
         widgets = {
-            'site_name': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': 'TechVault'}),
+            'site_name': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('e.g. My Store')}),
             'site_name_ru': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the name above if left blank')}),
             'site_name_ky': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the name above if left blank')}),
 

@@ -22,10 +22,6 @@ from .forms import (
     HomePageContentForm,
 )
 
-# Rotating accent colors for the per-category homepage rows, so each
-# category's "Newest In" slideshow gets a distinct look automatically.
-CATEGORY_ACCENT_PALETTE = ['indigo', 'cyan', 'emerald', 'purple', 'amber', 'rose', 'sky', 'teal']
-
 CATEGORIES_CACHE_KEY = 'global_store_categories'
 # Short on purpose — see the note on SETTINGS_CACHE_TIMEOUT in
 # context_processors: the cache is per-process, so the post_save signal that
@@ -61,14 +57,10 @@ def home_page(request):
     # product becomes an auto-rotating slide here. No fixed slide count.
     hero_slides = []
     featured_categories = [c for c in categories if c.is_featured_in_hero]
-    for index, category in enumerate(sorted(featured_categories, key=lambda c: c.name)):
+    for category in sorted(featured_categories, key=lambda c: c.name):
         products = newest_by_category.get(category.id)
         if products:
-            hero_slides.append({
-                'category': category,
-                'product': products[0],
-                'accent': CATEGORY_ACCENT_PALETTE[index % len(CATEGORY_ACCENT_PALETTE)],
-            })
+            hero_slides.append({'category': category, 'product': products[0]})
 
     # Whatever the hero is already showing is skipped in the rows below —
     # otherwise the first card of each row is the slide directly above it.
@@ -79,7 +71,7 @@ def home_page(request):
     # toggled from the Categories management page). New categories default to
     # shown, so this stays fully data-driven unless an admin opts a category out.
     category_sections = []
-    for index, category in enumerate(categories):
+    for category in categories:
         if not category.slug or not category.show_newest_row:
             continue
         products = [
@@ -87,11 +79,7 @@ def home_page(request):
             if p.id not in hero_product_ids
         ][:10]
         if products:
-            category_sections.append({
-                'category': category,
-                'products': products,
-                'accent': CATEGORY_ACCENT_PALETTE[index % len(CATEGORY_ACCENT_PALETTE)],
-            })
+            category_sections.append({'category': category, 'products': products})
 
     context = {
         'categories': categories,

@@ -2,7 +2,7 @@ services:
   # 💾 PostgreSQL Relational Database Service
   db:
     image: postgres:15-alpine
-    container_name: techvault_postgres_container
+    container_name: mobile_shop_postgres
     restart: always
     environment:
       - POSTGRES_DB=mobile_shop_db
@@ -21,7 +21,7 @@ services:
   # 🐍 Django storefront
   web:
     build: .
-    container_name: techvault_django
+    container_name: mobile_shop_web
     command: sh -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/app

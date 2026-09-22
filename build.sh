@@ -26,11 +26,3 @@ python manage.py migrate
 if [ -n "$DJANGO_SUPERUSER_USERNAME" ]; then
     python manage.py createsuperuser --noinput || true
 fi
-
-# Starter catalog: ~60 gadgets across 8 categories with generated
-# illustrations. Same no-shell reasoning as above — set SEED_CATALOG=1 on
-# the host for one deploy, then remove it. Re-running is harmless (it
-# skips anything already present), it just costs a few seconds per build.
-if [ "${SEED_CATALOG:-0}" = "1" ]; then
-    python manage.py seed_catalog
-fi

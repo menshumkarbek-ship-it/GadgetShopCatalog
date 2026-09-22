@@ -32,10 +32,9 @@ ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', '').split('
 # trailing slash matters since it's used directly in a urls.py path().
 ADMIN_URL = os.getenv('ADMIN_URL', 'system-console/').strip().strip('/') + '/'
 
-# Public domain the site is served from (no scheme, no trailing slash) —
-# used to build absolute URLs for the sitemap and robots.txt. Override via
-# .env once the real Render service/custom domain is known.
-SITE_DOMAIN = os.getenv('SITE_DOMAIN', 'techvault-c6us.onrender.com').strip().strip('/')
+# Google Search Console ownership token, rendered as a <meta> tag on every
+# storefront page when set. Blank locally.
+GOOGLE_SITE_VERIFICATION = os.getenv('GOOGLE_SITE_VERIFICATION', '').strip()
 
 # The storefront has no customer accounts/login of its own (view-only catalog).
 # Staff/managers authenticate through Django's admin login form, wherever
@@ -44,8 +43,7 @@ SITE_DOMAIN = os.getenv('SITE_DOMAIN', 'techvault-c6us.onrender.com').strip().st
 LOGIN_URL = 'admin:login'
 
 # Send staff back to the storefront home after signing out, instead of
-# rendering Django admin's own (jazzmin-styled, visually inconsistent)
-# "logged out" confirmation page.
+# rendering Django admin's own "logged out" confirmation page.
 LOGOUT_REDIRECT_URL = 'shop:home'
 
 INSTALLED_APPS = [
@@ -57,14 +55,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.sites',   
     'django.contrib.sitemaps',
     'rest_framework',
     'drf_spectacular',
     'shop',
 ]
-
-SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -91,6 +86,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.i18n',  # 🌐 Language context
+                'shop.context_processors.deployment',
                 'shop.context_processors.is_admin',
                 'shop.context_processors.contact_settings',
                 'shop.context_processors.site_identity',
@@ -168,14 +164,17 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Origins allowed to submit forms. Hardcoding only *.onrender.com meant that
-# attaching a custom domain would 403 every POST — login, product saves,
-# filters — so this is env-driven like ALLOWED_HOSTS, with the Render wildcard
-# kept as the default for the current deployment.
+# Origins allowed to submit forms. Set explicitly if the site answers on more
+# than its ALLOWED_HOSTS; otherwise derived from them, so a new domain only
+# has to be added in one place (a leading-dot host becomes a wildcard).
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
-    for origin in os.getenv('CSRF_TRUSTED_ORIGINS', 'https://*.onrender.com').split(',')
+    for origin in os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
     if origin.strip()
+] or [
+    'https://' + ('*' + host if host.startswith('.') else host)
+    for host in ALLOWED_HOSTS
+    if host != '*'
 ]
 
 # Base url to serve media files
@@ -243,8 +242,8 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'TechVault Core E-Commerce API',
-    'DESCRIPTION': 'Core API catalog for products, categories, and inventory management.',
+    'TITLE': 'Store Catalog API',
+    'DESCRIPTION': 'Read-only catalog of the products and categories on sale.',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
 }
@@ -257,7 +256,7 @@ SPECTACULAR_SETTINGS = {
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'techvault-catalog',
+        'LOCATION': 'shop-catalog',
     }
 }
 

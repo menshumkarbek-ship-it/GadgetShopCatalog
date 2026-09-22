@@ -11,6 +11,14 @@ SITE_IDENTITY_CACHE_KEY = 'global_site_identity'
 SETTINGS_CACHE_TIMEOUT = 60
 
 
+def deployment(request):
+    """Per-deployment values templates need: the Search Console token, set
+    on the host as GOOGLE_SITE_VERIFICATION (blank locally, so the tag is
+    simply not rendered)."""
+    from django.conf import settings
+    return {'google_site_verification': settings.GOOGLE_SITE_VERIFICATION}
+
+
 def is_admin(request):
     """Expose whether the current visitor is staff/manager, for nav rendering."""
     if not request.user.is_authenticated:

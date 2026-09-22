@@ -16,8 +16,9 @@ def robots_txt(request):
         "User-agent: *",
         f"Disallow: /{settings.ADMIN_URL}",
         "Disallow: /admin/",
+        "Disallow: /management/",
         "Allow: /",
-        f"Sitemap: https://{settings.SITE_DOMAIN}/sitemap.xml",
+        f"Sitemap: {request.build_absolute_uri('/sitemap.xml')}",
     ]
     return HttpResponse("\n".join(lines), content_type="text/plain")
 
