@@ -121,9 +121,10 @@ def management_nav(request):
             {
                 'label': _('Sales'),
                 'items': [
-                    {'key': 'sales_month', 'label': _('This Month'), 'icon': 'fa-chart-line',
-                     'url': reverse('shop:sales_report')},
-                    {'key': 'sales_all', 'label': _('All Time'), 'icon': 'fa-clock-rotate-left',
+                    # One entry: the page carries its own month / all-time
+                    # switch, and opens on all time, which is the view
+                    # staff actually read.
+                    {'key': 'sales', 'label': _('Sales'), 'icon': 'fa-chart-line',
                      'url': reverse('shop:sales_archive')},
                 ],
             },

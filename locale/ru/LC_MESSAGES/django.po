@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-22 14:41+0600\n"
+"POT-Creation-Date: 2026-09-22 14:54+0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -58,34 +58,26 @@ msgstr "Категории"
 msgid "Removed"
 msgstr "Удалённые"
 
-#: .\shop\context_processors.py:122
+#: .\shop\context_processors.py:122 .\shop\context_processors.py:127
 #: .\shop\templates\shop\product\sales_report.html:12
 msgid "Sales"
 msgstr "Продажи"
 
-#: .\shop\context_processors.py:124
-msgid "This Month"
-msgstr "Этот месяц"
-
-#: .\shop\context_processors.py:126
-msgid "All Time"
-msgstr "За всё время"
-
-#: .\shop\context_processors.py:131
+#: .\shop\context_processors.py:132
 msgid "Pages"
 msgstr "Страницы"
 
-#: .\shop\context_processors.py:133
+#: .\shop\context_processors.py:134
 #: .\shop\templates\shop\product\homepage_settings.html:6
 msgid "Homepage"
 msgstr "Главная страница"
 
-#: .\shop\context_processors.py:135
+#: .\shop\context_processors.py:136
 #: .\shop\templates\shop\product\about_settings.html:6
 msgid "About Page"
 msgstr "Страница «О нас»"
 
-#: .\shop\context_processors.py:137
+#: .\shop\context_processors.py:138
 #: .\shop\templates\shop\product\contact_settings.html:6
 msgid "Contacts"
 msgstr "Контакты"
@@ -595,20 +587,15 @@ msgstr "Управление"
 msgid "Management sections"
 msgstr "Разделы управления"
 
-#: .\shop\templates\shop\product\_management_base.html:74
-#: .\templates\admin\login.html:96
-msgid "Back to store"
-msgstr "Назад в магазин"
-
-#: .\shop\templates\shop\product\_management_base.html:80
+#: .\shop\templates\shop\product\_management_base.html:78
 msgid "Sign Out"
 msgstr "Выйти"
 
-#: .\shop\templates\shop\product\_management_base.html:96
+#: .\shop\templates\shop\product\_management_base.html:94
 msgid "No contact channels configured"
 msgstr "Каналы связи не настроены"
 
-#: .\shop\templates\shop\product\_management_base.html:97
+#: .\shop\templates\shop\product\_management_base.html:95
 msgid ""
 "Customers currently have no way to reach you, so the enquiry button is "
 "hidden on every product page."
@@ -616,7 +603,7 @@ msgstr ""
 "Сейчас клиенты не могут с вами связаться, поэтому кнопка запроса скрыта на "
 "всех карточках товаров."
 
-#: .\shop\templates\shop\product\_management_base.html:99
+#: .\shop\templates\shop\product\_management_base.html:97
 msgid "Add a channel"
 msgstr "Добавить канал"
 
@@ -852,7 +839,8 @@ msgstr "Существующие категории"
 msgid ""
 "Switch a category's slide or row on and off; changes apply to the homepage "
 "at once."
-msgstr "Включайте и выключайте слайд или ряд категории — главная обновляется сразу."
+msgstr ""
+"Включайте и выключайте слайд или ряд категории — главная обновляется сразу."
 
 #: .\shop\templates\shop\product\category_create.html:115
 #: .\shop\templates\shop\product\sales_report.html:189
@@ -1819,3 +1807,7 @@ msgstr "Пароль"
 #: .\templates\admin\login.html:88
 msgid "Sign In"
 msgstr "Войти"
+
+#: .\templates\admin\login.html:96
+msgid "Back to store"
+msgstr "Назад в магазин"

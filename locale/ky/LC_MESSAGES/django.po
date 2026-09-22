@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-22 14:41+0600\n"
+"POT-Creation-Date: 2026-09-22 14:54+0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -56,34 +56,26 @@ msgstr "Категориялар"
 msgid "Removed"
 msgstr "Өчүрүлгөндөр"
 
-#: .\shop\context_processors.py:122
+#: .\shop\context_processors.py:122 .\shop\context_processors.py:127
 #: .\shop\templates\shop\product\sales_report.html:12
 msgid "Sales"
 msgstr "Сатуулар"
 
-#: .\shop\context_processors.py:124
-msgid "This Month"
-msgstr "Ушул ай"
-
-#: .\shop\context_processors.py:126
-msgid "All Time"
-msgstr "Бардык убакыт"
-
-#: .\shop\context_processors.py:131
+#: .\shop\context_processors.py:132
 msgid "Pages"
 msgstr "Барактар"
 
-#: .\shop\context_processors.py:133
+#: .\shop\context_processors.py:134
 #: .\shop\templates\shop\product\homepage_settings.html:6
 msgid "Homepage"
 msgstr "Башкы барак"
 
-#: .\shop\context_processors.py:135
+#: .\shop\context_processors.py:136
 #: .\shop\templates\shop\product\about_settings.html:6
 msgid "About Page"
 msgstr "«Биз жөнүндө» баракчасы"
 
-#: .\shop\context_processors.py:137
+#: .\shop\context_processors.py:138
 #: .\shop\templates\shop\product\contact_settings.html:6
 msgid "Contacts"
 msgstr "Байланыштар"
@@ -594,20 +586,15 @@ msgstr "Башкаруу"
 msgid "Management sections"
 msgstr "Башкаруу бөлүмдөрү"
 
-#: .\shop\templates\shop\product\_management_base.html:74
-#: .\templates\admin\login.html:96
-msgid "Back to store"
-msgstr "Дүкөнгө кайтуу"
-
-#: .\shop\templates\shop\product\_management_base.html:80
+#: .\shop\templates\shop\product\_management_base.html:78
 msgid "Sign Out"
 msgstr "Чыгуу"
 
-#: .\shop\templates\shop\product\_management_base.html:96
+#: .\shop\templates\shop\product\_management_base.html:94
 msgid "No contact channels configured"
 msgstr "Байланыш каналдары туураланган эмес"
 
-#: .\shop\templates\shop\product\_management_base.html:97
+#: .\shop\templates\shop\product\_management_base.html:95
 msgid ""
 "Customers currently have no way to reach you, so the enquiry button is "
 "hidden on every product page."
@@ -615,7 +602,7 @@ msgstr ""
 "Азыр кардарлар сиз менен байланыша албайт, ошондуктан суроо баскычы бардык "
 "товар барактарында жашырылган."
 
-#: .\shop\templates\shop\product\_management_base.html:99
+#: .\shop\templates\shop\product\_management_base.html:97
 msgid "Add a channel"
 msgstr "Канал кошуу"
 
@@ -818,7 +805,8 @@ msgstr "Каталогдогу дарек"
 #: .\shop\templates\shop\product\category_create.html:59
 msgid ""
 "Filled in from the name automatically. Letters, numbers and dashes only."
-msgstr "Аталыштан автоматтык түрдө толтурулат. Тамгалар, сандар жана дефистер гана."
+msgstr ""
+"Аталыштан автоматтык түрдө толтурулат. Тамгалар, сандар жана дефистер гана."
 
 #: .\shop\templates\shop\product\category_create.html:65
 msgid "On the homepage"
@@ -853,7 +841,8 @@ msgstr "Бар болгон категориялар"
 msgid ""
 "Switch a category's slide or row on and off; changes apply to the homepage "
 "at once."
-msgstr "Категориянын слайдын же катарын күйгүзүп-өчүрүңүз — башкы бет дароо жаңырат."
+msgstr ""
+"Категориянын слайдын же катарын күйгүзүп-өчүрүңүз — башкы бет дароо жаңырат."
 
 #: .\shop\templates\shop\product\category_create.html:115
 #: .\shop\templates\shop\product\sales_report.html:189
@@ -1809,3 +1798,7 @@ msgstr "Сырсөз"
 #: .\templates\admin\login.html:88
 msgid "Sign In"
 msgstr "Кирүү"
+
+#: .\templates\admin\login.html:96
+msgid "Back to store"
+msgstr "Дүкөнгө кайтуу"

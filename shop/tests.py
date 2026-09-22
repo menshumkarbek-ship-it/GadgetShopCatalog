@@ -590,8 +590,7 @@ class ManagementPanelTests(TestCase):
             ('shop:create_product', 'products'),
             ('shop:create_category', 'categories'),
             ('shop:removed_products', 'removed'),
-            ('shop:sales_report', 'sales_month'),
-            ('shop:sales_archive', 'sales_all'),
+            ('shop:sales_archive', 'sales'),
             ('shop:manage_homepage', 'homepage'),
             ('shop:manage_about', 'about'),
             ('shop:manage_contacts', 'contacts'),
@@ -605,6 +604,13 @@ class ManagementPanelTests(TestCase):
                 # Every page can reach every other one from the sidebar.
                 for other, _unused in pages:
                     self.assertContains(response, reverse(other))
+
+        # The monthly view isn't in the sidebar — the sales page switches to
+        # it itself — but it still lights the one Sales entry.
+        response = self.client.get(reverse('shop:sales_report'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['active'], 'sales')
+        self.assertContains(response, reverse('shop:sales_archive'))
 
     def test_section_pages_drill_down_on_phones(self):
         """Below `lg` a section page shows only its own content: the section
@@ -665,8 +671,7 @@ class ManagementPanelTests(TestCase):
                 for item in group['items']]
         self.assertEqual(
             keys,
-            ['products', 'categories', 'removed', 'sales_month', 'sales_all',
-             'homepage', 'about', 'contacts'],
+            ['products', 'categories', 'removed', 'sales', 'homepage', 'about', 'contacts'],
         )
         # Every view's `active` key has to be one of them, or nothing lights up.
         self.assertIn(response.context['active'], keys)

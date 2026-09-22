@@ -829,7 +829,7 @@ def sales_report(request, period='month'):
         'available_years': available_years,
         'months': months,
         'search_query': search_query,
-        'active': 'sales_all' if period == 'all' else 'sales_month',
+        'active': 'sales',
     }
     return render(request, 'shop/product/sales_report.html', context)
 
