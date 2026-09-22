@@ -63,40 +63,6 @@
                 </div>
             </div>
 
-            <!-- The "visit the store" half of the public Contact page. -->
-            <div class="pt-5 border-t border-gray-100 space-y-4">
-                <div>
-                    <h2 class="text-[11px] font-black uppercase tracking-wider text-indigo-600">{% translate "Store Visit" %}</h2>
-                    <p class="text-[10px] text-gray-400 mt-1">{% translate "Shown next to the address from the About page. Leave both blank to show the address alone." %}</p>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <div class="flex items-center justify-between gap-3 mb-1">
-                            <label class="text-xs font-bold text-gray-500 uppercase tracking-wide">
-                                <i class="fa-regular fa-clock text-gray-400 mr-1"></i> {% translate "Opening Hours" %}
-                            </label>
-                            <div class="lang-tabs flex items-center gap-1 p-0.5 bg-gray-50 rounded-lg" data-group="opening-hours">
-                                <button type="button" class="lang-tab-btn px-2.5 py-1 rounded-md text-[10px] font-black bg-indigo-600 text-white" data-lang="en">EN</button>
-                                <button type="button" class="lang-tab-btn px-2.5 py-1 rounded-md text-[10px] font-black bg-gray-100 text-gray-500" data-lang="ru">RU</button>
-                                <button type="button" class="lang-tab-btn px-2.5 py-1 rounded-md text-[10px] font-black bg-gray-100 text-gray-500" data-lang="ky">KY</button>
-                            </div>
-                        </div>
-                        <div class="lang-field" data-group="opening-hours" data-lang="en">{{ form.opening_hours }}</div>
-                        <div class="lang-field hidden" data-group="opening-hours" data-lang="ru">{{ form.opening_hours_ru }}</div>
-                        <div class="lang-field hidden" data-group="opening-hours" data-lang="ky">{{ form.opening_hours_ky }}</div>
-                        <p class="text-[10px] text-gray-400 mt-1">{% translate "One line per range. A blank Russian or Kyrgyz version falls back to English." %}</p>
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">
-                            <i class="fa-solid fa-map-location-dot text-gray-400 mr-1"></i> {% translate "Map Link" %}
-                        </label>
-                        {{ form.map_url }}
-                        <p class="text-[10px] text-gray-400 mt-1">{% translate "Google Maps or 2GIS link to the store. Powers the Directions button." %}</p>
-                    </div>
-                </div>
-            </div>
-
             <div class="pt-4 border-t border-gray-100 flex items-center justify-end">
                 <button type="submit" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-7 py-3 rounded-xl transition-all shadow-md shadow-indigo-600/30 active:scale-95 uppercase tracking-wider">
                     <i class="fa-solid fa-floppy-disk"></i> {% translate "Save Contact Channels" %}

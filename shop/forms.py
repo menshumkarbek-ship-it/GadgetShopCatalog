@@ -157,10 +157,7 @@ class CategoryCreateForm(forms.ModelForm):
 class ContactSettingsForm(forms.ModelForm):
     class Meta:
         model = ContactSettings
-        fields = [
-            'email', 'phone_number', 'whatsapp_number', 'telegram_username', 'instagram_username',
-            'opening_hours', 'opening_hours_ru', 'opening_hours_ky', 'map_url',
-        ]
+        fields = ['email', 'phone_number', 'whatsapp_number', 'telegram_username', 'instagram_username']
         widgets = {
             'email': forms.EmailInput(attrs={
                 'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
@@ -182,22 +179,6 @@ class ContactSettingsForm(forms.ModelForm):
                 'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
                 'placeholder': _('techvault.shop (no @)')
             }),
-            'opening_hours': forms.Textarea(attrs={
-                'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
-                'rows': 3, 'placeholder': _('Mon–Sat 10:00–20:00 / Sun 11:00–18:00')
-            }),
-            'opening_hours_ru': forms.Textarea(attrs={
-                'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
-                'rows': 3, 'placeholder': 'Пн–Сб 10:00–20:00 / Вс 11:00–18:00'
-            }),
-            'opening_hours_ky': forms.Textarea(attrs={
-                'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
-                'rows': 3, 'placeholder': 'Дш–Иш 10:00–20:00 / Жк 11:00–18:00'
-            }),
-            'map_url': forms.URLInput(attrs={
-                'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
-                'placeholder': 'https://maps.app.goo.gl/…'
-            }),
         }
 
 
@@ -217,6 +198,8 @@ class AboutPageContentForm(forms.ModelForm):
             'visit_text', 'visit_text_ru', 'visit_text_ky',
             'store_address_line1', 'store_address_line1_ru', 'store_address_line1_ky',
             'store_address_line2', 'store_address_line2_ru', 'store_address_line2_ky',
+            'opening_hours', 'opening_hours_ru', 'opening_hours_ky',
+            'map_url',
             'store_image',
             'cta_heading', 'cta_heading_ru', 'cta_heading_ky',
             'cta_text', 'cta_text_ru', 'cta_text_ky',
@@ -253,6 +236,11 @@ class AboutPageContentForm(forms.ModelForm):
             'store_address_line2': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': 'Silicon District, CA 94016'}),
             'store_address_line2_ru': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the address above if left blank')}),
             'store_address_line2_ky': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the address above if left blank')}),
+
+            'opening_hours': forms.Textarea(attrs={'class': TEXTAREA_CLASS, 'rows': 3, 'placeholder': _('Mon–Sat 10:00–20:00 / Sun 11:00–18:00')}),
+            'opening_hours_ru': forms.Textarea(attrs={'class': TEXTAREA_CLASS, 'rows': 3, 'placeholder': _('Optional — falls back to the hours above if left blank')}),
+            'opening_hours_ky': forms.Textarea(attrs={'class': TEXTAREA_CLASS, 'rows': 3, 'placeholder': _('Optional — falls back to the hours above if left blank')}),
+            'map_url': forms.URLInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': 'https://maps.app.goo.gl/…'}),
 
             'store_image': forms.FileInput(attrs={
                 'class': 'text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer'

@@ -70,20 +70,6 @@ class ContactSettings(models.Model):
         help_text="Instagram username without the @, e.g. techvault.shop"
     )
 
-    # The "visit the store" half of the Contact page. The address itself
-    # lives on AboutPageContent (it is part of the shop's story there too);
-    # these are the two things a customer checks before setting off.
-    opening_hours = models.TextField(
-        blank=True,
-        help_text="One line per range, e.g. 'Mon–Sat 10:00–20:00' then 'Sun 11:00–18:00'. Leave blank to hide."
-    )
-    map_url = models.URLField(
-        max_length=500, blank=True,
-        help_text="Link to the store on Google Maps or 2GIS. Powers the Directions button; leave blank to hide it."
-    )
-    opening_hours_ru = models.TextField(blank=True, verbose_name="Opening Hours (Russian)")
-    opening_hours_ky = models.TextField(blank=True, verbose_name="Opening Hours (Kyrgyz)")
-
     class Meta:
         verbose_name = "Contact Settings"
         verbose_name_plural = "Contact Settings"
@@ -105,8 +91,6 @@ class ContactSettings(models.Model):
     def get_solo(cls):
         obj, _ = cls.objects.get_or_create(pk=1)
         return obj
-
-    translated_opening_hours = translatable_property('opening_hours')
 
     @property
     def whatsapp_digits(self):
@@ -182,6 +166,16 @@ class AboutPageContent(models.Model):
         upload_to='about/', blank=True, null=True,
         help_text="Optional photo of your storefront. Falls back to a generic map graphic if left empty."
     )
+    # The rest of the Visit Us section: the two things a customer checks
+    # before setting off.
+    opening_hours = models.TextField(
+        blank=True,
+        help_text="One line per range, e.g. 'Mon–Sat 10:00–20:00' then 'Sun 11:00–18:00'. Leave blank to hide."
+    )
+    map_url = models.URLField(
+        max_length=500, blank=True,
+        help_text="Link to the store on Google Maps or 2GIS. Powers the Directions button; leave blank to hide it."
+    )
 
     cta_heading = models.CharField(max_length=150, blank=True, default="Ready to Find Your Next Device?")
     cta_text = models.TextField(
@@ -208,6 +202,8 @@ class AboutPageContent(models.Model):
     store_address_line1_ky = models.CharField(max_length=200, blank=True, verbose_name="Address Line 1 (Kyrgyz)")
     store_address_line2_ru = models.CharField(max_length=200, blank=True, verbose_name="Address Line 2 (Russian)")
     store_address_line2_ky = models.CharField(max_length=200, blank=True, verbose_name="Address Line 2 (Kyrgyz)")
+    opening_hours_ru = models.TextField(blank=True, verbose_name="Opening Hours (Russian)")
+    opening_hours_ky = models.TextField(blank=True, verbose_name="Opening Hours (Kyrgyz)")
     cta_heading_ru = models.CharField(max_length=150, blank=True, verbose_name="Banner Heading (Russian)")
     cta_heading_ky = models.CharField(max_length=150, blank=True, verbose_name="Banner Heading (Kyrgyz)")
     cta_text_ru = models.TextField(blank=True, verbose_name="Banner Text (Russian)")
@@ -242,6 +238,7 @@ class AboutPageContent(models.Model):
     translated_visit_text = translatable_property('visit_text')
     translated_store_address_line1 = translatable_property('store_address_line1')
     translated_store_address_line2 = translatable_property('store_address_line2')
+    translated_opening_hours = translatable_property('opening_hours')
     translated_cta_heading = translatable_property('cta_heading')
     translated_cta_text = translatable_property('cta_text')
 

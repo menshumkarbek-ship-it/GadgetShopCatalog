@@ -12,7 +12,7 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone, translation
 
-from .models import Category, ContactSettings, HomePageContent, Product, Sale
+from .models import AboutPageContent, Category, ContactSettings, HomePageContent, Product, Sale
 from .seed.catalog import CATEGORIES, PRODUCTS
 
 
@@ -495,9 +495,10 @@ class StorefrontTests(TestCase):
         self.assertEqual(len(product_queries), 1)
 
     def test_about_page_shows_hours_and_directions_only_when_set(self):
-        settings_obj = ContactSettings.get_solo()
-        settings_obj.whatsapp_number = '996700123456'
-        settings_obj.save()
+        contact = ContactSettings.get_solo()
+        contact.whatsapp_number = '996700123456'
+        contact.save()
+        settings_obj = AboutPageContent.get_solo()
 
         response = self.client.get(reverse('shop:about_us'), HTTP_ACCEPT_LANGUAGE='en')
         self.assertEqual(response.status_code, 200)

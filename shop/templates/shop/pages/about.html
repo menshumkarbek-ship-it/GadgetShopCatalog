@@ -69,7 +69,7 @@
 </section>
 
 <!-- Visit us: the store photo beside where and when to find it. -->
-{% if about.translated_visit_heading or about.translated_visit_text or about.translated_store_address_line1 or about.translated_store_address_line2 or contact_settings.translated_opening_hours or about.store_image %}
+{% if about.translated_visit_heading or about.translated_visit_text or about.translated_store_address_line1 or about.translated_store_address_line2 or about.translated_opening_hours or about.store_image %}
 <section class="band band-gray">
     <div class="wrap grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <div>
@@ -81,7 +81,7 @@
             <p class="t-body-sm text-midgray mt-6 max-w-xl whitespace-pre-line">{{ about.translated_visit_text }}</p>
             {% endif %}
 
-            {% if about.translated_store_address_line1 or about.translated_store_address_line2 or contact_settings.translated_opening_hours %}
+            {% if about.translated_store_address_line1 or about.translated_store_address_line2 or about.translated_opening_hours %}
             <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-xl">
                 {% if about.translated_store_address_line1 or about.translated_store_address_line2 %}
                 <div>
@@ -90,18 +90,18 @@
                     {% if about.translated_store_address_line2 %}<p class="t-body-sm text-ink">{{ about.translated_store_address_line2 }}</p>{% endif %}
                 </div>
                 {% endif %}
-                {% if contact_settings.translated_opening_hours %}
+                {% if about.translated_opening_hours %}
                 <div>
                     <p class="t-caption text-midgray"><i class="fa-regular fa-clock mr-1.5"></i>{% translate "Opening hours" %}</p>
-                    <p class="t-body-sm text-ink mt-1 whitespace-pre-line figures">{{ contact_settings.translated_opening_hours }}</p>
+                    <p class="t-body-sm text-ink mt-1 whitespace-pre-line figures">{{ about.translated_opening_hours }}</p>
                 </div>
                 {% endif %}
             </div>
             {% endif %}
 
             <div class="mt-8 flex flex-wrap items-center gap-4">
-                {% if contact_settings.map_url %}
-                <a href="{{ contact_settings.map_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost">{% translate "Get directions" %}</a>
+                {% if about.map_url %}
+                <a href="{{ about.map_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost">{% translate "Get directions" %}</a>
                 {% endif %}
                 {% if contact_settings.has_any_channel %}
                 <a href="{% url 'shop:contact_us' %}" class="link-arrow">{% translate "Contact us" %} &rsaquo;</a>

@@ -743,6 +743,7 @@ def manage_about(request):
             form[f'site_name{suffix}'], form[f'badge_text{suffix}'], form[f'heading{suffix}'],
             form[f'intro_text{suffix}'], form[f'visit_heading{suffix}'], form[f'visit_text{suffix}'],
             form[f'store_address_line1{suffix}'], form[f'store_address_line2{suffix}'],
+            form[f'opening_hours{suffix}'],
             form[f'cta_heading{suffix}'], form[f'cta_text{suffix}'],
         )
         for lang, suffix in [('en', ''), ('ru', '_ru'), ('ky', '_ky')]

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-22 14:54+0600\n"
+"POT-Creation-Date: 2026-09-22 15:03+0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -80,15 +80,15 @@ msgstr "«Биз жөнүндө» баракчасы"
 msgid "Contacts"
 msgstr "Байланыштар"
 
-#: .\shop\forms.py:23 .\shop\forms.py:234 .\shop\forms.py:235
-#: .\shop\forms.py:242 .\shop\forms.py:243 .\shop\forms.py:262
-#: .\shop\forms.py:263
+#: .\shop\forms.py:23 .\shop\forms.py:217 .\shop\forms.py:218
+#: .\shop\forms.py:225 .\shop\forms.py:226 .\shop\forms.py:250
+#: .\shop\forms.py:251
 msgid "Optional — falls back to the heading above if left blank"
 msgstr "Милдеттүү эмес — бош калса, жогорудагы баш сөз колдонулат"
 
-#: .\shop\forms.py:24 .\shop\forms.py:230 .\shop\forms.py:231
-#: .\shop\forms.py:246 .\shop\forms.py:247 .\shop\forms.py:266
-#: .\shop\forms.py:267
+#: .\shop\forms.py:24 .\shop\forms.py:213 .\shop\forms.py:214
+#: .\shop\forms.py:229 .\shop\forms.py:230 .\shop\forms.py:254
+#: .\shop\forms.py:255
 msgid "Optional — falls back to the text above if left blank"
 msgstr "Милдеттүү эмес — бош калса, жогорудагы текст колдонулат"
 
@@ -136,97 +136,101 @@ msgstr "Башкы баракта бул категориянын «Жаңыла
 msgid "e.g., Headphones, Powerbanks, Smartwatches"
 msgstr "мисалы, Кулакчындар, Повербанктар, Смарт-сааттар"
 
-#: .\shop\forms.py:132 .\shop\forms.py:133 .\shop\forms.py:226
-#: .\shop\forms.py:227
+#: .\shop\forms.py:132 .\shop\forms.py:133 .\shop\forms.py:209
+#: .\shop\forms.py:210
 msgid "Optional — falls back to the name above if left blank"
 msgstr "Милдеттүү эмес — бош калса, жогорудагы аталыш колдонулат"
 
-#: .\shop\forms.py:175
+#: .\shop\forms.py:172
 msgid "996700123456 (country code, digits only)"
 msgstr "996700123456 (өлкө коду, сандар гана)"
 
-#: .\shop\forms.py:179
+#: .\shop\forms.py:176
 msgid "techvault_support (no @)"
 msgstr "techvault_support (@ белгисиз)"
 
-#: .\shop\forms.py:183
+#: .\shop\forms.py:180
 msgid "techvault.shop (no @)"
 msgstr "techvault.shop (@ белгисиз)"
 
-#: .\shop\forms.py:187
-msgid "Mon–Sat 10:00–20:00 / Sun 11:00–18:00"
-msgstr "Дш–Иш 10:00–20:00 / Жк 11:00–18:00"
-
-#: .\shop\forms.py:229
+#: .\shop\forms.py:212
 msgid "Family Owned Since 2010"
 msgstr "2010-жылдан бери үй-бүлөлүк бизнес"
 
-#: .\shop\forms.py:237
+#: .\shop\forms.py:220
 msgid "Tell customers about your shop and your market..."
 msgstr "Кардарларга дүкөнүңүз жана рыногуңуз жөнүндө айтып бериңиз..."
 
-#: .\shop\forms.py:238 .\shop\forms.py:239
+#: .\shop\forms.py:221 .\shop\forms.py:222
 msgid "Optional — falls back to the story above if left blank"
 msgstr "Милдеттүү эмес — бош калса, жогорудагы текст колдонулат"
 
-#: .\shop\forms.py:241
+#: .\shop\forms.py:224
 msgid "See It In Person"
 msgstr "Өз көзү менен көрүңүз"
 
-#: .\shop\forms.py:245
+#: .\shop\forms.py:228
 msgid "Invite customers to visit your store in person..."
 msgstr "Кардарларды дүкөнүңүзгө жеке келүүгө чакырыңыз..."
 
-#: .\shop\forms.py:250 .\shop\forms.py:251 .\shop\forms.py:254
-#: .\shop\forms.py:255
+#: .\shop\forms.py:233 .\shop\forms.py:234 .\shop\forms.py:237
+#: .\shop\forms.py:238
 msgid "Optional — falls back to the address above if left blank"
 msgstr "Милдеттүү эмес — бош калса, жогорудагы дарек колдонулат"
 
-#: .\shop\forms.py:261
+#: .\shop\forms.py:240
+msgid "Mon–Sat 10:00–20:00 / Sun 11:00–18:00"
+msgstr "Дш–Иш 10:00–20:00 / Жк 11:00–18:00"
+
+#: .\shop\forms.py:241 .\shop\forms.py:242
+msgid "Optional — falls back to the hours above if left blank"
+msgstr "Милдеттүү эмес — бош болсо, жогорудагы убакыт колдонулат"
+
+#: .\shop\forms.py:249
 msgid "Ready to Find Your Next Device?"
 msgstr "Кийинки түзмөгүңүздү табууга даярсызбы?"
 
-#: .\shop\forms.py:265
+#: .\shop\forms.py:253
 msgid "Invite customers to browse or get in touch..."
 msgstr "Кардарларды каталогду көрүүгө же байланышууга чакырыңыз..."
 
-#: .\shop\forms.py:296
+#: .\shop\forms.py:284
 msgid "Why shop here"
 msgstr "Эмне үчүн бизде"
 
-#: .\shop\forms.py:300
+#: .\shop\forms.py:288
 msgid "Checked devices at the price on the tag"
 msgstr "Текшерилген техника адилет баада"
 
-#: .\shop\forms.py:304
+#: .\shop\forms.py:292
 msgid "What customers get by buying from you..."
 msgstr "Кардар сизден сатып алганда эмне алат..."
 
-#: .\shop\forms.py:308 .\shop\templates\shop\pages\about.html:132
+#: .\shop\forms.py:296 .\shop\templates\shop\pages\about.html:132
 msgid "Browse the catalog"
 msgstr "Каталогду көрүү"
 
-#: .\shop\forms.py:312
+#: .\shop\forms.py:300
 msgid "devices in stock"
 msgstr "түзмөк кампада бар"
 
-#: .\shop\forms.py:316
+#: .\shop\forms.py:304
 msgid "Restocked every week"
 msgstr "Жума сайын толукталат"
 
-#: .\shop\forms.py:320
+#: .\shop\forms.py:308
 msgid "Looking for something else"
 msgstr "Башка нерсе издеп жатасызбы"
 
-#: .\shop\forms.py:324
+#: .\shop\forms.py:312
 msgid "Not in the catalog? We will bring it in"
 msgstr "Каталогдо жокпу? Алып келебиз"
 
-#: .\shop\forms.py:328
+#: .\shop\forms.py:316
 msgid "Invite customers to ask for a model you do not stock yet..."
 msgstr "Кардарларды азырынча кампада жок моделди сурап көрүүгө чакырыңыз..."
 
-#: .\shop\forms.py:332
+#: .\shop\forms.py:320
 msgid "Tell us what you need"
 msgstr "Эмне керек экенин айтыңыз"
 
@@ -446,7 +450,7 @@ msgid "Message us"
 msgstr "Бизге жазыңыз"
 
 #: .\shop\templates\shop\pages\contact.html:55
-#: .\shop\templates\shop\product\contact_settings.html:113
+#: .\shop\templates\shop\product\contact_settings.html:79
 msgid "WhatsApp"
 msgstr "WhatsApp"
 
@@ -460,7 +464,7 @@ msgid "Open WhatsApp"
 msgstr "WhatsApp ачуу"
 
 #: .\shop\templates\shop\pages\contact.html:66
-#: .\shop\templates\shop\product\contact_settings.html:114
+#: .\shop\templates\shop\product\contact_settings.html:80
 msgid "Telegram"
 msgstr "Telegram"
 
@@ -473,7 +477,7 @@ msgid "Open Telegram"
 msgstr "Telegram ачуу"
 
 #: .\shop\templates\shop\pages\contact.html:76
-#: .\shop\templates\shop\product\contact_settings.html:116
+#: .\shop\templates\shop\product\contact_settings.html:82
 msgid "Phone"
 msgstr "Телефон"
 
@@ -487,7 +491,7 @@ msgstr "Чалуу"
 
 #: .\shop\templates\shop\pages\contact.html:87
 #: .\shop\templates\shop\product\contact_settings.html:30
-#: .\shop\templates\shop\product\contact_settings.html:117
+#: .\shop\templates\shop\product\contact_settings.html:83
 msgid "Email"
 msgstr "Email"
 
@@ -500,7 +504,7 @@ msgid "Write to us"
 msgstr "Кат жазуу"
 
 #: .\shop\templates\shop\pages\contact.html:99
-#: .\shop\templates\shop\product\contact_settings.html:115
+#: .\shop\templates\shop\product\contact_settings.html:81
 msgid "Instagram"
 msgstr "Instagram"
 
@@ -733,42 +737,60 @@ msgid "Address Line 2"
 msgstr "Дарек, 2-сап"
 
 #: .\shop\templates\shop\product\about_settings.html:94
+msgid "Opening Hours"
+msgstr "Иш убактысы"
+
+#: .\shop\templates\shop\product\about_settings.html:97
+msgid "One line per range. Leave blank to show the address alone."
+msgstr "Ар бир диапазон үчүн бир сап. Дарек гана көрүнүшү үчүн бош калтырыңыз."
+
+#: .\shop\templates\shop\product\about_settings.html:102
+msgid "Map Link"
+msgstr "Карта шилтемеси"
+
+#: .\shop\templates\shop\product\about_settings.html:105
+msgid ""
+"Google Maps or 2GIS link to the store. Powers the Directions button; shared "
+"across all languages."
+msgstr "Дүкөндүн Google Maps же 2GIS шилтемеси. «Кантип жетүү» баскычын иштетет; бардык тилдер үчүн бир."
+
+#: .\shop\templates\shop\product\about_settings.html:108
 msgid "Store Photo"
 msgstr "Дүкөндүн сүрөтү"
 
-#: .\shop\templates\shop\product\about_settings.html:98
+#: .\shop\templates\shop\product\about_settings.html:112
 msgid "Current store photo"
 msgstr "Дүкөндүн учурдагы сүрөтү"
 
-#: .\shop\templates\shop\product\about_settings.html:101
+#: .\shop\templates\shop\product\about_settings.html:115
 msgid "Optional. If left empty, a generic map graphic is shown instead."
 msgstr "Милдеттүү эмес. Бош калтырылса, жалпы карта көрсөтүлөт."
 
-#: .\shop\templates\shop\product\about_settings.html:102
+#: .\shop\templates\shop\product\about_settings.html:116
 msgid "The store photo is shared across all languages."
 msgstr "Дүкөндүн сүрөтү бардык тилдер үчүн жалпы."
 
-#: .\shop\templates\shop\product\about_settings.html:109
+#: .\shop\templates\shop\product\about_settings.html:123
 msgid "Call to Action Banner"
 msgstr "Чакырык баннери"
 
-#: .\shop\templates\shop\product\about_settings.html:110
+#: .\shop\templates\shop\product\about_settings.html:124
 msgid "Leave both fields blank to hide this banner."
 msgstr "Бул баннерди жашыруу үчүн эки талааны тең бош калтырыңыз."
 
-#: .\shop\templates\shop\product\about_settings.html:112
+#: .\shop\templates\shop\product\about_settings.html:126
 msgid "Banner Heading"
 msgstr "Баннердин аталышы"
 
-#: .\shop\templates\shop\product\about_settings.html:116
+#: .\shop\templates\shop\product\about_settings.html:130
 msgid "Banner Text"
 msgstr "Баннердин тексти"
 
-#: .\shop\templates\shop\product\about_settings.html:126
+#: .\shop\templates\shop\product\about_settings.html:140
 msgid "Open About page"
 msgstr "«Биз жөнүндө» баракчасын ачуу"
 
-#: .\shop\templates\shop\product\about_settings.html:129
+#: .\shop\templates\shop\product\about_settings.html:143
 msgid "Save About Page"
 msgstr "«Биз жөнүндө» баракчасын сактоо"
 
@@ -945,58 +967,26 @@ msgstr "Telegram колдонуучу аты"
 msgid "Instagram Username"
 msgstr "Instagram колдонуучу аты"
 
-#: .\shop\templates\shop\product\contact_settings.html:69
-msgid "Store Visit"
-msgstr "Дүкөнгө келүү"
-
-#: .\shop\templates\shop\product\contact_settings.html:70
-msgid ""
-"Shown next to the address from the About page. Leave both blank to show the "
-"address alone."
-msgstr ""
-"«Биз жөнүндө» барагындагы дарек менен катар көрсөтүлөт. Дарек гана көрүнүшү "
-"үчүн экөөнү тең бош калтырыңыз."
-
-#: .\shop\templates\shop\product\contact_settings.html:77
-msgid "Opening Hours"
-msgstr "Иш убактысы"
-
-#: .\shop\templates\shop\product\contact_settings.html:88
-msgid ""
-"One line per range. A blank Russian or Kyrgyz version falls back to English."
-msgstr ""
-"Ар бир диапазон үчүн бир сап. Орусча же кыргызча бош болсо, англисчеси "
-"колдонулат."
-
-#: .\shop\templates\shop\product\contact_settings.html:92
-msgid "Map Link"
-msgstr "Карта шилтемеси"
-
-#: .\shop\templates\shop\product\contact_settings.html:95
-msgid "Google Maps or 2GIS link to the store. Powers the Directions button."
-msgstr ""
-"Дүкөндүн Google Maps же 2GIS шилтемеси. «Кантип жетүү» баскычын иштетет."
-
-#: .\shop\templates\shop\product\contact_settings.html:102
+#: .\shop\templates\shop\product\contact_settings.html:68
 msgid "Save Contact Channels"
 msgstr "Байланыш каналдарын сактоо"
 
-#: .\shop\templates\shop\product\contact_settings.html:110
+#: .\shop\templates\shop\product\contact_settings.html:76
 msgid "Preview"
 msgstr "Алдын ала көрүү"
 
-#: .\shop\templates\shop\product\contact_settings.html:111
+#: .\shop\templates\shop\product\contact_settings.html:77
 msgid "What customers will see on the Contact page right now."
 msgstr "Кардарлар байланыш баракчасында азыр эмнени көрөрү."
 
-#: .\shop\templates\shop\product\contact_settings.html:119
+#: .\shop\templates\shop\product\contact_settings.html:85
 msgid ""
 "Nothing configured yet — the Contact page will show an empty-state notice."
 msgstr ""
 "Азырынча эч нерсе туураланган эмес — байланыш баракчасында бош абал жөнүндө "
 "эскертүү көрсөтүлөт."
 
-#: .\shop\templates\shop\product\contact_settings.html:123
+#: .\shop\templates\shop\product\contact_settings.html:89
 msgid "Open Contact page"
 msgstr "Байланыш баракчасын ачуу"
 
@@ -1750,7 +1740,7 @@ msgstr "«%(name)s» үчүн «Жаңылар» блогу башкы бара�
 msgid "Contact channels updated!"
 msgstr "Байланыш каналдары жаңыртылды!"
 
-#: .\shop\views.py:709 .\shop\views.py:732 .\shop\views.py:871
+#: .\shop\views.py:709 .\shop\views.py:732 .\shop\views.py:872
 msgid "Please correct the entry errors below."
 msgstr "Төмөндөгү киргизүү каталарын оңдоңуз."
 
@@ -1758,7 +1748,7 @@ msgstr "Төмөндөгү киргизүү каталарын оңдоңуз."
 msgid "About page updated!"
 msgstr "«Биз жөнүндө» баракчасы жаңыртылды!"
 
-#: .\shop\views.py:868
+#: .\shop\views.py:869
 msgid "Homepage sections updated!"
 msgstr "Башкы барактын блоктору жаңырды!"
 

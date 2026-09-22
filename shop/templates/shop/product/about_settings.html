@@ -33,7 +33,7 @@
                 <button type="button" class="lang-tab-btn px-4 py-1.5 rounded-lg text-xs font-black bg-gray-100 text-gray-500" data-lang="ky">KY</button>
             </div>
 
-            {% for lang, name_field, badge_field, heading_field, intro_field, visit_heading_field, visit_text_field, addr1_field, addr2_field, cta_heading_field, cta_text_field in about_lang_fields %}
+            {% for lang, name_field, badge_field, heading_field, intro_field, visit_heading_field, visit_text_field, addr1_field, addr2_field, hours_field, cta_heading_field, cta_text_field in about_lang_fields %}
             <div class="lang-field space-y-8 {% if not forloop.first %}hidden{% endif %}" data-group="about-page" data-lang="{{ lang }}">
 
                 <!-- Site Identity -->
@@ -89,7 +89,21 @@
                             {{ addr2_field }}
                         </div>
                     </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">
+                            <i class="fa-regular fa-clock text-gray-400 mr-1"></i> {% translate "Opening Hours" %}
+                        </label>
+                        {{ hours_field }}
+                        {% if forloop.first %}<p class="text-[10px] text-gray-400 mt-1">{% translate "One line per range. Leave blank to show the address alone." %}</p>{% endif %}
+                    </div>
                     {% if forloop.first %}
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">
+                            <i class="fa-solid fa-map-location-dot text-gray-400 mr-1"></i> {% translate "Map Link" %}
+                        </label>
+                        {{ form.map_url }}
+                        <p class="text-[10px] text-gray-400 mt-1">{% translate "Google Maps or 2GIS link to the store. Powers the Directions button; shared across all languages." %}</p>
+                    </div>
                     <div>
                         <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">{% translate "Store Photo" %}</label>
                         {{ form.store_image }}
