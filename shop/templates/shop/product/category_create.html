@@ -8,117 +8,196 @@
 {% block page_intro %}{% translate 'New categories (e.g. Headphones, Powerbanks, Smartwatches) show up immediately in the catalog filter, and automatically get their own "Newest In" slideshow on the homepage as soon as they have at least one product.' %}{% endblock %}
 
 {% block management_content %}
-    <!-- Add Category Form -->
-    <section class="bg-white border border-gray-100 rounded-3xl shadow-sm p-5 sm:p-8">
-        <h2 class="text-sm font-black text-gray-950 mb-6 pb-4 border-b border-gray-50">{% translate "Add New Category" %}</h2>
-
-        {% if form.errors %}
-        <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-semibold space-y-1">
-            <p class="font-bold text-sm">⚠️ {% translate "Please correct errors below:" %}</p>
-            <ul class="list-disc list-inside space-y-0.5">
-                {% for field, errors in form.errors.items %}
-                    <li><strong>{{ field|title }}:</strong> {{ errors|striptags }}</li>
-                {% endfor %}
-            </ul>
+    <!-- ── Add a category ────────────────────────────────────────────── -->
+    <section class="bg-white border border-gray-200/80 rounded-2xl shadow-sm overflow-hidden">
+        <div class="px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+            <span class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center"><i class="fa-solid fa-folder-plus"></i></span>
+            <div>
+                <h2 class="text-sm font-black text-gray-950">{% translate "Add New Category" %}</h2>
+                <p class="text-[11px] text-gray-400">{% translate "Name it in any language you like; the others fall back to English." %}</p>
+            </div>
         </div>
-        {% endif %}
 
-        <form method="POST" class="space-y-5">
+        <form method="POST" class="p-5 sm:p-6 space-y-6">
             {% csrf_token %}
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+            {% if form.errors %}
+            <div class="flex items-start gap-3 p-4 rounded-xl bg-red-50 text-red-700">
+                <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
+                <div class="text-xs font-semibold space-y-0.5">
+                    <p class="font-bold text-sm">{% translate "Please correct errors below:" %}</p>
+                    {% for field, errors in form.errors.items %}
+                        <p><strong>{{ field|title }}:</strong> {{ errors|striptags }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <!-- Name, one field per language behind a segmented switch -->
                 <div>
-                    <div class="flex items-center justify-between mb-1">
-                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wide">{% translate "Category Name" %}</label>
-                        <div class="lang-tabs flex items-center gap-1" data-group="category-name">
-                            <button type="button" class="lang-tab-btn px-2 py-0.5 rounded text-[10px] font-black bg-indigo-600 text-white" data-lang="en">EN</button>
-                            <button type="button" class="lang-tab-btn px-2 py-0.5 rounded text-[10px] font-black bg-gray-100 text-gray-500" data-lang="ru">RU</button>
-                            <button type="button" class="lang-tab-btn px-2 py-0.5 rounded text-[10px] font-black bg-gray-100 text-gray-500" data-lang="ky">KY</button>
+                    <div class="flex items-center justify-between gap-3 mb-2">
+                        <label class="text-[11px] font-black uppercase tracking-wider text-gray-500">{% translate "Category Name" %}</label>
+                        <div class="lang-tabs inline-flex items-center gap-0.5 p-0.5 bg-gray-100 rounded-lg" data-group="category-name">
+                            <button type="button" class="lang-tab-btn px-2.5 py-1 rounded-md text-[10px] font-black transition-colors bg-indigo-600 text-white" data-lang="en">EN</button>
+                            <button type="button" class="lang-tab-btn px-2.5 py-1 rounded-md text-[10px] font-black transition-colors bg-gray-100 text-gray-500" data-lang="ru">RU</button>
+                            <button type="button" class="lang-tab-btn px-2.5 py-1 rounded-md text-[10px] font-black transition-colors bg-gray-100 text-gray-500" data-lang="ky">KY</button>
                         </div>
                     </div>
                     <div class="lang-field" data-group="category-name" data-lang="en">{{ form.name }}</div>
                     <div class="lang-field hidden" data-group="category-name" data-lang="ru">{{ form.name_ru }}</div>
                     <div class="lang-field hidden" data-group="category-name" data-lang="ky">{{ form.name_ky }}</div>
                 </div>
+
+                <!-- Slug, shown as the address it will become -->
                 <div>
-                    <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">{% translate "URL Slug Handle" %}</label>
-                    {{ form.slug }}
+                    <label class="block text-[11px] font-black uppercase tracking-wider text-gray-500 mb-2">{% translate "Catalog address" %}</label>
+                    <div class="flex items-stretch rounded-xl border border-gray-200 bg-gray-50 focus-within:bg-white focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all overflow-hidden">
+                        <span class="flex items-center pl-4 pr-1 text-sm text-gray-400 select-none whitespace-nowrap">/catalog/</span>
+                        {{ form.slug }}
+                    </div>
+                    <p class="text-[11px] text-gray-400 mt-1.5">{% translate "Filled in from the name automatically. Letters, numbers and dashes only." %}</p>
                 </div>
             </div>
-            <label class="flex items-center gap-2.5 p-3.5 rounded-xl bg-indigo-50/60 border border-indigo-100 cursor-pointer">
-                {{ form.is_featured_in_hero }}
-                <span class="text-xs font-bold text-gray-700">
-                    {% translate "Show as a homepage announcement slide (rotates through its newest in-stock product)" %}
-                </span>
-            </label>
-            <label class="flex items-center gap-2.5 p-3.5 rounded-xl bg-indigo-50/60 border border-indigo-100 cursor-pointer">
-                {{ form.show_newest_row }}
-                <span class="text-xs font-bold text-gray-700">
-                    {% translate 'Show a "Newest In" row for this category on the homepage' %}
-                </span>
-            </label>
-            <div class="pt-4 border-t border-gray-100 flex items-center justify-end">
-                <button type="submit" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-7 py-3 rounded-xl transition-all shadow-md shadow-indigo-600/30 active:scale-95 uppercase tracking-wider">
-                    + {% translate "Create Category" %}
+
+            <!-- Homepage options: two switch rows -->
+            <div>
+                <p class="text-[11px] font-black uppercase tracking-wider text-gray-500 mb-2">{% translate "On the homepage" %}</p>
+                <div class="rounded-2xl border border-gray-200 divide-y divide-gray-100 overflow-hidden">
+                    <label class="flex items-center gap-4 p-4 cursor-pointer hover:bg-gray-50/80 transition-colors">
+                        <span class="w-9 h-9 shrink-0 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center"><i class="fa-solid fa-star"></i></span>
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-sm font-bold text-gray-900">{% translate "Announcement slide" %}</span>
+                            <span class="block text-[11px] text-gray-400 mt-0.5">{% translate "Rotates this category's newest in-stock product through the hero slideshow." %}</span>
+                        </span>
+                        <span class="switch shrink-0">
+                            {{ form.is_featured_in_hero }}
+                            <span class="switch-track"></span>
+                            <span class="switch-knob"></span>
+                        </span>
+                    </label>
+                    <label class="flex items-center gap-4 p-4 cursor-pointer hover:bg-gray-50/80 transition-colors">
+                        <span class="w-9 h-9 shrink-0 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center"><i class="fa-solid fa-grip"></i></span>
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-sm font-bold text-gray-900">{% translate "“Newest In” row" %}</span>
+                            <span class="block text-[11px] text-gray-400 mt-0.5">{% translate "Its own slideshow row of latest arrivals, once it has stock." %}</span>
+                        </span>
+                        <span class="switch shrink-0">
+                            {{ form.show_newest_row }}
+                            <span class="switch-track"></span>
+                            <span class="switch-knob"></span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end">
+                <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-6 py-3 rounded-xl transition-all shadow-md shadow-indigo-600/30 active:scale-95">
+                    <i class="fa-solid fa-plus text-[10px]"></i>
+                    <span>{% translate "Create Category" %}</span>
                 </button>
             </div>
         </form>
     </section>
 
-    <!-- Existing Categories -->
-    <div class="bg-white border border-gray-200/80 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
-        <h3 class="text-xs font-black uppercase tracking-wider text-gray-900">{% translate "Existing Categories" %}</h3>
-        <p class="text-[10px] text-gray-400 -mt-2">{% translate 'Toggle the star for the homepage announcement slide, or the row icon to show/hide its "Newest In" row.' %}</p>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+    <!-- ── Existing categories ───────────────────────────────────────── -->
+    <section class="bg-white border border-gray-200/80 rounded-2xl shadow-sm overflow-hidden">
+        <div class="px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between gap-3">
+            <div>
+                <h3 class="text-sm font-black text-gray-950">{% translate "Existing Categories" %}</h3>
+                <p class="text-[11px] text-gray-400">{% translate "Switch a category's slide or row on and off; changes apply to the homepage at once." %}</p>
+            </div>
+            <span class="shrink-0 rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-black text-gray-600 tabular-nums">{{ all_categories|length }}</span>
+        </div>
+
+        <!-- Column labels for the two switches, so each row can stay quiet -->
+        <div class="hidden sm:grid grid-cols-[minmax(0,1fr)_5rem_5rem_3rem] gap-3 px-5 sm:px-6 py-2 bg-gray-50/70 text-[10px] font-black uppercase tracking-wider text-gray-400">
+            <span>{% translate "Category" %}</span>
+            <span class="text-center">{% translate "Slide" %}</span>
+            <span class="text-center">{% translate "Row" %}</span>
+            <span></span>
+        </div>
+
+        <ul class="divide-y divide-gray-100">
             {% for cat in all_categories %}
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-2 p-2.5 rounded-xl border {% if cat.is_featured_in_hero %}border-indigo-200 bg-indigo-50/40{% else %}border-gray-100{% endif %}">
+            <li class="grid grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[minmax(0,1fr)_5rem_5rem_3rem] gap-x-3 gap-y-3 items-center px-5 sm:px-6 py-3.5">
+                <div class="min-w-0 flex items-center gap-3">
+                    <span class="w-9 h-9 shrink-0 rounded-xl {% if cat.is_featured_in_hero %}bg-indigo-50 text-indigo-600{% else %}bg-gray-100 text-gray-400{% endif %} flex items-center justify-center"><i class="fa-solid fa-folder"></i></span>
                     <div class="min-w-0">
-                        <span class="text-xs font-black text-gray-900 break-words">{{ cat.name }}</span>
-                        <span class="text-[10px] text-gray-400 font-bold uppercase block">/{{ cat.slug }}/</span>
+                        <p class="text-sm font-bold text-gray-900 truncate">{{ cat.name }}</p>
+                        <p class="text-[11px] text-gray-400 truncate">
+                            <span class="font-mono">/catalog/{{ cat.slug }}/</span>
+                            &middot; {% blocktranslate count counter=cat.product_count %}{{ counter }} product{% plural %}{{ counter }} products{% endblocktranslate %}
+                        </p>
                     </div>
-                    <div class="flex items-center gap-1.5 shrink-0">
-                        <form method="POST" action="{% url 'shop:toggle_category_hero' cat.id %}">
+                </div>
+
+                <!-- Delete: takes its products with it, so it names the count
+                     and goes through the confirm gate first. -->
+                <form method="POST" action="{% url 'shop:delete_category' cat.id %}" class="sm:order-last justify-self-end"
+                      data-confirm-delete="{% blocktranslate with name=cat.name total=cat.product_count %}The category {{ name }} will be deleted together with everything filed under it — products, including any sitting in Removed: {{ total }}. Their photos go too. Sales already recorded stay in the report.{% endblocktranslate %}">
+                    {% csrf_token %}
+                    <button type="submit" title="{% translate 'Delete category and its products' %}" class="w-9 h-9 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition-colors">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </form>
+
+                <!-- The two switches. On phones they sit on their own line
+                     with their labels beside them. -->
+                <div class="col-span-2 sm:col-span-1 sm:contents">
+                    <div class="flex items-center gap-6 sm:contents">
+                        <form method="POST" action="{% url 'shop:toggle_category_hero' cat.id %}" class="flex items-center gap-2 sm:justify-center">
                             {% csrf_token %}
-                            {% if cat.is_featured_in_hero %}
-                                <button type="submit" title="{% translate 'Remove from homepage slideshow' %}" class="flex items-center gap-1.5 text-[10px] font-bold uppercase px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-500 transition-colors">
-                                    <i class="fa-solid fa-star"></i>
-                                </button>
-                            {% else %}
-                                <button type="submit" title="{% translate 'Add to homepage slideshow' %}" class="flex items-center gap-1.5 text-[10px] font-bold uppercase px-2.5 py-1.5 rounded-lg bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100 transition-colors">
-                                    <i class="fa-regular fa-star"></i>
-                                </button>
-                            {% endif %}
-                        </form>
-                        <form method="POST" action="{% url 'shop:toggle_category_newest' cat.id %}">
-                            {% csrf_token %}
-                            {% if cat.show_newest_row %}
-                                <button type="submit" title="{% translate 'Hide the Newest In row from the homepage' %}" class="flex items-center gap-1.5 text-[10px] font-bold uppercase px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-500 transition-colors">
-                                    <i class="fa-solid fa-eye"></i>
-                                </button>
-                            {% else %}
-                                <button type="submit" title="{% translate 'Show the Newest In row on the homepage' %}" class="flex items-center gap-1.5 text-[10px] font-bold uppercase px-2.5 py-1.5 rounded-lg bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100 transition-colors">
-                                    <i class="fa-solid fa-eye-slash"></i>
-                                </button>
-                            {% endif %}
-                        </form>
-                        <!-- Deleting a category takes its products with it, so the
-                             button shows the count and goes through the password
-                             gate before anything is touched. -->
-                        <form method="POST" action="{% url 'shop:delete_category' cat.id %}" data-confirm-delete="{% blocktranslate with name=cat.name total=cat.product_count %}The category {{ name }} will be deleted together with everything filed under it — products, including any sitting in Removed: {{ total }}. Their photos go too. Sales already recorded stay in the report.{% endblocktranslate %}">
-                            {% csrf_token %}
-                            <button type="submit" title="{% translate 'Delete category and its products' %}" class="flex items-center gap-1.5 text-[10px] font-bold uppercase px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-colors">
-                                <i class="fa-solid fa-trash"></i>
-                                {% if cat.product_count %}<span class="tabular-nums">{{ cat.product_count }}</span>{% endif %}
+                            <button type="submit" role="switch" aria-checked="{% if cat.is_featured_in_hero %}true{% else %}false{% endif %}"
+                                    title="{% if cat.is_featured_in_hero %}{% translate 'Remove from homepage slideshow' %}{% else %}{% translate 'Add to homepage slideshow' %}{% endif %}"
+                                    class="switch-btn {% if cat.is_featured_in_hero %}is-on{% endif %}">
+                                <span class="switch-btn-knob"></span>
                             </button>
+                            <span class="sm:hidden text-[11px] font-bold text-gray-500">{% translate "Slide" %}</span>
+                        </form>
+                        <form method="POST" action="{% url 'shop:toggle_category_newest' cat.id %}" class="flex items-center gap-2 sm:justify-center">
+                            {% csrf_token %}
+                            <button type="submit" role="switch" aria-checked="{% if cat.show_newest_row %}true{% else %}false{% endif %}"
+                                    title="{% if cat.show_newest_row %}{% translate 'Hide the Newest In row from the homepage' %}{% else %}{% translate 'Show the Newest In row on the homepage' %}{% endif %}"
+                                    class="switch-btn {% if cat.show_newest_row %}is-on{% endif %}">
+                                <span class="switch-btn-knob"></span>
+                            </button>
+                            <span class="sm:hidden text-[11px] font-bold text-gray-500">{% translate "Row" %}</span>
                         </form>
                     </div>
                 </div>
+            </li>
             {% empty %}
-                <p class="text-xs text-gray-400 col-span-full py-4 text-center">{% translate "No categories yet." %}</p>
+            <li class="px-6 py-10 text-center">
+                <p class="text-sm font-bold text-gray-700">{% translate "No categories yet." %}</p>
+                <p class="text-xs text-gray-400 mt-1">{% translate "Create the first one above." %}</p>
+            </li>
             {% endfor %}
-        </div>
-        <p class="text-[10px] text-gray-400">{% translate "Need to rename a category? Use the full Django admin panel for that." %}</p>
-    </div>
+        </ul>
 
+        <p class="px-5 sm:px-6 py-3 border-t border-gray-100 text-[11px] text-gray-400">{% translate "Need to rename a category? Use the full Django admin panel for that." %}</p>
+    </section>
+
+<style>
+    /* Toggle switches. Two flavours: a checkbox inside the create form
+       (the input is visually hidden, the track and knob follow :checked),
+       and a submit button on each existing row (the state comes from the
+       server, so the class does the work). Same size and colours either
+       way. */
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+    .switch-track { position: absolute; inset: 0; border-radius: 9999px; background: #e5e7eb; transition: background-color .2s; pointer-events: none; }
+    .switch-knob  { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 9999px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .2s; pointer-events: none; }
+    .switch input:checked ~ .switch-track { background: #4f46e5; }
+    .switch input:checked ~ .switch-knob  { transform: translateX(20px); }
+    .switch input:focus-visible ~ .switch-track { box-shadow: 0 0 0 4px rgba(79,70,229,.15); }
+
+    .switch-btn { position: relative; width: 44px; height: 24px; border-radius: 9999px; background: #e5e7eb; transition: background-color .2s; }
+    .switch-btn.is-on { background: #4f46e5; }
+    .switch-btn-knob { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 9999px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .2s; }
+    .switch-btn.is-on .switch-btn-knob { transform: translateX(20px); }
+    .switch-btn:focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(79,70,229,.15); }
+</style>
 
 <!-- Auto-slug script -->
 <script>

@@ -537,6 +537,52 @@ class ManagementPanelTests(TestCase):
             price=Decimal(price), description='A tested product.',
         )
 
+    # --- products browser ---------------------------------------------
+
+    def test_products_page_lists_categories_then_opens_one(self):
+        laptops = Category.objects.create(name='Laptops', slug='laptops')
+        phone = self.make_product('Phone', 'phone', '250.00')
+        Product.objects.create(category=laptops, brand='Other', name='Laptop', slug='laptop', price=Decimal('900.00'))
+
+        # Top level: the category list, no listings.
+        response = self.client.get(reverse('shop:create_product'))
+        self.assertIsNone(response.context['selected_group'])
+        self.assertEqual([g['category'].slug for g in response.context['category_groups']], ['laptops', 'phones'])
+        self.assertContains(response, '?category=phones')
+        self.assertNotContains(response, 'name="category"')
+
+        # Pressing one: its listings, and only its.
+        response = self.client.get(reverse('shop:create_product'), {'category': 'phones'})
+        self.assertEqual(response.context['selected_group']['products'], [phone])
+        self.assertContains(response, 'name="category" value="phones"')
+        self.assertNotContains(response, 'name="category" value="laptops"')
+
+        # An unknown slug shows the list rather than 404ing.
+        response = self.client.get(reverse('shop:create_product'), {'category': 'nope'})
+        self.assertIsNone(response.context['selected_group'])
+
+    def test_products_search_spans_every_category(self):
+        laptops = Category.objects.create(name='Laptops', slug='laptops')
+        self.make_product('Galaxy Phone', 'galaxy-phone', '250.00')
+        self.make_product('Other Phone', 'other-phone', '250.00')
+        Product.objects.create(category=laptops, brand='Galaxy Works', name='Book', slug='book', price=Decimal('900.00'))
+
+        response = self.client.get(reverse('shop:create_product'), {'q': 'galaxy'})
+
+        groups = {g['category'].slug: [p.slug for p in g['products']] for g in response.context['search_groups']}
+        self.assertEqual(groups, {'laptops': ['book'], 'phones': ['galaxy-phone']})
+
+        response = self.client.get(reverse('shop:create_product'), {'q': '#1'})
+        groups = {g['category'].slug: [p.slug for p in g['products']] for g in response.context['search_groups']}
+        self.assertEqual(groups, {'phones': ['other-phone']})
+
+    def test_marking_sold_returns_to_the_category_it_happened_in(self):
+        product = self.make_product('Phone', 'phone', '250.00')
+
+        response = self.client.post(reverse('shop:sell_product', args=[product.id]), {'category': 'phones'})
+
+        self.assertRedirects(response, reverse('shop:create_product') + '?category=phones')
+
     # --- sidebar -------------------------------------------------------
 
     def test_every_management_page_renders_with_the_shared_sidebar(self):

@@ -8,6 +8,7 @@ from django.core.cache import cache
 from django.db.models import Q, Sum, Count, Min, Max
 from django.utils import timezone
 from django.utils.dates import MONTHS
+from django.utils.http import urlencode
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
@@ -336,20 +337,43 @@ def create_product(request, product_id=None):
     else:
         form = ProductCreateForm(instance=product_instance)
 
-    # Grouped by category (then by its per-category #ID) so a seller can find
-    # a specific listing quickly instead of hunting through one long list.
+    # The list is a drill-down: the categories, then — once one is pressed —
+    # that category's listings in #ID order, the way the panel itself opens
+    # a section. One query for the whole catalog; the grouping, the counts,
+    # and the search all happen on that list.
     all_products = Product.objects.filter(is_sold=False).select_related('category').order_by(
         'category__name', 'category_number'
     )
+    products_by_category = {}
+    for product in all_products:
+        products_by_category.setdefault(product.category, []).append(product)
+    category_groups = [
+        {'category': category, 'products': products}
+        for category, products in products_by_category.items()
+    ]
 
-    # Search by catalog #ID (to pull up the exact listing to delete once it's
-    # sold), or by name/brand as a fallback for a more casual lookup.
+    # Which category is open, if any. An unknown slug just shows the list.
+    requested_slug = request.GET.get('category', '')
+    selected_group = next(
+        (group for group in category_groups if group['category'].slug == requested_slug), None
+    )
+
+    # Search by catalog #ID (to pull up the exact listing to mark sold), or
+    # by name/brand for a more casual lookup. Results come from every
+    # category and replace the open category's listings while it's active.
     search_query = request.GET.get('q', '').strip()
+    search_groups = None
     if search_query:
-        search_filter = Q(name__icontains=search_query) | Q(brand__icontains=search_query)
-        if search_query.lstrip('#').isdigit():
-            search_filter |= Q(category_number=int(search_query.lstrip('#')))
-        all_products = all_products.filter(search_filter)
+        needle = search_query.lower()
+        number = int(search_query.lstrip('#')) if search_query.lstrip('#').isdigit() else None
+        search_groups = []
+        for group in category_groups:
+            matches = [
+                p for p in group['products']
+                if needle in p.name.lower() or needle in p.brand.lower() or p.category_number == number
+            ]
+            if matches:
+                search_groups.append({'category': group['category'], 'products': matches})
 
     known_brands = Product.objects.exclude(brand='').values_list('brand', flat=True).distinct().order_by('brand')
     gallery_images = product_instance.gallery_images.all() if product_instance else []
@@ -359,10 +383,12 @@ def create_product(request, product_id=None):
     context = {
         'form': form,
         'product_instance': product_instance,
-        'all_products': all_products,
+        'category_groups': category_groups,
+        'selected_group': selected_group,
+        'search_query': search_query,
+        'search_groups': search_groups,
         'known_brands': known_brands,
         'gallery_images': gallery_images,
-        'search_query': search_query,
         'active': 'products',
     }
     return render(request, 'shop/product/create.html', context)
@@ -408,10 +434,15 @@ def _after_catalog_action(request):
     """
     Where to land after removing, restoring, or deleting a listing. Both
     the Products page and the Removed page offer these, so each posts its
-    own `next` and the admin stays on the page they acted from.
+    own `next` and the admin stays on the page they acted from — and, on
+    the Products page, in the category they acted from.
     """
     destinations = {'removed': 'shop:removed_products', 'products': 'shop:create_product'}
-    return redirect(destinations.get(request.POST.get('next'), 'shop:create_product'))
+    url = reverse(destinations.get(request.POST.get('next'), 'shop:create_product'))
+    category_slug = request.POST.get('category', '')
+    if category_slug and request.POST.get('next') != 'removed':
+        url += '?' + urlencode({'category': category_slug})
+    return redirect(url)
 
 
 def _remove_from_catalog(product):

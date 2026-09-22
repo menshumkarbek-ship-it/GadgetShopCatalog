@@ -9,6 +9,15 @@ from .utils import build_unique_slug
 TEXT_INPUT_CLASS = 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all'
 TEXTAREA_CLASS = TEXT_INPUT_CLASS
 
+# The panel is light, so its inputs are too: quiet gray at rest, white with
+# a soft indigo halo once focused. (The forms above still carry the dark
+# style from the panel's previous look; the Categories page uses this.)
+LIGHT_INPUT_CLASS = (
+    'w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 '
+    'placeholder-gray-400 focus:outline-none focus:bg-white focus:border-indigo-500 '
+    'focus:ring-4 focus:ring-indigo-500/10 transition-all'
+)
+
 # Every translated field carries the same 'leave it blank and the base
 # language shows instead' hint, worded for the kind of field it sits on.
 FALLBACK_HEADING_HINT = _('Optional — falls back to the heading above if left blank')
@@ -89,27 +98,27 @@ class ProductCreateForm(forms.ModelForm):
 # ==========================================
 
 class CategoryCreateForm(forms.ModelForm):
+    # The slug sits inside a "/catalog/" prefix box in the template, so the
+    # box carries the border and the field itself is bare.
     slug = forms.CharField(
         required=False,
         widget=forms.TextInput(attrs={
-            'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
-            'placeholder': _('Auto-generated if empty (e.g., headphones)')
+            'class': 'flex-1 min-w-0 bg-transparent border-0 py-3 pl-0 pr-4 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-0',
+            'placeholder': _('auto-filled, e.g. headphones')
         })
     )
+    # Both rendered as toggle switches: the template hides the box and draws
+    # a track and knob that follow :checked, so no widget classes here.
     is_featured_in_hero = forms.BooleanField(
         required=False,
         label=_("Show as a homepage announcement slide"),
-        widget=forms.CheckboxInput(attrs={
-            'class': 'h-4 w-4 rounded border-slate-700 bg-slate-800 text-indigo-600 focus:ring-indigo-500'
-        })
+        widget=forms.CheckboxInput(attrs={'class': ''})
     )
     show_newest_row = forms.BooleanField(
         required=False,
         initial=True,
         label=_('Show a "Newest In" row for this category on the homepage'),
-        widget=forms.CheckboxInput(attrs={
-            'class': 'h-4 w-4 rounded border-slate-700 bg-slate-800 text-indigo-600 focus:ring-indigo-500'
-        })
+        widget=forms.CheckboxInput(attrs={'class': ''})
     )
 
     class Meta:
@@ -117,11 +126,11 @@ class CategoryCreateForm(forms.ModelForm):
         fields = ['name', 'name_ru', 'name_ky', 'slug', 'is_featured_in_hero', 'show_newest_row']
         widgets = {
             'name': forms.TextInput(attrs={
-                'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
+                'class': LIGHT_INPUT_CLASS,
                 'placeholder': _('e.g., Headphones, Powerbanks, Smartwatches')
             }),
-            'name_ru': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the name above if left blank')}),
-            'name_ky': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the name above if left blank')}),
+            'name_ru': forms.TextInput(attrs={'class': LIGHT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the name above if left blank')}),
+            'name_ky': forms.TextInput(attrs={'class': LIGHT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the name above if left blank')}),
         }
 
     def clean_slug(self):
