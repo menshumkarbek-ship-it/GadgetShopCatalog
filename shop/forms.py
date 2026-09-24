@@ -82,11 +82,46 @@ class ProductCreateForm(forms.ModelForm):
 
         return slug
 
+    # Technical characteristics are free-form: a charger may list only its
+    # model, a phone its CPU, RAM, storage and cameras, and a cable nothing
+    # at all. The template posts them as parallel `spec_name` / `spec_value`
+    # lists (one pair per row the admin added), stored in order on
+    # Product.specifications.
+    SPEC_NAME_MAX_LENGTH = 60
+    SPEC_VALUE_MAX_LENGTH = 200
+
+    def spec_rows(self):
+        """The (name, value) rows to render: what was posted, or what's saved."""
+        if self.is_bound:
+            return list(zip(self.data.getlist('spec_name'), self.data.getlist('spec_value')))
+        return list((self.instance.specifications or {}).items())
+
+    def clean(self):
+        cleaned_data = super().clean()
+        specifications = {}
+        for name, value in self.spec_rows():
+            name, value = name.strip(), value.strip()
+            if not name and not value:
+                continue  # an empty row the admin added and never filled
+            if not name:
+                self.add_error(None, _('Every characteristic with a value needs a name.'))
+                continue
+            if not value:
+                self.add_error(None, _('The characteristic “%(name)s” has no value.') % {'name': name})
+                continue
+            if len(name) > self.SPEC_NAME_MAX_LENGTH or len(value) > self.SPEC_VALUE_MAX_LENGTH:
+                self.add_error(None, _('The characteristic “%(name)s” is too long.') % {'name': name[:40]})
+                continue
+            if name.casefold() in (existing.casefold() for existing in specifications):
+                self.add_error(None, _('The characteristic “%(name)s” is listed twice.') % {'name': name})
+                continue
+            specifications[name] = value
+        cleaned_data['specifications'] = specifications
+        return cleaned_data
+
     def save(self, commit=True):
-        # Note: 'specifications' isn't a form field (the RAM/Storage/Screen/
-        # Processor panel was removed from the add-product UI), so any
-        # existing value on the instance is left untouched here.
         product = super().save(commit=False)
+        product.specifications = self.cleaned_data['specifications']
 
         if commit:
             product.save()

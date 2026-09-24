@@ -12,6 +12,7 @@ from django.utils import timezone
 from django.utils.dates import MONTHS
 from django.utils.http import urlencode
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 from django.views.decorators.http import require_POST
 
 from .models import (
@@ -333,6 +334,14 @@ def management_home(request):
     return render(request, 'shop/product/management_home.html')
 
 
+# One-click row names for the product form's characteristics section: the
+# ones most devices share. Anything else is typed in by hand.
+SPEC_PRESETS = [
+    gettext_lazy('Model'), gettext_lazy('CPU'), gettext_lazy('RAM'), gettext_lazy('Storage'),
+    gettext_lazy('Screen'), gettext_lazy('Camera'), gettext_lazy('Battery'), gettext_lazy('Color'),
+]
+
+
 @login_required
 @user_passes_test(is_admin_or_manager, login_url='shop:product_list', redirect_field_name=None)
 def create_product(request, product_id=None):
@@ -418,6 +427,7 @@ def create_product(request, product_id=None):
         'search_query': search_query,
         'search_groups': search_groups,
         'known_brands': known_brands,
+        'spec_presets': SPEC_PRESETS,
         'gallery_images': gallery_images,
         'active': 'products',
     }

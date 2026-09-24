@@ -1,103 +1,97 @@
+{% extends "shop/base.html" %}
 {% load i18n %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, nofollow">
-    <title>{% translate "Admin Access" %} | {{ store_name }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        body, button, input {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
-        }
-    </style>
-</head>
-<body class="bg-slate-950 text-slate-100 antialiased min-h-screen flex items-center justify-center p-6">
 
-    <div class="w-full max-w-sm space-y-6">
+{% comment %}
+  Staff sign-in. Overrides Django's admin login, but wears the storefront's
+  look (nav, type scale, pill button) rather than a theme of its own, so
+  signing in doesn't feel like leaving the site.
+{% endcomment %}
 
-        <div class="text-center space-y-3">
-            <a href="/" class="inline-flex items-center gap-2.5 text-white font-black text-2xl tracking-tight">
-                <span class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/30 text-white text-lg">
-                    <i class="fa-solid fa-bolt"></i>
-                </span>
-                <span>{{ store_name }}<span class="text-indigo-400">.</span></span>
-            </a>
-            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                <i class="fa-solid fa-lock text-[10px]"></i> {% translate "Staff Access Only" %}
-            </span>
-        </div>
+{% block title %}{% translate "Admin Access" %} | {{ store_name }}{% endblock %}
+{% block extra_head %}<meta name="robots" content="noindex, nofollow">{% endblock %}
 
-        <div class="bg-slate-900/80 backdrop-blur-xl border border-slate-800/80 rounded-3xl p-8 shadow-2xl space-y-6">
+{% block content %}
+<style>
+    .field {
+        width: 100%;
+        background-color: #ffffff;
+        border: 1px solid #d6d6d6;
+        border-radius: 12px;
+        padding: 11px 14px;
+        font-size: 17px;
+        letter-spacing: -0.022em;
+        color: #1d1d1f;
+    }
+    .field:focus { outline: none; border-color: #1d1d1f; }
+    .field::placeholder { color: #707070; }
+    .field-label {
+        display: block;
+        font-size: 12px;
+        line-height: 1.333;
+        letter-spacing: -0.01em;
+        color: #707070;
+        margin-bottom: 6px;
+    }
+</style>
 
-            <div class="space-y-1 text-center">
-                <h1 class="text-xl font-black text-white tracking-tight">{% translate "Admin Sign In" %}</h1>
-                <p class="text-xs text-slate-400">{% translate "Sign in to manage the product catalog." %}</p>
-            </div>
+<section class="band band-gray min-h-[70vh] flex items-center">
+    <div class="wrap w-full">
+        <div class="max-w-md mx-auto">
 
-            {% if user.is_authenticated %}
-                <p class="p-3 text-xs font-semibold rounded-xl border bg-amber-950/60 text-amber-400 border-amber-800/80">
-                    {% blocktranslate trimmed %}
-                        You are signed in as {{ username }}, but that account cannot access
-                        catalog management. Sign in with a different account below.
-                    {% endblocktranslate %}
+            <div class="card bg-paper p-8 sm:p-10">
+                <p class="t-caption text-midgray flex items-center gap-2">
+                    <i class="fa-solid fa-lock text-[11px]"></i> {% translate "Staff Access Only" %}
                 </p>
-            {% endif %}
+                <h1 class="t-heading-sm text-ink mt-3">{% translate "Admin Sign In" %}</h1>
+                <p class="t-body-sm text-midgray mt-2">{% translate "Sign in to manage the product catalog." %}</p>
 
-            {% if form.non_field_errors %}
+                {% if user.is_authenticated %}
+                    <p class="t-caption text-ember bg-canvas rounded-xl p-4 mt-6">
+                        {% blocktranslate trimmed %}
+                            You are signed in as {{ username }}, but that account cannot access
+                            catalog management. Sign in with a different account below.
+                        {% endblocktranslate %}
+                    </p>
+                {% endif %}
+
                 {% for error in form.non_field_errors %}
-                    <p class="p-3 text-xs font-semibold rounded-xl border bg-rose-950/60 text-rose-400 border-rose-800/80 flex items-center gap-2">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    <p class="t-caption text-ember bg-canvas rounded-xl p-4 mt-6 flex items-start gap-2">
+                        <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
                         <span>{{ error }}</span>
                     </p>
                 {% endfor %}
-            {% endif %}
 
-            <form action="{{ app_path }}" method="post" class="space-y-4">
-                {% csrf_token %}
+                <form action="{{ app_path }}" method="post" class="space-y-5 mt-8">
+                    {% csrf_token %}
 
-                <div>
-                    <label for="id_username" class="block text-[11px] font-black uppercase text-slate-400 tracking-wider mb-1.5">
-                        {% translate "Username" %}
-                    </label>
-                    <input type="text" name="username" id="id_username" required autofocus autocapitalize="none" autocomplete="username"
-                           class="w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
-                           placeholder="{% translate 'Username' %}">
-                    {% for error in form.username.errors %}
-                        <p class="text-xs text-rose-400 mt-1">{{ error }}</p>
-                    {% endfor %}
-                </div>
+                    <div>
+                        <label for="id_username" class="field-label">{% translate "Username" %}</label>
+                        <input type="text" name="username" id="id_username" required autofocus autocapitalize="none" autocomplete="username"
+                               class="field" placeholder="{% translate 'Username' %}">
+                        {% for error in form.username.errors %}
+                            <p class="t-caption text-ember mt-1.5">{{ error }}</p>
+                        {% endfor %}
+                    </div>
 
-                <div>
-                    <label for="id_password" class="block text-[11px] font-black uppercase text-slate-400 tracking-wider mb-1.5">
-                        {% translate "Password" %}
-                    </label>
-                    <input type="password" name="password" id="id_password" required autocomplete="current-password"
-                           class="w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
-                           placeholder="••••••••">
-                    {% for error in form.password.errors %}
-                        <p class="text-xs text-rose-400 mt-1">{{ error }}</p>
-                    {% endfor %}
-                    <input type="hidden" name="next" value="{% if next == '/admin/' %}/management/product/add/{% else %}{{ next }}{% endif %}">
-                </div>
+                    <div>
+                        <label for="id_password" class="field-label">{% translate "Password" %}</label>
+                        <input type="password" name="password" id="id_password" required autocomplete="current-password"
+                               class="field" placeholder="••••••••">
+                        {% for error in form.password.errors %}
+                            <p class="t-caption text-ember mt-1.5">{{ error }}</p>
+                        {% endfor %}
+                        <input type="hidden" name="next" value="{% if next == '/admin/' %}/management/product/add/{% else %}{{ next }}{% endif %}">
+                    </div>
 
-                <button type="submit" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs uppercase tracking-wider rounded-2xl transition-all shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-right-to-bracket text-xs"></i>
-                    <span>{% translate "Sign In" %}</span>
-                </button>
-            </form>
+                    <button type="submit" class="btn btn-blue w-full">{% translate "Sign In" %}</button>
+                </form>
+            </div>
+
+            <p class="text-center mt-6">
+                <a href="{% url 'shop:home' %}" class="link-arrow t-caption">&lsaquo; {% translate "Back to store" %}</a>
+            </p>
 
         </div>
-
-        <div class="text-center">
-            <a href="/" class="text-xs font-bold text-slate-500 hover:text-slate-300 transition-colors">
-                &larr; {% translate "Back to store" %}
-            </a>
-        </div>
-
     </div>
-
-</body>
-</html>
+</section>
+{% endblock %}

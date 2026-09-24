@@ -134,12 +134,6 @@
                     <p class="t-caption text-midgray mt-6">{{ product.brand }}</p>
                     <p class="t-body-sm text-ink font-semibold mt-1">{{ product.translated_name }}</p>
 
-                    {% if product.specifications %}
-                        <p class="t-caption text-midgray mt-2">
-                            {% for key, val in product.specifications.items %}{% if forloop.counter <= 2 %}{{ key }}: {{ val }}{% if not forloop.last and forloop.counter < 2 %} · {% endif %}{% endif %}{% endfor %}
-                        </p>
-                    {% endif %}
-
                     <p class="t-body-sm text-ink mt-auto pt-5 figures">{{ product.price }} {% translate "som" %}</p>
                 </a>
             {% empty %}

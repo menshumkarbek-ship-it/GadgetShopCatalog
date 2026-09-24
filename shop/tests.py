@@ -82,6 +82,23 @@ class StorefrontTests(TestCase):
 
         self.assertNotContains(response, reverse('shop:management_home'))
 
+    def test_sign_in_page_wears_the_storefront_theme_and_still_signs_in(self):
+        User.objects.create_user(username='manager', password='manager-password-123', is_staff=True)
+        response = self.client.get(reverse('admin:login'))
+
+        self.assertContains(response, 'id="globalnav"')
+        self.assertContains(response, 'btn btn-blue')
+        self.assertContains(response, 'noindex, nofollow')
+        self.assertNotContains(response, 'bg-slate-950')
+
+        wrong = self.client.post(reverse('admin:login'), {'username': 'manager', 'password': 'nope'})
+        self.assertContains(wrong, 'fa-triangle-exclamation')
+
+        right = self.client.post(reverse('admin:login'), {
+            'username': 'manager', 'password': 'manager-password-123', 'next': reverse('shop:create_product'),
+        })
+        self.assertRedirects(right, reverse('shop:create_product'))
+
     def test_staff_sees_settings_link_and_sign_out_lives_inside_it(self):
         staff = User.objects.create_user(username='manager', password='manager-password-123', is_staff=True)
         self.client.force_login(staff)
@@ -620,6 +637,52 @@ class ManagementPanelTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()['ok'])
         self.assertTrue(Product.objects.filter(slug='phone').exists())
+
+    # --- technical characteristics ------------------------------------
+
+    def post_product(self, specs, product=None):
+        """Save a product with the given (name, value) characteristic rows."""
+        url = reverse('shop:update_product', args=[product.id]) if product else reverse('shop:create_product')
+        return self.client.post(url, {
+            'name': 'Charger', 'slug': 'charger', 'brand': 'Example', 'category': self.category.id,
+            'price': '20.00', 'description': 'A charger.',
+            'spec_name': [name for name, _ in specs], 'spec_value': [value for _, value in specs],
+        }, **self.AJAX)
+
+    def test_a_product_can_be_added_with_its_own_characteristics_or_none(self):
+        self.assertTrue(self.post_product([('Model', 'A2305'), ('', '')]).json()['ok'])
+        self.assertEqual(Product.objects.get(slug='charger').specifications, {'Model': 'A2305'})
+
+        Product.objects.all().delete()
+        self.assertTrue(self.post_product([]).json()['ok'])
+        self.assertEqual(Product.objects.get(slug='charger').specifications, {})
+
+    def test_characteristics_stay_editable_after_the_product_is_added(self):
+        product = self.make_product('Phone', 'phone', '250.00')
+        product.specifications = {'RAM': '8 GB', 'CPU': 'A17'}
+        product.save()
+
+        response = self.client.get(reverse('shop:update_product', args=[product.id]))
+        self.assertContains(response, 'value="RAM"')
+        self.assertContains(response, 'value="A17"')
+
+        self.post_product([('CPU', 'A17 Pro'), ('Camera', '48 MP')], product=product)
+        product.refresh_from_db()
+        self.assertEqual(list(product.specifications.items()), [('CPU', 'A17 Pro'), ('Camera', '48 MP')])
+
+    def test_a_half_filled_or_repeated_characteristic_is_refused(self):
+        for specs in ([('RAM', '')], [('', '8 GB')], [('RAM', '8 GB'), ('ram', '16 GB')]):
+            response = self.post_product(specs)
+            self.assertEqual(response.status_code, 400)
+        self.assertFalse(Product.objects.exists())
+
+    def test_catalog_cards_do_not_list_characteristics(self):
+        product = self.make_product('Phone', 'phone', '250.00')
+        product.specifications = {'RAM': '8 GB'}
+        product.save()
+
+        self.assertNotContains(self.client.get(reverse('shop:product_list')), 'RAM: 8 GB')
+        self.assertContains(self.client.get(reverse('shop:product_detail', args=[product.slug])), '8 GB')
 
     def test_category_actions_in_the_background_hand_back_the_row(self):
         response = self.client.post(reverse('shop:create_category'), {'name': 'Laptops', 'slug': 'laptops'}, **self.AJAX)

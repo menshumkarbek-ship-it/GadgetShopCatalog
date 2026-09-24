@@ -62,9 +62,11 @@
             </p>
         </div>
 
+        {% comment %}Not every product has characteristics (a cable may have
+          none), so the column only appears when some were entered.{% endcomment %}
+        {% if product.specifications %}
         <div>
             <h2 class="t-subheading text-ink">{% translate "Technical Specifications" %}</h2>
-            {% if product.specifications %}
             <dl class="mt-5 card bg-paper p-7 divide-y divide-hairline">
                 {% for key, value in product.specifications.items %}
                 <div class="flex items-baseline justify-between gap-6 py-3 first:pt-0 last:pb-0">
@@ -73,10 +75,8 @@
                 </div>
                 {% endfor %}
             </dl>
-            {% else %}
-            <p class="t-body-sm text-midgray mt-5">{% translate "No detailed specification parameters logged for this product." %}</p>
-            {% endif %}
         </div>
+        {% endif %}
 
     </div>
 </section>

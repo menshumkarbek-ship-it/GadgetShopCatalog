@@ -208,6 +208,57 @@
                 <div class="lang-field hidden" data-group="product-description" data-lang="ky">{{ form.description_ky }}</div>
             </div>
 
+            <!-- Technical characteristics: as many or as few rows as this
+                 product needs. A cable can have none, a charger just its
+                 model, a phone its CPU, RAM, storage and cameras. -->
+            <div class="bg-gray-50/50 rounded-xl p-4 border border-gray-100 space-y-3" data-specs>
+                <div>
+                    <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block">{% translate "Technical Characteristics" %}</label>
+                    <p class="text-[10px] text-gray-400 mt-0.5">{% translate "Optional. Add only the ones that fit this product. Rows left empty are ignored." %}</p>
+                </div>
+
+                <div class="space-y-2" data-spec-rows>
+                    {% for spec_name, spec_value in form.spec_rows %}
+                    <div class="flex items-center gap-2" data-spec-row>
+                        <input type="text" name="spec_name" value="{{ spec_name }}" maxlength="60" autocomplete="off" placeholder="{% translate 'Name, e.g. RAM' %}"
+                               class="w-2/5 min-w-0 bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all">
+                        <input type="text" name="spec_value" value="{{ spec_value }}" maxlength="200" placeholder="{% translate 'Value, e.g. 8 GB' %}"
+                               class="flex-1 min-w-0 bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all">
+                        <button type="button" data-spec-remove title="{% translate 'Remove characteristic' %}"
+                                class="shrink-0 w-9 h-9 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <template data-spec-template>
+                    <div class="flex items-center gap-2" data-spec-row>
+                        <input type="text" name="spec_name" maxlength="60" autocomplete="off" placeholder="{% translate 'Name, e.g. RAM' %}"
+                               class="w-2/5 min-w-0 bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all">
+                        <input type="text" name="spec_value" maxlength="200" placeholder="{% translate 'Value, e.g. 8 GB' %}"
+                               class="flex-1 min-w-0 bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all">
+                        <button type="button" data-spec-remove title="{% translate 'Remove characteristic' %}"
+                                class="shrink-0 w-9 h-9 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </template>
+
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <button type="button" data-spec-add
+                            class="inline-flex items-center gap-1.5 bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50 text-xs font-bold px-3 py-2 rounded-xl transition-colors">
+                        <i class="fa-solid fa-plus text-[10px]"></i>
+                        <span>{% translate "Add characteristic" %}</span>
+                    </button>
+                    <span class="text-[10px] text-gray-400 ml-1">{% translate "Quick add:" %}</span>
+                    {% for preset in spec_presets %}
+                    <button type="button" data-spec-add="{{ preset }}"
+                            class="px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-indigo-50 hover:text-indigo-600 text-[11px] font-bold text-gray-500 transition-colors">{{ preset }}</button>
+                    {% endfor %}
+                </div>
+            </div>
+
             <!-- Image Upload Box -->
             <div class="bg-gray-50/50 rounded-xl p-4 border border-gray-100">
                 <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">{% translate "Product Showcase Image" %}</label>
@@ -271,6 +322,42 @@
                 }
             });
             slugInput.addEventListener('input', function() { slugInput.dataset.touched = "true"; });
+        }
+
+        // Characteristics rows: add a blank or preset-named row, remove one.
+        const specs = document.querySelector('[data-specs]');
+        if (specs) {
+            const rows = specs.querySelector('[data-spec-rows]');
+            const template = specs.querySelector('[data-spec-template]');
+
+            specs.addEventListener('click', function (event) {
+                const add = event.target.closest('[data-spec-add]');
+                if (add) {
+                    const preset = add.dataset.specAdd;
+                    // A preset already listed is focused, not added twice.
+                    const existing = preset && Array.from(rows.querySelectorAll('input[name="spec_name"]'))
+                        .find(function (i) { return i.value.trim().toLowerCase() === preset.toLowerCase(); });
+                    if (existing) { existing.closest('[data-spec-row]').querySelector('input[name="spec_value"]').focus(); return; }
+                    rows.appendChild(template.content.cloneNode(true));
+                    const row = rows.lastElementChild;
+                    if (preset) {
+                        row.querySelector('input[name="spec_name"]').value = preset;
+                        row.querySelector('input[name="spec_value"]').focus();
+                    } else {
+                        row.querySelector('input[name="spec_name"]').focus();
+                    }
+                    return;
+                }
+                const remove = event.target.closest('[data-spec-remove]');
+                if (remove) remove.closest('[data-spec-row]').remove();
+            });
+
+            // After "Register Product" the panel resets the form for the
+            // next entry; the added rows go with it.
+            const form = specs.closest('form');
+            if (form && form.dataset.after === 'reset') {
+                form.addEventListener('reset', function () { rows.innerHTML = ''; });
+            }
         }
     })();
 </script>
