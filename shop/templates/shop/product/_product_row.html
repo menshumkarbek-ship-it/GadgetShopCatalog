@@ -18,14 +18,14 @@
         <a href="{% url 'shop:update_product' p.id %}" class="text-[11px] font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-2 sm:px-2.5 sm:py-1.5 rounded-lg transition-colors">{% translate "Edit" %}</a>
         <!-- Two ways off the catalog: "Sold" feeds the sales report, -->
         <!-- "Delete" doesn't (mistakes, duplicates). Both are undoable. -->
-        <form method="POST" action="{% url 'shop:sell_product' p.id %}" data-after="remove-row" onsubmit="return confirm('{% translate "Mark this product as sold? It leaves the catalog and is counted in the sales report. You can undo this from &quot;Removed&quot;." %}');">
+        <form method="POST" action="{% url 'shop:sell_product' p.id %}" data-after="remove-row" data-confirm-delete="{% translate "Mark this product as sold? It leaves the catalog and is counted in the sales report. You can undo this from &quot;Removed&quot;." %}">
             {% csrf_token %}
             <input type="hidden" name="category" value="{{ category_slug }}">
             <button type="submit" title="{% translate 'Mark as sold' %}" class="text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-2 sm:px-2.5 sm:py-1.5 rounded-lg transition-colors whitespace-nowrap">
                 <i class="fa-solid fa-cash-register"></i> {% translate "Sold" %}
             </button>
         </form>
-        <form method="POST" action="{% url 'shop:remove_product' p.id %}" data-after="remove-row" onsubmit="return confirm('{% translate "Remove this product from the catalog without recording a sale? You can undo this from &quot;Removed&quot;." %}');">
+        <form method="POST" action="{% url 'shop:remove_product' p.id %}" data-after="remove-row" data-confirm-delete="{% translate "Remove this product from the catalog without recording a sale? You can undo this from &quot;Removed&quot;." %}">
             {% csrf_token %}
             <input type="hidden" name="category" value="{{ category_slug }}">
             <button type="submit" title="{% translate 'Delete without recording a sale' %}" class="text-[11px] font-bold text-red-600 bg-red-50 hover:bg-red-100 px-3.5 py-2 sm:px-2.5 sm:py-1.5 rounded-lg transition-colors">

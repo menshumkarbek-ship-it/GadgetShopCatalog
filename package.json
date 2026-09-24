@@ -1,0 +1,11 @@
+{
+  "name": "mobile-shop-styles",
+  "private": true,
+  "description": "Builds the site's Tailwind stylesheet. Only needed when changing classes; the built CSS is committed.",
+  "scripts": {
+    "build:css": "tailwindcss -c tailwind.config.js -i shop/static_src/tailwind.css -o shop/static/shop/css/site.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
+  }
+}

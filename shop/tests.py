@@ -1,10 +1,15 @@
 import re
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone as dt_timezone
 from decimal import Decimal
+from io import BytesIO
+
+from PIL import Image
 
 from django.contrib.auth.models import User, Group
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import connection
-from django.test import TestCase
+from django.conf import settings
+from django.test import TestCase, override_settings
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone, translation
@@ -12,6 +17,38 @@ from django.utils import timezone, translation
 from .models import AboutPageContent, Category, ContactSettings, HomePageContent, Product, Sale
 
 
+def in_language(client, language):
+    """Pick a language the way a visitor does: the switcher's cookie."""
+    client.cookies[settings.LANGUAGE_COOKIE_NAME] = language
+
+
+class DefaultLanguageTests(TestCase):
+    """The store is Russian-first: the browser's language is ignored, and
+    only the navbar switcher changes it."""
+
+    def test_a_first_visit_is_in_russian_whatever_the_browser_asks_for(self):
+        response = self.client.get(reverse('shop:product_list'), HTTP_ACCEPT_LANGUAGE='en-US,en;q=0.9')
+        self.assertEqual(response.wsgi_request.LANGUAGE_CODE, 'ru')
+        self.assertContains(response, '<html lang="ru">')
+        self.assertEqual(response['Content-Language'], 'ru')
+
+    def test_the_switcher_choice_sticks(self):
+        response = self.client.post(reverse('set_language'), {'language': 'en', 'next': '/'})
+        self.assertEqual(response.status_code, 302)
+        response = self.client.get(reverse('shop:product_list'))
+        self.assertEqual(response.wsgi_request.LANGUAGE_CODE, 'en')
+
+        in_language(self.client, 'ky')
+        self.assertEqual(self.client.get(reverse('shop:product_list')).wsgi_request.LANGUAGE_CODE, 'ky')
+
+    def test_an_unknown_language_cookie_falls_back_to_russian(self):
+        in_language(self.client, 'de')
+        self.assertEqual(self.client.get(reverse('shop:product_list')).wsgi_request.LANGUAGE_CODE, 'ru')
+
+
+# The suites below assert English copy, so they run with English as the
+# default; DefaultLanguageTests above covers the real (Russian) one.
+@override_settings(LANGUAGE_CODE='en')
 class StorefrontTests(TestCase):
     def setUp(self):
         self.category = Category.objects.create(name='Phones', slug='phones')
@@ -507,13 +544,66 @@ class StorefrontTests(TestCase):
         product_queries = [q for q in queries.captured_queries if '"shop_product"' in q['sql']]
         self.assertEqual(len(product_queries), 1)
 
+    def test_missing_page_gets_the_branded_404(self):
+        response = self.client.get('/product/no-such-device/')
+        self.assertEqual(response.status_code, 404)
+        self.assertTemplateUsed(response, '404.html')
+        self.assertContains(response, 'Page not found', status_code=404)
+        self.assertContains(response, reverse('shop:product_list'), status_code=404)
+
+    def test_pages_load_the_built_stylesheet_not_the_tailwind_cdn(self):
+        response = self.client.get(reverse('shop:home'))
+        self.assertContains(response, 'shop/css/site.css')
+        self.assertNotContains(response, 'cdn.tailwindcss.com')
+
+    def test_favicon_is_served(self):
+        response = self.client.get('/favicon.ico')
+        self.assertEqual(response.status_code, 301)
+        self.assertIn('shop/favicon', response['Location'])
+
+    def test_500_page_renders_without_a_request(self):
+        from django.template.loader import get_template
+        html = get_template('500.html').render()
+        self.assertIn('Something went wrong', html)
+
+    def test_sitemap_lists_categories_and_products_on_sale_only(self):
+        on_sale = self.make_product('Phone', 'phone', '100.00')
+        sold = self.make_product('Sold Phone', 'sold-phone', '100.00')
+        sold.is_sold = True
+        sold.save()
+
+        response = self.client.get('/sitemap.xml')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, reverse('shop:product_detail', args=[on_sale.slug]))
+        self.assertContains(response, reverse('shop:product_list_by_category', args=[self.category.slug]))
+        self.assertNotContains(response, reverse('shop:product_detail', args=[sold.slug]))
+
+    def test_nonsense_price_filters_are_ignored_not_a_500(self):
+        self.make_product('Phone', 'phone', '100.00')
+        for value in ('nan', 'inf', '-inf', '1e999', 'abc', '-5'):
+            with self.subTest(value=value):
+                response = self.client.get(reverse('shop:product_list'), {'min_price': value, 'max_price': value})
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(len(response.context['products']), 1)
+
+        response = self.client.get(reverse('shop:product_list'), {'min_price': '150'})
+        self.assertEqual(len(response.context['products']), 0)
+
+    def test_catalog_search_finds_a_listing_by_its_russian_title(self):
+        product = self.make_product('Galaxy Buds', 'galaxy-buds', '100.00')
+        product.name_ru = 'Беспроводные наушники'
+        product.save()
+
+        response = self.client.get(reverse('shop:product_list'), {'search': 'наушники'})
+        self.assertEqual([p.pk for p in response.context['products']], [product.pk])
+
     def test_about_page_shows_hours_and_directions_only_when_set(self):
         contact = ContactSettings.get_solo()
         contact.whatsapp_number = '996700123456'
         contact.save()
         settings_obj = AboutPageContent.get_solo()
 
-        response = self.client.get(reverse('shop:about_us'), HTTP_ACCEPT_LANGUAGE='en')
+        response = self.client.get(reverse('shop:about_us'))
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, 'Opening hours')
         self.assertNotContains(response, 'Get directions')
@@ -523,19 +613,22 @@ class StorefrontTests(TestCase):
         settings_obj.map_url = 'https://maps.example.com/store'
         settings_obj.save()
 
-        response = self.client.get(reverse('shop:about_us'), HTTP_ACCEPT_LANGUAGE='en')
+        response = self.client.get(reverse('shop:about_us'))
         self.assertContains(response, 'Mon-Sat 10:00-20:00')
         self.assertContains(response, 'https://maps.example.com/store')
 
         # The hours follow the visitor's language, falling back to English.
-        response = self.client.get(reverse('shop:about_us'), HTTP_ACCEPT_LANGUAGE='ru')
+        in_language(self.client, 'ru')
+        response = self.client.get(reverse('shop:about_us'))
         self.assertContains(response, 'Пн-Сб 10:00-20:00')
-        response = self.client.get(reverse('shop:about_us'), HTTP_ACCEPT_LANGUAGE='ky')
+        in_language(self.client, 'ky')
+        response = self.client.get(reverse('shop:about_us'))
         self.assertContains(response, 'Mon-Sat 10:00-20:00')
 
 
+@override_settings(LANGUAGE_CODE='en')
 class ManagementPanelTests(TestCase):
-    """The in-app management panel: its sidebar, the homepage section editor,
+    """The in-app management panel: its section cards, the homepage section editor,
     the removed-listings page, and the merged sales page."""
 
     def setUp(self):
@@ -609,7 +702,6 @@ class ManagementPanelTests(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertTrue(data['ok'])
-        self.assertEqual(data['removed_count'], 1)
         self.assertEqual(data['messages'][0]['level'], 'success')
         self.assertIn('Phone', data['messages'][0]['text'])
         # The flash was handed over in the JSON, so it must not show up on
@@ -651,14 +743,33 @@ class ManagementPanelTests(TestCase):
 
     def test_a_product_can_be_added_with_its_own_characteristics_or_none(self):
         self.assertTrue(self.post_product([('Model', 'A2305'), ('', '')]).json()['ok'])
-        self.assertEqual(Product.objects.get(slug='charger').specifications, {'Model': 'A2305'})
+        self.assertEqual(Product.objects.get(slug='charger').specifications, [['Model', 'A2305']])
 
         Product.objects.all().delete()
         self.assertTrue(self.post_product([]).json()['ok'])
-        self.assertEqual(Product.objects.get(slug='charger').specifications, {})
+        self.assertEqual(Product.objects.get(slug='charger').specifications, [])
+
+    def test_characteristics_keep_the_order_they_were_entered_in(self):
+        # Longest name first on purpose: jsonb sorts object keys shortest
+        # first, which is what used to scramble this.
+        specs = [('Встроенная память', '256 GB'), ('Модель', 'A3090'), ('CPU', 'A17'), ('Цвет', 'Black')]
+        self.post_product(specs)
+        product = Product.objects.get(slug='charger')
+
+        self.assertEqual(product.spec_items, specs)
+        html = self.client.get(reverse('shop:product_detail', args=[product.slug])).content.decode()
+        positions = [html.index(name) for name, _value in specs]
+        self.assertEqual(positions, sorted(positions))
+        edit = self.client.get(reverse('shop:update_product', args=[product.id])).content.decode()
+        positions = [edit.index(f'value="{name}"') for name, _value in specs]
+        self.assertEqual(positions, sorted(positions))
+        # The API still answers with an object, now in that same order.
+        api = self.client.get(f'/api/products/{product.slug}/').json()
+        self.assertEqual(list(api['specifications'].items()), specs)
 
     def test_characteristics_stay_editable_after_the_product_is_added(self):
         product = self.make_product('Phone', 'phone', '250.00')
+        # Saved in the older object form, which still has to load.
         product.specifications = {'RAM': '8 GB', 'CPU': 'A17'}
         product.save()
 
@@ -668,7 +779,7 @@ class ManagementPanelTests(TestCase):
 
         self.post_product([('CPU', 'A17 Pro'), ('Camera', '48 MP')], product=product)
         product.refresh_from_db()
-        self.assertEqual(list(product.specifications.items()), [('CPU', 'A17 Pro'), ('Camera', '48 MP')])
+        self.assertEqual(product.specifications, [['CPU', 'A17 Pro'], ['Camera', '48 MP']])
 
     def test_a_half_filled_or_repeated_characteristic_is_refused(self):
         for specs in ([('RAM', '')], [('', '8 GB')], [('RAM', '8 GB'), ('ram', '16 GB')]):
@@ -683,6 +794,55 @@ class ManagementPanelTests(TestCase):
 
         self.assertNotContains(self.client.get(reverse('shop:product_list')), 'RAM: 8 GB')
         self.assertContains(self.client.get(reverse('shop:product_detail', args=[product.slug])), '8 GB')
+
+    def test_a_gallery_upload_that_is_not_an_image_is_refused(self):
+        fake = SimpleUploadedFile('notes.png', b'<script>alert(1)</script>', content_type='image/png')
+        response = self.client.post(reverse('shop:create_product'), {
+            'name': 'Phone', 'slug': 'phone', 'brand': 'Example', 'category': self.category.id,
+            'price': '250.00', 'description': 'A phone.', 'extra_images': [fake],
+        }, **self.AJAX)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(Product.all_objects.exists())
+
+        buffer = BytesIO()
+        Image.new('RGB', (10, 10), 'red').save(buffer, format='PNG')
+        real = SimpleUploadedFile('photo.png', buffer.getvalue(), content_type='image/png')
+        response = self.client.post(reverse('shop:create_product'), {
+            'name': 'Phone', 'slug': 'phone', 'brand': 'Example', 'category': self.category.id,
+            'price': '250.00', 'description': 'A phone.', 'extra_images': [real],
+        }, **self.AJAX)
+        self.assertTrue(response.json()['ok'])
+        self.assertEqual(Product.objects.get(slug='phone').gallery_images.count(), 1)
+
+    def test_pressing_sold_twice_records_one_sale(self):
+        product = self.make_product('Phone', 'phone', '250.00')
+
+        first = self.client.post(reverse('shop:sell_product', args=[product.id]), **self.AJAX)
+        second = self.client.post(reverse('shop:sell_product', args=[product.id]), **self.AJAX)
+
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(second.status_code, 404)
+        self.assertEqual(Sale.objects.count(), 1)
+
+    def test_sales_report_survives_an_impossible_year(self):
+        for year in ('99999999', '0', '-3'):
+            with self.subTest(year=year):
+                response = self.client.get(reverse('shop:sales_report'), {'year': year, 'month': '1'})
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.context['selected_year'], timezone.localdate().year)
+
+    def test_sales_count_towards_the_month_in_bishkek_time(self):
+        product = self.make_product('Phone', 'phone', '250.00')
+        self.client.post(reverse('shop:sell_product', args=[product.id]))
+        sale = Sale.objects.get()
+        # 1 March 03:00 in Bishkek is still 28/29 February in UTC.
+        Sale.objects.filter(pk=sale.pk).update(sold_at=datetime(2026, 2, 28, 21, 0, tzinfo=dt_timezone.utc))
+
+        march = self.client.get(reverse('shop:sales_report'), {'year': '2026', 'month': '3'})
+        self.assertEqual(march.context['total_count'], 1)
+        february = self.client.get(reverse('shop:sales_report'), {'year': '2026', 'month': '2'})
+        self.assertEqual(february.context['total_count'], 0)
 
     def test_category_actions_in_the_background_hand_back_the_row(self):
         response = self.client.post(reverse('shop:create_category'), {'name': 'Laptops', 'slug': 'laptops'}, **self.AJAX)
@@ -702,108 +862,71 @@ class ManagementPanelTests(TestCase):
         self.assertTrue(response.json()['ok'])
         self.assertEqual(response.json()['category_count'], 1)
 
-    # --- sidebar -------------------------------------------------------
+    # --- the panel's menu: section cards, Back links ---------------------
 
-    def test_every_management_page_renders_with_the_shared_sidebar(self):
-        pages = [
-            ('shop:create_product', 'products'),
-            ('shop:create_category', 'categories'),
-            ('shop:removed_products', 'removed'),
-            ('shop:sales_archive', 'sales'),
-            ('shop:manage_homepage', 'homepage'),
-            ('shop:manage_about', 'about'),
-            ('shop:manage_contacts', 'contacts'),
-        ]
-        for name, active in pages:
-            with self.subTest(page=name):
-                response = self.client.get(reverse(name))
-                self.assertEqual(response.status_code, 200)
-                # The lit link is chosen from this key, so it has to survive.
-                self.assertEqual(response.context['active'], active)
-                # Every page can reach every other one from the sidebar.
-                for other, _unused in pages:
-                    self.assertContains(response, reverse(other))
+    SECTION_PAGES = [
+        ('shop:create_product', 'products'),
+        ('shop:create_category', 'categories'),
+        ('shop:removed_products', 'removed'),
+        ('shop:sales_archive', 'sales'),
+        ('shop:manage_homepage', 'homepage'),
+        ('shop:manage_about', 'about'),
+        ('shop:manage_contacts', 'contacts'),
+    ]
 
-        # The monthly view isn't in the sidebar — the sales page switches to
-        # it itself — but it still lights the one Sales entry.
-        response = self.client.get(reverse('shop:sales_report'))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['active'], 'sales')
-        self.assertContains(response, reverse('shop:sales_archive'))
+    # The navbar's Settings link points at the front door too, so the Back
+    # link is told apart by its chevron.
+    BACK_LINK = r'<a href="/management/"[^>]*>\s*<i class="fa-solid fa-chevron-left'
 
-    def test_section_pages_drill_down_on_phones(self):
-        """Below `lg` a section page shows only its own content: the section
-        list is hidden and a Back link leads to the panel's front door. From
-        `lg` up the same list is the sidebar beside the page."""
-        for name in ('shop:create_product', 'shop:sales_archive', 'shop:manage_contacts'):
-            with self.subTest(page=name):
-                html = self.client.get(reverse(name)).content.decode()
-
-                menu = re.search(r'id="section-menu"[^>]*class="([^"]*)"', html)
-                self.assertIsNotNone(menu)
-                self.assertIn('hidden', menu.group(1))
-                self.assertIn('lg:block', menu.group(1))
-
-                content = re.search(r'id="section-content"[^>]*class="([^"]*)"', html)
-                self.assertIsNotNone(content)
-                self.assertNotIn('hidden', content.group(1))
-
-                self.assertContains(
-                    self.client.get(reverse(name)),
-                    f'href="{reverse("shop:management_home")}"',
-                )
-
-    def test_management_home_is_the_section_list_on_phones(self):
-        """The front door passes no `active` key, so below `lg` it is the
-        full-width section list and nothing else; from `lg` up the list is
-        the sidebar and an overview of the same sections sits beside it."""
+    def test_the_front_door_is_the_only_menu_and_it_can_sign_out(self):
         response = self.client.get(reverse('shop:management_home'))
         self.assertEqual(response.status_code, 200)
         self.assertNotIn('active', response.context)
-        html = response.content.decode()
 
-        menu = re.search(r'id="section-menu"[^>]*class="([^"]*)"', html)
-        self.assertIsNotNone(menu)
-        self.assertNotIn('hidden', menu.group(1))
+        # One card per section, in this order, and nothing else to keep in step.
+        keys = [item['key'] for group in response.context['management_groups'] for item in group['items']]
+        self.assertEqual(keys, [key for _name, key in self.SECTION_PAGES])
+        for name, _key in self.SECTION_PAGES:
+            self.assertContains(response, f'href="{reverse(name)}"')
 
-        content = re.search(r'id="section-content"[^>]*class="([^"]*)"', html)
-        self.assertIsNotNone(content)
-        self.assertIn('hidden', content.group(1))
-        self.assertIn('lg:block', content.group(1))
+        # Signing out lives here, as a full page post rather than a background one.
+        self.assertContains(response, f'action="{reverse("admin:logout")}" data-reload')
+        # No Back link on the front door itself.
+        self.assertNotRegex(response.content.decode(), self.BACK_LINK)
 
-        # Every section is reachable from here, in both layouts.
-        for group in response.context['management_groups']:
-            for item in group['items']:
-                self.assertContains(response, item['url'])
+    def test_every_section_page_has_a_back_link_and_no_sidebar(self):
+        for name, key in self.SECTION_PAGES + [('shop:sales_report', 'sales')]:
+            with self.subTest(page=name):
+                response = self.client.get(reverse(name))
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.context['active'], key)
+                self.assertRegex(response.content.decode(), self.BACK_LINK)
+                # The section list is not repeated beside the page.
+                self.assertNotIn('management_groups', response.context)
+                self.assertNotContains(response, 'id="section-menu"')
 
     def test_management_home_requires_a_manager(self):
         self.client.logout()
         response = self.client.get(reverse('shop:management_home'))
         self.assertEqual(response.status_code, 302)
 
-    def test_every_nav_link_is_defined_once_for_both_layouts(self):
-        """The sidebar and the collapsed row read one list, so a page added to
-        the panel shows up in both without being spelled out twice."""
-        response = self.client.get(reverse('shop:manage_about'))
-
-        keys = [item['key'] for group in response.context['management_groups']
-                for item in group['items']]
-        self.assertEqual(
-            keys,
-            ['products', 'categories', 'removed', 'sales', 'homepage', 'about', 'contacts'],
-        )
-        # Every view's `active` key has to be one of them, or nothing lights up.
-        self.assertIn(response.context['active'], keys)
-
-    def test_sidebar_badge_counts_removed_listings_only_on_the_panel(self):
+    def test_removed_card_counts_removed_listings_only_on_the_panel(self):
         self.make_product('Gone', 'gone', '100.00')
         self.client.post(reverse('shop:remove_product', args=[Product.all_objects.get(slug='gone').id]))
 
-        panel = self.client.get(reverse('shop:manage_about'))
-        self.assertEqual(panel.context['removed_count'], 1)
+        panel = self.client.get(reverse('shop:management_home'))
+        removed = next(item for group in panel.context['management_groups']
+                       for item in group['items'] if item['key'] == 'removed')
+        self.assertEqual(removed['badge'], 1)
 
-        # The storefront renders no sidebar, so it must not pay for the count.
-        self.assertNotIn('removed_count', self.client.get(reverse('shop:home')).context)
+        # The storefront renders no panel menu, so it must not pay for the count.
+        self.assertNotIn('management_groups', self.client.get(reverse('shop:home')).context)
+
+    def test_panel_inputs_are_light_not_the_old_dark_theme(self):
+        for name in ('shop:manage_contacts', 'shop:manage_about', 'shop:manage_homepage'):
+            with self.subTest(page=name):
+                self.assertNotContains(self.client.get(reverse(name)), 'bg-slate-800')
+        self.assertNotContains(self.client.get(reverse('shop:create_product'), {'action': 'new'}), 'bg-slate-800')
 
     # --- homepage sections ---------------------------------------------
 
@@ -889,11 +1012,13 @@ class ManagementPanelTests(TestCase):
     def test_management_panel_speaks_russian(self):
         """The panel's own chrome is translated, not just the storefront —
         a fuzzy or missing catalog entry would silently fall back to English."""
-        response = self.client.get(reverse('shop:manage_homepage'), headers={'accept-language': 'ru'})
+        in_language(self.client, 'ru')
+        response = self.client.get(reverse('shop:manage_homepage'))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Блоки главной страницы')
-        self.assertContains(response, 'Удалённые')
+        self.assertContains(response, 'Управление')  # the Back link
+        self.assertContains(self.client.get(reverse('shop:management_home')), 'Удалённые')
 
     def test_regular_user_cannot_edit_the_homepage(self):
         self.client.force_login(User.objects.create_user(username='shopper', password='shopper-pass-123'))
@@ -928,8 +1053,6 @@ class ManagementPanelTests(TestCase):
 
         self.assertEqual([p.pk for p in response.context['removed_products']], [keep.pk])
         self.assertEqual(response.context['shown_count'], 1)
-        # The sidebar badge keeps showing everything that is actually removed.
-        self.assertEqual(response.context['removed_count'], 2)
 
     def test_restoring_from_the_removed_page_comes_back_to_it(self):
         product = self.make_product('Phone', 'phone', '250.00')

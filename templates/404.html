@@ -1,0 +1,26 @@
+{% extends "shop/base.html" %}
+{% load i18n %}
+
+{% comment %}
+  Shown for any missing page once DEBUG is off — most often a sold or
+  removed listing someone had bookmarked, so the way on is the catalog.
+{% endcomment %}
+
+{% block title %}{% translate "Page not found" %} | {{ store_name }}{% endblock %}
+{% block extra_head %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block content %}
+<section class="band band-gray min-h-[60vh] flex items-center">
+    <div class="wrap w-full text-center">
+        <p class="t-caption text-midgray figures">404</p>
+        <h1 class="t-heading text-ink mt-3">{% translate "Page not found" %}</h1>
+        <p class="t-body text-midgray mt-4 max-w-xl mx-auto">
+            {% translate "This page doesn't exist, or the device on it has already been sold." %}
+        </p>
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-4">
+            <a href="{% url 'shop:product_list' %}" class="btn btn-blue">{% translate "Browse the catalog" %}</a>
+            <a href="{% url 'shop:home' %}" class="link-arrow">{% translate "Home" %} &rsaquo;</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,4 @@
+/* Source for shop/static/shop/css/site.css — see tailwind.config.js. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

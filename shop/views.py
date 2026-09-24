@@ -1,12 +1,16 @@
-from datetime import date, timedelta
+from datetime import timedelta
+from decimal import Decimal, InvalidOperation
 
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.contrib import messages
+from django import forms
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.cache import cache
+from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.db.models import Q, Sum, Count, Min, Max
 from django.utils import timezone
 from django.utils.dates import MONTHS
@@ -100,6 +104,17 @@ def home_page(request):
 # 🏪 CATALOG CONTROLLER
 # ==========================================
 
+def _parse_price(value):
+    """A price filter from the query string, or None if it isn't a plain
+    non-negative number. float() would also accept 'nan', 'inf' and '1e999',
+    which the database then chokes on."""
+    try:
+        price = Decimal((value or '').strip())
+    except InvalidOperation:
+        return None
+    return price if price.is_finite() and 0 <= price < 10 ** 8 else None
+
+
 def product_list(request, category_slug=None):
     category = None
     categories = get_cached_categories()
@@ -135,23 +150,21 @@ def product_list(request, category_slug=None):
         products_list = products_list.filter(brand__iexact=brand_filter)
 
     if search_query:
+        # Every language's title and description: the store opens in
+        # Russian, so a visitor searches in Russian whether or not the
+        # listing's main title is.
         products_list = products_list.filter(
-            Q(name__icontains=search_query) |
-            Q(brand__icontains=search_query) |
-            Q(description__icontains=search_query)
+            Q(name__icontains=search_query) | Q(name_ru__icontains=search_query) |
+            Q(name_ky__icontains=search_query) | Q(brand__icontains=search_query) |
+            Q(description__icontains=search_query) | Q(description_ru__icontains=search_query) |
+            Q(description_ky__icontains=search_query)
         )
 
-    if min_price:
-        try:
-            products_list = products_list.filter(price__gte=float(min_price))
-        except ValueError:
-            pass
-
-    if max_price:
-        try:
-            products_list = products_list.filter(price__lte=float(max_price))
-        except ValueError:
-            pass
+    low, high = _parse_price(min_price), _parse_price(max_price)
+    if low is not None:
+        products_list = products_list.filter(price__gte=low)
+    if high is not None:
+        products_list = products_list.filter(price__lte=high)
 
     available_brands = Product.objects.filter(is_sold=False).order_by('brand').values_list('brand', flat=True).distinct()
 
@@ -305,10 +318,6 @@ def _form_errors(form):
     ]
 
 
-def _removed_count():
-    return Product.all_objects.filter(deleted_at__isnull=False).count()
-
-
 def is_admin_or_manager(user):
     return user.is_authenticated and (
             user.is_staff or
@@ -321,17 +330,34 @@ def is_admin_or_manager(user):
 @user_passes_test(is_admin_or_manager, login_url='shop:product_list', redirect_field_name=None)
 def management_home(request):
     """
-    The front door of the management panel.
+    The front door of the management panel, and its only menu: a card per
+    section, plus Sign Out. Picking one opens that section on its own, with
+    a Back link returning here, the way a settings app drills down.
 
-    On a phone this is the whole panel's top level: the section list fills
-    the screen, and picking one opens that section on its own (with a Back
-    link returning here), the way a settings app drills down. On a desktop
-    it is the same sidebar beside an overview of the sections.
-
-    Passes no `active` key on purpose — that is what tells the shell to show
-    the list instead of a section (see _management_base.html).
+    Passes no `active` key on purpose — that is what tells the shell to
+    leave the Back link out (see _management_base.html).
     """
     return render(request, 'shop/product/management_home.html')
+
+
+def _are_images(files, form):
+    """
+    Check the gallery uploads the way the main photo's ImageField is
+    checked — opened with Pillow — so a file that isn't a picture is refused
+    instead of stored and served from the gallery. They aren't a form field
+    (Django forms have no multi-file field), so the error is added to `form`
+    by hand, where the panel shows it like any other.
+    """
+    image_check = forms.ImageField()
+    for image_file in files:
+        try:
+            image_check.clean(image_file)
+        except ValidationError as error:
+            form.add_error(None, _('Additional photo “%(name)s”: %(error)s') % {
+                'name': image_file.name, 'error': ' '.join(error.messages),
+            })
+            return False
+    return True
 
 
 # One-click row names for the product form's characteristics section: the
@@ -351,14 +377,14 @@ def create_product(request, product_id=None):
 
     if request.method == 'POST':
         form = ProductCreateForm(request.POST, request.FILES, instance=product_instance)
-        if form.is_valid():
+        extra_images = request.FILES.getlist('extra_images')
+        if form.is_valid() and _are_images(extra_images, form):
             product = form.save()
 
             # Extra gallery photos: a plain <input type="file" name="extra_images"
             # multiple> isn't a ModelForm field (Django forms don't support
             # multi-file fields out of the box), so they're picked up straight
             # from request.FILES and saved as separate ProductImage rows.
-            extra_images = request.FILES.getlist('extra_images')
             if extra_images:
                 next_order = product.gallery_images.count()
                 for offset, image_file in enumerate(extra_images):
@@ -409,7 +435,8 @@ def create_product(request, product_id=None):
         for group in category_groups:
             matches = [
                 p for p in group['products']
-                if needle in p.name.lower() or needle in p.brand.lower() or p.category_number == number
+                if any(needle in text.lower() for text in (p.name, p.name_ru, p.name_ky, p.brand))
+                or p.category_number == number
             ]
             if matches:
                 search_groups.append({'category': group['category'], 'products': matches})
@@ -502,25 +529,30 @@ def sell_product(request, product_id):
     the values as they are right now, so later edits never change a past
     month's sales report.
     """
-    product = get_object_or_404(Product.objects.select_related('category'), id=product_id)
-
-    Sale.objects.create(
-        product=product,
-        product_name=product.name,
-        brand=product.brand,
-        category_name=product.category.name,
-        catalog_code=product.catalog_code,
-        price=product.price,
-        sold_by=request.user,
-    )
-    _remove_from_catalog(product)
+    # Locked for the length of the sale, so a double click (or two staff
+    # pressing Sold at once) can't record the same listing twice: the second
+    # request waits, then finds it already removed and gets a 404.
+    with transaction.atomic():
+        product = get_object_or_404(
+            Product.objects.select_for_update(of=('self',)).select_related('category'), id=product_id
+        )
+        Sale.objects.create(
+            product=product,
+            product_name=product.name,
+            brand=product.brand,
+            category_name=product.category.name,
+            catalog_code=product.catalog_code,
+            price=product.price,
+            sold_by=request.user,
+        )
+        _remove_from_catalog(product)
 
     messages.success(
         request,
         _('"%(name)s" was marked as sold and removed from the catalog. You can undo this from "Removed".')
         % {'name': product.name},
     )
-    return _panel_response(request, _after_catalog_action(request), removed_count=_removed_count())
+    return _panel_response(request, _after_catalog_action(request))
 
 
 @login_required
@@ -539,7 +571,7 @@ def remove_product(request, product_id):
         _('"%(name)s" was removed from the catalog (not counted as a sale). You can undo this from "Removed".')
         % {'name': product.name},
     )
-    return _panel_response(request, _after_catalog_action(request), removed_count=_removed_count())
+    return _panel_response(request, _after_catalog_action(request))
 
 
 @login_required
@@ -561,7 +593,7 @@ def restore_product(request, product_id):
     product.save(update_fields=['deleted_at'])
 
     messages.success(request, _('"%(name)s" is back in the catalog.') % {'name': product.name})
-    return _panel_response(request, _after_catalog_action(request), removed_count=_removed_count())
+    return _panel_response(request, _after_catalog_action(request))
 
 
 def _delete_product_files(product):
@@ -597,7 +629,7 @@ def purge_product(request, product_id):
         request,
         _('"%(name)s" was permanently deleted, along with its photos.') % {'name': name},
     )
-    return _panel_response(request, _after_catalog_action(request), removed_count=_removed_count())
+    return _panel_response(request, _after_catalog_action(request))
 
 
 @login_required
@@ -627,7 +659,7 @@ def delete_category(request, category_id):
         _('Category "%(name)s" was deleted, along with its products: %(count)s.')
         % {'name': name, 'count': len(products)},
     )
-    return _panel_response(request, redirect('shop:create_category'), category_count=Category.objects.count(), removed_count=_removed_count())
+    return _panel_response(request, redirect('shop:create_category'), category_count=Category.objects.count())
 
 
 @login_required
@@ -653,7 +685,7 @@ def discard_sale(request, sale_id):
     url = reverse('shop:sales_report')
     month, year = request.POST.get('month'), request.POST.get('year')
     if month and year:
-        url += f'?month={month}&year={year}'
+        url += '?' + urlencode({'month': month, 'year': year})
     return _panel_response(request, redirect(url))
 
 
@@ -821,13 +853,17 @@ def sales_report(request, period='month'):
     `period` is 'month' (filtered by the month/year pickers) or 'all' (every
     sale ever recorded); shop:sales_archive is this same page pinned to 'all'.
     """
-    today = date.today()
+    # The store's own date, not the server's UTC one (see TIME_ZONE).
+    today = timezone.localdate()
     if request.GET.get('period') in ('month', 'all'):
         period = request.GET['period']
 
     try:
         year = int(request.GET.get('year', today.year))
     except (TypeError, ValueError):
+        year = today.year
+    if not 2000 <= year <= today.year + 1:
+        # A year outside what datetime can hold would 500 the page.
         year = today.year
     try:
         month = int(request.GET.get('month', today.month))
@@ -891,8 +927,8 @@ def sales_report(request, period='month'):
 
 def sales_archive(request):
     """
-    The all-time view of the sales page above, kept on its own URL: it is a
-    distinct place to navigate to from the sidebar, and links made to
+    The all-time view of the sales page above, kept on its own URL: it is
+    what the Sales card opens, and links made to
     /management/archive/ before the two pages merged still land on it.
     """
     return sales_report(request, period='all')
@@ -996,9 +1032,7 @@ def removed_products(request):
         'removed_products': removed,
         'search_query': search_query,
         # Counted off the list actually shown, so the tallies agree with it
-        # while a search is narrowing things down. The sidebar badge
-        # (removed_count, from the management_nav processor) stays the
-        # unfiltered total on purpose.
+        # while a search is narrowing things down.
         'shown_count': len(removed),
         'sold_count': sum(1 for product in removed if product.was_sold),
         'deleted_count': sum(1 for product in removed if not product.was_sold),

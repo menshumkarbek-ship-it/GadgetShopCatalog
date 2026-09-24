@@ -1,0 +1,33 @@
+{% load i18n %}<!DOCTYPE html>
+{% comment %}
+  Rendered by Django's server_error handler with no request context: no
+  context processors, no database, nothing that could fail a second time.
+  So it stands alone — inline styles, no base template, no store name.
+{% endcomment %}
+<html lang="{% get_current_language as LANGUAGE_CODE %}{{ LANGUAGE_CODE|default:'ru' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>{% translate "Something went wrong" %}</title>
+    <style>
+        body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+               background: #f5f5f7; color: #1d1d1f; text-align: center; padding: 20px; box-sizing: border-box;
+               font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif; }
+        h1 { font-size: clamp(28px, 5vw, 48px); font-weight: 600; letter-spacing: -0.005em; margin: 12px 0 0; }
+        p { font-size: 17px; line-height: 1.47; color: #707070; max-width: 32rem; margin: 16px auto 0; }
+        .code { font-size: 14px; margin: 0; }
+        a { display: inline-block; margin-top: 32px; padding: 11px 22px; border-radius: 980px;
+            background: #0071e3; color: #fff; text-decoration: none; font-size: 17px; }
+        a:hover { background: #0077ed; }
+    </style>
+</head>
+<body>
+    <main>
+        <p class="code">500</p>
+        <h1>{% translate "Something went wrong" %}</h1>
+        <p>{% translate "The page couldn't be loaded because of a problem on our side. Please try again in a minute." %}</p>
+        <a href="/">{% translate "Back to store" %}</a>
+    </main>
+</body>
+</html>

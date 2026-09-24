@@ -9,7 +9,6 @@
 {% endcomment %}
 
 {% block title %}{% if period == 'all' %}{% translate "All Sales" %}{% else %}{% translate "Sales Report" %}{% endif %} | {{ store_name }}{% endblock %}
-{% block breadcrumb %}{% translate "Sales" %}{% endblock %}
 {% block page_heading %}{% if period == 'all' %}{% translate "All Sales" %}{% else %}{% translate "Sales Report" %}{% endif %}{% endblock %}
 {% block page_intro %}
     {% if period == 'all' %}

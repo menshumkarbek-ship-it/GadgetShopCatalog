@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-24 12:26+0600\n"
+"POT-Creation-Date: 2026-09-24 14:16+0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,256 +19,250 @@ msgstr ""
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || "
 "(n%100>=11 && n%100<=14)? 2 : 3);\n"
 
-#: .\config\settings.py:144
+#: .\config\settings.py:151
 msgid "English"
 msgstr "Английский"
 
-#: .\config\settings.py:145
+#: .\config\settings.py:152
 msgid "Russian"
 msgstr "Русский"
 
-#: .\config\settings.py:146
+#: .\config\settings.py:153
 msgid "Kyrgyz"
 msgstr "Кыргызский"
 
-#: .\shop\context_processors.py:119 .\shop\templates\shop\base.html:214
-#: .\shop\templates\shop\base.html:253
-#: .\shop\templates\shop\product\_management_base.html:45
+#: .\shop\context_processors.py:99 .\shop\templates\shop\base.html:196
+#: .\shop\templates\shop\base.html:235
 #: .\shop\templates\shop\product\list.html:5
 msgid "Catalog"
 msgstr "Каталог"
 
-#: .\shop\context_processors.py:121 .\shop\templates\shop\product\create.html:6
+#: .\shop\context_processors.py:101 .\shop\templates\shop\product\create.html:6
 #: .\shop\templates\shop\product\create.html:8
-#: .\shop\templates\shop\product\create.html:9
+#: .\shop\templates\shop\product\create.html:125
 msgid "Products"
 msgstr "Товары"
 
-#: .\shop\context_processors.py:123 .\shop\templates\shop\pages\about.html:34
+#: .\shop\context_processors.py:103 .\shop\templates\shop\pages\about.html:34
 #: .\shop\templates\shop\product\category_create.html:6
-#: .\shop\templates\shop\product\category_create.html:7
-#: .\shop\templates\shop\product\create.html:80
+#: .\shop\templates\shop\product\create.html:79
+#: .\shop\templates\shop\product\create.html:99
 #: .\shop\templates\shop\product\create.html:100
-#: .\shop\templates\shop\product\create.html:101
 msgid "Categories"
 msgstr "Категории"
 
-#: .\shop\context_processors.py:125
-#: .\shop\templates\shop\product\removed_products.html:6
+#: .\shop\context_processors.py:105
 msgid "Removed"
 msgstr "Удалённые"
 
-#: .\shop\context_processors.py:130 .\shop\context_processors.py:135
-#: .\shop\templates\shop\product\sales_report.html:12
+#: .\shop\context_processors.py:110 .\shop\context_processors.py:115
 msgid "Sales"
 msgstr "Продажи"
 
-#: .\shop\context_processors.py:140
+#: .\shop\context_processors.py:120
 msgid "Pages"
 msgstr "Страницы"
 
-#: .\shop\context_processors.py:142
-#: .\shop\templates\shop\product\homepage_settings.html:6
+#: .\shop\context_processors.py:122
 msgid "Homepage"
 msgstr "Главная страница"
 
-#: .\shop\context_processors.py:144
-#: .\shop\templates\shop\product\about_settings.html:6
+#: .\shop\context_processors.py:124
 msgid "About Page"
 msgstr "Страница «О нас»"
 
-#: .\shop\context_processors.py:146
-#: .\shop\templates\shop\product\contact_settings.html:6
+#: .\shop\context_processors.py:126
 msgid "Contacts"
 msgstr "Контакты"
 
-#: .\shop\forms.py:23 .\shop\forms.py:247 .\shop\forms.py:248
-#: .\shop\forms.py:255 .\shop\forms.py:256 .\shop\forms.py:280
-#: .\shop\forms.py:281
+#: .\shop\forms.py:24 .\shop\forms.py:249 .\shop\forms.py:250
+#: .\shop\forms.py:257 .\shop\forms.py:258 .\shop\forms.py:282
+#: .\shop\forms.py:283
 msgid "Optional — falls back to the heading above if left blank"
 msgstr "Необязательно — если пусто, используется заголовок выше"
 
-#: .\shop\forms.py:24 .\shop\forms.py:243 .\shop\forms.py:244
-#: .\shop\forms.py:259 .\shop\forms.py:260 .\shop\forms.py:284
-#: .\shop\forms.py:285
+#: .\shop\forms.py:25 .\shop\forms.py:245 .\shop\forms.py:246
+#: .\shop\forms.py:261 .\shop\forms.py:262 .\shop\forms.py:286
+#: .\shop\forms.py:287
 msgid "Optional — falls back to the text above if left blank"
 msgstr "Необязательно — если пусто, используется текст выше"
 
-#: .\shop\forms.py:25
+#: .\shop\forms.py:26
 msgid "Optional — falls back to the label above if left blank"
 msgstr "Необязательно — если пусто, используется надпись выше"
 
-#: .\shop\forms.py:37
+#: .\shop\forms.py:38
 msgid "Auto-generated if empty (e.g., iphone-15-pro-max)"
 msgstr ""
 "Создаётся автоматически, если оставить пустым (например, iphone-15-pro-max)"
 
-#: .\shop\forms.py:44
+#: .\shop\forms.py:45
 msgid "Describe the product, condition, and included accessories."
 msgstr "Опишите товар, его состояние и комплектацию."
 
-#: .\shop\forms.py:57
+#: .\shop\forms.py:58
 msgid "Type any brand, e.g. Apple, Samsung, Anker..."
 msgstr "Введите любой бренд, например Apple, Samsung, Anker..."
 
-#: .\shop\forms.py:58
+#: .\shop\forms.py:59
 msgid "e.g., iPhone 15 Pro Max"
 msgstr "например, iPhone 15 Pro Max"
 
-#: .\shop\forms.py:59 .\shop\forms.py:60
+#: .\shop\forms.py:60 .\shop\forms.py:61
 msgid "Optional — falls back to the title above if left blank"
 msgstr "Необязательно — если пусто, используется название выше"
 
-#: .\shop\forms.py:62 .\shop\forms.py:63
+#: .\shop\forms.py:63 .\shop\forms.py:64
 msgid "Optional — falls back to the description above if left blank"
 msgstr "Необязательно — если пусто, используется описание выше"
 
-#: .\shop\forms.py:107
+#: .\shop\forms.py:108
 msgid "Every characteristic with a value needs a name."
 msgstr "У каждой характеристики со значением должно быть название."
 
-#: .\shop\forms.py:110
+#: .\shop\forms.py:111
 #, python-format
 msgid "The characteristic “%(name)s” has no value."
 msgstr "У характеристики «%(name)s» нет значения."
 
-#: .\shop\forms.py:113
+#: .\shop\forms.py:114
 #, python-format
 msgid "The characteristic “%(name)s” is too long."
 msgstr "Характеристика «%(name)s» слишком длинная."
 
-#: .\shop\forms.py:116
+#: .\shop\forms.py:117
 #, python-format
 msgid "The characteristic “%(name)s” is listed twice."
 msgstr "Характеристика «%(name)s» указана дважды."
 
-#: .\shop\forms.py:142
+#: .\shop\forms.py:144
 msgid "auto-filled, e.g. headphones"
 msgstr "заполняется само, напр. headphones"
 
-#: .\shop\forms.py:149
+#: .\shop\forms.py:151
 msgid "Show as a homepage announcement slide"
 msgstr "Показывать как слайд-анонс на главной странице"
 
-#: .\shop\forms.py:155
+#: .\shop\forms.py:157
 msgid "Show a \"Newest In\" row for this category on the homepage"
 msgstr "Показывать блок «Новинки» этой категории на главной странице"
 
-#: .\shop\forms.py:165
+#: .\shop\forms.py:167
 msgid "e.g., Headphones, Powerbanks, Smartwatches"
 msgstr "например, Наушники, Повербанки, Смарт-часы"
 
-#: .\shop\forms.py:167 .\shop\forms.py:168 .\shop\forms.py:316
-#: .\shop\forms.py:317
+#: .\shop\forms.py:169 .\shop\forms.py:170 .\shop\forms.py:318
+#: .\shop\forms.py:319
 msgid "Optional — falls back to the name above if left blank"
 msgstr "Необязательно — если пусто, используется название выше"
 
-#: .\shop\forms.py:199
+#: .\shop\forms.py:201
 msgid "e.g. hello@yourstore.com"
 msgstr "напр. hello@yourstore.com"
 
-#: .\shop\forms.py:207
+#: .\shop\forms.py:209
 msgid "996700123456 (country code, digits only)"
 msgstr "996700123456 (код страны, только цифры)"
 
-#: .\shop\forms.py:211 .\shop\forms.py:215
+#: .\shop\forms.py:213 .\shop\forms.py:217
 msgid "username, without the @"
 msgstr "имя пользователя, без @"
 
-#: .\shop\forms.py:242
+#: .\shop\forms.py:244
 msgid "Family Owned Since 2010"
 msgstr "Семейный бизнес с 2010 года"
 
-#: .\shop\forms.py:246
+#: .\shop\forms.py:248
 msgid "e.g. About us"
 msgstr "напр. О нас"
 
-#: .\shop\forms.py:250
+#: .\shop\forms.py:252
 msgid "Tell customers about your shop and your market..."
 msgstr "Расскажите покупателям о вашем магазине и рынке..."
 
-#: .\shop\forms.py:251 .\shop\forms.py:252
+#: .\shop\forms.py:253 .\shop\forms.py:254
 msgid "Optional — falls back to the story above if left blank"
 msgstr "Необязательно — если пусто, используется текст выше"
 
-#: .\shop\forms.py:254
+#: .\shop\forms.py:256
 msgid "See It In Person"
 msgstr "Увидеть вживую"
 
-#: .\shop\forms.py:258
+#: .\shop\forms.py:260
 msgid "Invite customers to visit your store in person..."
 msgstr "Пригласите покупателей посетить ваш магазин лично..."
 
-#: .\shop\forms.py:262
+#: .\shop\forms.py:264
 msgid "e.g. 12 Main Street"
 msgstr "напр. ул. Главная, 12"
 
-#: .\shop\forms.py:263 .\shop\forms.py:264 .\shop\forms.py:267
-#: .\shop\forms.py:268
+#: .\shop\forms.py:265 .\shop\forms.py:266 .\shop\forms.py:269
+#: .\shop\forms.py:270
 msgid "Optional — falls back to the address above if left blank"
 msgstr "Необязательно — если пусто, используется адрес выше"
 
-#: .\shop\forms.py:266
+#: .\shop\forms.py:268
 msgid "e.g. Bishkek"
 msgstr "напр. Бишкек"
 
-#: .\shop\forms.py:270
+#: .\shop\forms.py:272
 msgid "Mon–Sat 10:00–20:00 / Sun 11:00–18:00"
 msgstr "Пн–Сб 10:00–20:00 / Вс 11:00–18:00"
 
-#: .\shop\forms.py:271 .\shop\forms.py:272
+#: .\shop\forms.py:273 .\shop\forms.py:274
 msgid "Optional — falls back to the hours above if left blank"
 msgstr "Необязательно — если пусто, берутся часы выше"
 
-#: .\shop\forms.py:279
+#: .\shop\forms.py:281
 msgid "Ready to Find Your Next Device?"
 msgstr "Готовы найти своё следующее устройство?"
 
-#: .\shop\forms.py:283
+#: .\shop\forms.py:285
 msgid "Invite customers to browse or get in touch..."
 msgstr "Пригласите покупателей посмотреть каталог или связаться с вами..."
 
-#: .\shop\forms.py:315
+#: .\shop\forms.py:317
 msgid "e.g. My Store"
 msgstr "напр. Мой магазин"
 
-#: .\shop\forms.py:319
+#: .\shop\forms.py:321
 msgid "Why shop here"
 msgstr "Почему у нас"
 
-#: .\shop\forms.py:323
+#: .\shop\forms.py:325
 msgid "Checked devices at the price on the tag"
 msgstr "Проверенная техника по честной цене"
 
-#: .\shop\forms.py:327
+#: .\shop\forms.py:329
 msgid "What customers get by buying from you..."
 msgstr "Что покупатель получает, покупая у вас..."
 
-#: .\shop\forms.py:331 .\shop\templates\shop\pages\about.html:132
+#: .\shop\forms.py:333 .\shop\templates\shop\pages\about.html:132
+#: .\templates\404.html:21
 msgid "Browse the catalog"
 msgstr "Смотреть каталог"
 
-#: .\shop\forms.py:335
+#: .\shop\forms.py:337
 msgid "devices in stock"
 msgstr "устройств в наличии"
 
-#: .\shop\forms.py:339
+#: .\shop\forms.py:341
 msgid "Restocked every week"
 msgstr "Пополняем каждую неделю"
 
-#: .\shop\forms.py:343
+#: .\shop\forms.py:345
 msgid "Looking for something else"
 msgstr "Ищете другое"
 
-#: .\shop\forms.py:347
+#: .\shop\forms.py:349
 msgid "Not in the catalog? We will bring it in"
 msgstr "Нет в каталоге? Привезём под заказ"
 
-#: .\shop\forms.py:351
+#: .\shop\forms.py:353
 msgid "Invite customers to ask for a model you do not stock yet..."
 msgstr "Предложите покупателям спросить модель, которой пока нет в наличии..."
 
-#: .\shop\forms.py:355
+#: .\shop\forms.py:357
 msgid "Tell us what you need"
 msgstr "Расскажите, что нужно"
 
@@ -284,27 +278,28 @@ msgstr ""
 "Телефоны, ноутбуки, планшеты и аксессуары с проверенными ценами и полными "
 "характеристиками."
 
-#: .\shop\templates\shop\base.html:211 .\shop\templates\shop\base.html:252
+#: .\shop\templates\shop\base.html:193 .\shop\templates\shop\base.html:234
+#: .\templates\404.html:22
 msgid "Home"
 msgstr "Главная"
 
-#: .\shop\templates\shop\base.html:217 .\shop\templates\shop\base.html:254
+#: .\shop\templates\shop\base.html:199 .\shop\templates\shop\base.html:236
 #: .\shop\templates\shop\footer.html:8 .\shop\templates\shop\pages\about.html:5
 msgid "About Us"
 msgstr "О нас"
 
-#: .\shop\templates\shop\base.html:220 .\shop\templates\shop\base.html:255
+#: .\shop\templates\shop\base.html:202 .\shop\templates\shop\base.html:237
 #: .\shop\templates\shop\footer.html:9
 #: .\shop\templates\shop\pages\contact.html:5
 msgid "Contact"
 msgstr "Контакты"
 
-#: .\shop\templates\shop\base.html:238 .\shop\templates\shop\base.html:240
-#: .\shop\templates\shop\base.html:257
+#: .\shop\templates\shop\base.html:220 .\shop\templates\shop\base.html:222
+#: .\shop\templates\shop\base.html:239
 msgid "Settings"
 msgstr "Настройки"
 
-#: .\shop\templates\shop\base.html:244
+#: .\shop\templates\shop\base.html:226
 msgid "Toggle menu"
 msgstr "Открыть/закрыть меню"
 
@@ -333,11 +328,11 @@ msgstr "Посмотреть устройство"
 #: .\shop\templates\shop\product\detail.html:20
 #: .\shop\templates\shop\product\detail.html:106
 #: .\shop\templates\shop\product\list.html:137
-#: .\shop\templates\shop\product\sales_report.html:85
-#: .\shop\templates\shop\product\sales_report.html:103
-#: .\shop\templates\shop\product\sales_report.html:122
-#: .\shop\templates\shop\product\sales_report.html:166
-#: .\shop\templates\shop\product\sales_report.html:218
+#: .\shop\templates\shop\product\sales_report.html:84
+#: .\shop\templates\shop\product\sales_report.html:102
+#: .\shop\templates\shop\product\sales_report.html:121
+#: .\shop\templates\shop\product\sales_report.html:165
+#: .\shop\templates\shop\product\sales_report.html:217
 msgid "som"
 msgstr "сом"
 
@@ -487,7 +482,7 @@ msgid "Message us"
 msgstr "Напишите нам"
 
 #: .\shop\templates\shop\pages\contact.html:55
-#: .\shop\templates\shop\product\contact_settings.html:79
+#: .\shop\templates\shop\product\contact_settings.html:78
 msgid "WhatsApp"
 msgstr "WhatsApp"
 
@@ -501,7 +496,7 @@ msgid "Open WhatsApp"
 msgstr "Открыть WhatsApp"
 
 #: .\shop\templates\shop\pages\contact.html:66
-#: .\shop\templates\shop\product\contact_settings.html:80
+#: .\shop\templates\shop\product\contact_settings.html:79
 msgid "Telegram"
 msgstr "Telegram"
 
@@ -514,7 +509,7 @@ msgid "Open Telegram"
 msgstr "Открыть Telegram"
 
 #: .\shop\templates\shop\pages\contact.html:76
-#: .\shop\templates\shop\product\contact_settings.html:82
+#: .\shop\templates\shop\product\contact_settings.html:81
 msgid "Phone"
 msgstr "Телефон"
 
@@ -527,8 +522,8 @@ msgid "Call now"
 msgstr "Позвонить"
 
 #: .\shop\templates\shop\pages\contact.html:87
-#: .\shop\templates\shop\product\contact_settings.html:30
-#: .\shop\templates\shop\product\contact_settings.html:83
+#: .\shop\templates\shop\product\contact_settings.html:29
+#: .\shop\templates\shop\product\contact_settings.html:82
 msgid "Email"
 msgstr "Email"
 
@@ -541,7 +536,7 @@ msgid "Write to us"
 msgstr "Написать письмо"
 
 #: .\shop\templates\shop\pages\contact.html:99
-#: .\shop\templates\shop\product\contact_settings.html:81
+#: .\shop\templates\shop\product\contact_settings.html:80
 msgid "Instagram"
 msgstr "Instagram"
 
@@ -647,7 +642,7 @@ msgid "Add to homepage slideshow"
 msgstr "Добавить в слайд-шоу на главной"
 
 #: .\shop\templates\shop\product\_category_row.html:40
-#: .\shop\templates\shop\product\category_create.html:116
+#: .\shop\templates\shop\product\category_create.html:115
 msgid "Slide"
 msgstr "Слайд"
 
@@ -660,31 +655,21 @@ msgid "Show the Newest In row on the homepage"
 msgstr "Показать блок «Новинки» на главной странице"
 
 #: .\shop\templates\shop\product\_category_row.html:49
-#: .\shop\templates\shop\product\category_create.html:117
+#: .\shop\templates\shop\product\category_create.html:116
 msgid "Row"
 msgstr "Ряд"
 
-#: .\shop\templates\shop\product\_management_base.html:40
-#: .\shop\templates\shop\product\_management_base.html:47
-#: .\shop\templates\shop\product\_management_base.html:54
+#: .\shop\templates\shop\product\_management_base.html:27
 #: .\shop\templates\shop\product\management_home.html:10
 #: .\shop\templates\shop\product\management_home.html:11
 msgid "Management"
 msgstr "Управление"
 
-#: .\shop\templates\shop\product\_management_base.html:57
-msgid "Management sections"
-msgstr "Разделы управления"
-
-#: .\shop\templates\shop\product\_management_base.html:78
-msgid "Sign Out"
-msgstr "Выйти"
-
-#: .\shop\templates\shop\product\_management_base.html:94
+#: .\shop\templates\shop\product\_management_base.html:37
 msgid "No contact channels configured"
 msgstr "Каналы связи не настроены"
 
-#: .\shop\templates\shop\product\_management_base.html:95
+#: .\shop\templates\shop\product\_management_base.html:38
 msgid ""
 "Customers currently have no way to reach you, so the enquiry button is "
 "hidden on every product page."
@@ -692,11 +677,11 @@ msgstr ""
 "Сейчас клиенты не могут с вами связаться, поэтому кнопка запроса скрыта на "
 "всех карточках товаров."
 
-#: .\shop\templates\shop\product\_management_base.html:97
+#: .\shop\templates\shop\product\_management_base.html:40
 msgid "Add a channel"
 msgstr "Добавить канал"
 
-#: .\shop\templates\shop\product\_management_base.html:140
+#: .\shop\templates\shop\product\_management_base.html:82
 msgid "Could not reach the server. Check the connection and try again."
 msgstr ""
 "Не удалось связаться с сервером. Проверьте соединение и попробуйте снова."
@@ -718,8 +703,8 @@ msgid "Mark as sold"
 msgstr "Отметить как проданный"
 
 #: .\shop\templates\shop\product\_product_row.html:26
-#: .\shop\templates\shop\product\removed_products.html:21
-#: .\shop\templates\shop\product\removed_products.html:56
+#: .\shop\templates\shop\product\removed_products.html:20
+#: .\shop\templates\shop\product\removed_products.html:55
 msgid "Sold"
 msgstr "Продано"
 
@@ -739,11 +724,11 @@ msgstr "Удалить без записи о продаже"
 msgid "About Page Settings"
 msgstr "Настройки страницы «О нас»"
 
-#: .\shop\templates\shop\product\about_settings.html:7
+#: .\shop\templates\shop\product\about_settings.html:6
 msgid "About Us Page"
 msgstr "Страница «О нас»"
 
-#: .\shop\templates\shop\product\about_settings.html:8
+#: .\shop\templates\shop\product\about_settings.html:7
 msgid ""
 "Write about your shop and your market here — this is what customers see on "
 "the public About page."
@@ -751,35 +736,35 @@ msgstr ""
 "Напишите здесь о вашем магазине и рынке — это увидят покупатели на публичной "
 "странице «О нас»."
 
-#: .\shop\templates\shop\product\about_settings.html:15
-#: .\shop\templates\shop\product\category_create.html:28
-#: .\shop\templates\shop\product\contact_settings.html:15
-#: .\shop\templates\shop\product\create.html:138
-#: .\shop\templates\shop\product\homepage_settings.html:52
+#: .\shop\templates\shop\product\about_settings.html:14
+#: .\shop\templates\shop\product\category_create.html:27
+#: .\shop\templates\shop\product\contact_settings.html:14
+#: .\shop\templates\shop\product\create.html:139
+#: .\shop\templates\shop\product\homepage_settings.html:51
 msgid "Please correct errors below:"
 msgstr "Исправьте ошибки ниже:"
 
-#: .\shop\templates\shop\product\about_settings.html:41
+#: .\shop\templates\shop\product\about_settings.html:40
 msgid "Page Header"
 msgstr "Заголовок страницы"
 
-#: .\shop\templates\shop\product\about_settings.html:44
+#: .\shop\templates\shop\product\about_settings.html:43
 msgid "Badge Text"
 msgstr "Текст значка"
 
-#: .\shop\templates\shop\product\about_settings.html:46
+#: .\shop\templates\shop\product\about_settings.html:45
 msgid "Small pill above the heading. Leave blank to hide it."
 msgstr "Небольшая метка над заголовком. Оставьте пустым, чтобы скрыть."
 
-#: .\shop\templates\shop\product\about_settings.html:49
+#: .\shop\templates\shop\product\about_settings.html:48
 msgid "Page Heading"
 msgstr "Заголовок страницы"
 
-#: .\shop\templates\shop\product\about_settings.html:54
+#: .\shop\templates\shop\product\about_settings.html:53
 msgid "Your Story"
 msgstr "Ваша история"
 
-#: .\shop\templates\shop\product\about_settings.html:56
+#: .\shop\templates\shop\product\about_settings.html:55
 msgid ""
 "Tell customers about your shop and your market — this is the main paragraph "
 "on the page."
@@ -787,45 +772,45 @@ msgstr ""
 "Расскажите покупателям о вашем магазине и рынке — это основной текст на "
 "странице."
 
-#: .\shop\templates\shop\product\about_settings.html:62
+#: .\shop\templates\shop\product\about_settings.html:61
 msgid "Visit Us Section"
 msgstr "Раздел «Посетите нас»"
 
-#: .\shop\templates\shop\product\about_settings.html:63
+#: .\shop\templates\shop\product\about_settings.html:62
 msgid "Leave all fields in this section blank to hide it entirely."
 msgstr "Оставьте все поля этого раздела пустыми, чтобы полностью скрыть его."
 
-#: .\shop\templates\shop\product\about_settings.html:65
-#: .\shop\templates\shop\product\homepage_settings.html:96
+#: .\shop\templates\shop\product\about_settings.html:64
+#: .\shop\templates\shop\product\homepage_settings.html:95
 msgid "Section Heading"
 msgstr "Заголовок раздела"
 
-#: .\shop\templates\shop\product\about_settings.html:69
+#: .\shop\templates\shop\product\about_settings.html:68
 msgid "Section Text"
 msgstr "Текст раздела"
 
-#: .\shop\templates\shop\product\about_settings.html:74
+#: .\shop\templates\shop\product\about_settings.html:73
 msgid "Address Line 1"
 msgstr "Адрес, строка 1"
 
-#: .\shop\templates\shop\product\about_settings.html:78
+#: .\shop\templates\shop\product\about_settings.html:77
 msgid "Address Line 2"
 msgstr "Адрес, строка 2"
 
-#: .\shop\templates\shop\product\about_settings.html:84
+#: .\shop\templates\shop\product\about_settings.html:83
 msgid "Opening Hours"
 msgstr "Часы работы"
 
-#: .\shop\templates\shop\product\about_settings.html:87
+#: .\shop\templates\shop\product\about_settings.html:86
 msgid "One line per range. Leave blank to show the address alone."
 msgstr ""
 "По одной строке на диапазон. Оставьте пустым, чтобы показать только адрес."
 
-#: .\shop\templates\shop\product\about_settings.html:92
+#: .\shop\templates\shop\product\about_settings.html:91
 msgid "Map Link"
 msgstr "Ссылка на карту"
 
-#: .\shop\templates\shop\product\about_settings.html:95
+#: .\shop\templates\shop\product\about_settings.html:94
 msgid ""
 "Google Maps or 2GIS link to the store. Powers the Directions button; shared "
 "across all languages."
@@ -833,43 +818,43 @@ msgstr ""
 "Ссылка на магазин в Google Maps или 2GIS. Включает кнопку «Как добраться»; "
 "одна для всех языков."
 
-#: .\shop\templates\shop\product\about_settings.html:98
+#: .\shop\templates\shop\product\about_settings.html:97
 msgid "Store Photo"
 msgstr "Фото магазина"
 
-#: .\shop\templates\shop\product\about_settings.html:102
+#: .\shop\templates\shop\product\about_settings.html:101
 msgid "Current store photo"
 msgstr "Текущее фото магазина"
 
-#: .\shop\templates\shop\product\about_settings.html:105
+#: .\shop\templates\shop\product\about_settings.html:104
 msgid "Optional. If left empty, the section shows the text alone."
 msgstr "Необязательно. Если пусто, раздел показывает только текст."
 
-#: .\shop\templates\shop\product\about_settings.html:106
+#: .\shop\templates\shop\product\about_settings.html:105
 msgid "The store photo is shared across all languages."
 msgstr "Фото магазина общее для всех языков."
 
-#: .\shop\templates\shop\product\about_settings.html:113
+#: .\shop\templates\shop\product\about_settings.html:112
 msgid "Call to Action Banner"
 msgstr "Призывающий баннер"
 
-#: .\shop\templates\shop\product\about_settings.html:114
+#: .\shop\templates\shop\product\about_settings.html:113
 msgid "Leave both fields blank to hide this banner."
 msgstr "Оставьте оба поля пустыми, чтобы скрыть этот баннер."
 
-#: .\shop\templates\shop\product\about_settings.html:116
+#: .\shop\templates\shop\product\about_settings.html:115
 msgid "Banner Heading"
 msgstr "Заголовок баннера"
 
-#: .\shop\templates\shop\product\about_settings.html:120
+#: .\shop\templates\shop\product\about_settings.html:119
 msgid "Banner Text"
 msgstr "Текст баннера"
 
-#: .\shop\templates\shop\product\about_settings.html:130
+#: .\shop\templates\shop\product\about_settings.html:129
 msgid "Open About page"
 msgstr "Открыть страницу «О нас»"
 
-#: .\shop\templates\shop\product\about_settings.html:133
+#: .\shop\templates\shop\product\about_settings.html:132
 msgid "Save About Page"
 msgstr "Сохранить страницу «О нас»"
 
@@ -877,7 +862,7 @@ msgstr "Сохранить страницу «О нас»"
 msgid "Category Management"
 msgstr "Управление категориями"
 
-#: .\shop\templates\shop\product\category_create.html:8
+#: .\shop\templates\shop\product\category_create.html:7
 msgid ""
 "New categories (e.g. Headphones, Powerbanks, Smartwatches) show up "
 "immediately in the catalog filter, and automatically get their own \"Newest "
@@ -887,77 +872,77 @@ msgstr ""
 "появляются в фильтре каталога и автоматически получают собственный блок "
 "«Новинки» на главной странице, как только в них появится хотя бы один товар."
 
-#: .\shop\templates\shop\product\category_create.html:16
+#: .\shop\templates\shop\product\category_create.html:15
 msgid "Add New Category"
 msgstr "Добавить новую категорию"
 
-#: .\shop\templates\shop\product\category_create.html:17
+#: .\shop\templates\shop\product\category_create.html:16
 msgid "Name it in any language you like; the others fall back to English."
 msgstr "Назовите на любом языке; остальные подставят английское название."
 
-#: .\shop\templates\shop\product\category_create.html:40
+#: .\shop\templates\shop\product\category_create.html:39
 msgid "Category Name"
 msgstr "Название категории"
 
-#: .\shop\templates\shop\product\category_create.html:54
+#: .\shop\templates\shop\product\category_create.html:53
 msgid "Catalog address"
 msgstr "Адрес в каталоге"
 
-#: .\shop\templates\shop\product\category_create.html:59
+#: .\shop\templates\shop\product\category_create.html:58
 msgid ""
 "Filled in from the name automatically. Letters, numbers and dashes only."
 msgstr "Заполняется из названия автоматически. Только буквы, цифры и дефисы."
 
-#: .\shop\templates\shop\product\category_create.html:65
+#: .\shop\templates\shop\product\category_create.html:64
 msgid "On the homepage"
 msgstr "На главной странице"
 
-#: .\shop\templates\shop\product\category_create.html:70
+#: .\shop\templates\shop\product\category_create.html:69
 msgid "Announcement slide"
 msgstr "Слайд-анонс"
 
-#: .\shop\templates\shop\product\category_create.html:71
+#: .\shop\templates\shop\product\category_create.html:70
 msgid ""
 "Rotates this category's newest in-stock product through the hero slideshow."
 msgstr "Показывает новейший товар этой категории в слайдшоу на главной."
 
-#: .\shop\templates\shop\product\category_create.html:82
+#: .\shop\templates\shop\product\category_create.html:81
 msgid "“Newest In” row"
 msgstr "Ряд «Новинки»"
 
-#: .\shop\templates\shop\product\category_create.html:83
+#: .\shop\templates\shop\product\category_create.html:82
 msgid "Its own slideshow row of latest arrivals, once it has stock."
 msgstr "Собственный ряд последних поступлений, как только появится товар."
 
-#: .\shop\templates\shop\product\category_create.html:97
+#: .\shop\templates\shop\product\category_create.html:96
 msgid "Create Category"
 msgstr "Создать категорию"
 
-#: .\shop\templates\shop\product\category_create.html:107
+#: .\shop\templates\shop\product\category_create.html:106
 msgid "Existing Categories"
 msgstr "Существующие категории"
 
-#: .\shop\templates\shop\product\category_create.html:108
+#: .\shop\templates\shop\product\category_create.html:107
 msgid ""
 "Switch a category's slide or row on and off; changes apply to the homepage "
 "at once."
 msgstr ""
 "Включайте и выключайте слайд или ряд категории — главная обновляется сразу."
 
-#: .\shop\templates\shop\product\category_create.html:115
-#: .\shop\templates\shop\product\sales_report.html:189
+#: .\shop\templates\shop\product\category_create.html:114
+#: .\shop\templates\shop\product\sales_report.html:188
 msgid "Category"
 msgstr "Категория"
 
-#: .\shop\templates\shop\product\category_create.html:126
+#: .\shop\templates\shop\product\category_create.html:125
 msgid "No categories yet."
 msgstr "Пока нет категорий."
 
-#: .\shop\templates\shop\product\category_create.html:127
+#: .\shop\templates\shop\product\category_create.html:126
 msgid "Create the first one above."
 msgstr "Создайте первую выше."
 
-#: .\shop\templates\shop\product\category_create.html:132
+#: .\shop\templates\shop\product\category_create.html:131
 msgid "Need to rename a category? Use the full Django admin panel for that."
 msgstr ""
 "Нужно переименовать категорию? Используйте для этого полную панель "
@@ -967,11 +952,11 @@ msgstr ""
 msgid "Contact Settings"
 msgstr "Настройки контактов"
 
-#: .\shop\templates\shop\product\contact_settings.html:7
+#: .\shop\templates\shop\product\contact_settings.html:6
 msgid "Contact Channels"
 msgstr "Каналы связи"
 
-#: .\shop\templates\shop\product\contact_settings.html:8
+#: .\shop\templates\shop\product\contact_settings.html:7
 msgid ""
 "These channels power the public Contact page. When a customer taps \"Enquire "
 "About This Device\" on a product, the product link is sent through whichever "
@@ -982,83 +967,83 @@ msgstr ""
 "отправляется через выбранный им канал. Оставьте поле пустым, чтобы скрыть "
 "этот канал."
 
-#: .\shop\templates\shop\product\contact_settings.html:36
+#: .\shop\templates\shop\product\contact_settings.html:35
 msgid "Phone Number"
 msgstr "Номер телефона"
 
-#: .\shop\templates\shop\product\contact_settings.html:45
+#: .\shop\templates\shop\product\contact_settings.html:44
 msgid "WhatsApp Number"
 msgstr "Номер WhatsApp"
 
-#: .\shop\templates\shop\product\contact_settings.html:51
+#: .\shop\templates\shop\product\contact_settings.html:50
 msgid "Telegram Username"
 msgstr "Имя пользователя Telegram"
 
-#: .\shop\templates\shop\product\contact_settings.html:60
+#: .\shop\templates\shop\product\contact_settings.html:59
 msgid "Instagram Username"
 msgstr "Имя пользователя Instagram"
 
-#: .\shop\templates\shop\product\contact_settings.html:68
+#: .\shop\templates\shop\product\contact_settings.html:67
 msgid "Save Contact Channels"
 msgstr "Сохранить каналы связи"
 
-#: .\shop\templates\shop\product\contact_settings.html:76
+#: .\shop\templates\shop\product\contact_settings.html:75
 msgid "Preview"
 msgstr "Предпросмотр"
 
-#: .\shop\templates\shop\product\contact_settings.html:77
+#: .\shop\templates\shop\product\contact_settings.html:76
 msgid "What customers will see on the Contact page right now."
 msgstr "Что покупатели увидят на странице контактов прямо сейчас."
 
-#: .\shop\templates\shop\product\contact_settings.html:85
+#: .\shop\templates\shop\product\contact_settings.html:84
 msgid ""
 "Nothing configured yet — the Contact page will show an empty-state notice."
 msgstr ""
 "Пока ничего не настроено — на странице контактов будет показано уведомление "
 "о пустом состоянии."
 
-#: .\shop\templates\shop\product\contact_settings.html:89
+#: .\shop\templates\shop\product\contact_settings.html:88
 msgid "Open Contact page"
 msgstr "Открыть страницу контактов"
 
 #: .\shop\templates\shop\product\create.html:6
-#: .\shop\templates\shop\product\create.html:127
+#: .\shop\templates\shop\product\create.html:128
 msgid "Update Product"
 msgstr "Изменить товар"
 
-#: .\shop\templates\shop\product\create.html:10
+#: .\shop\templates\shop\product\create.html:9
 msgid "Add a listing, mark one sold, or find a device by its catalog #ID."
 msgstr ""
 "Добавьте товар, отметьте проданный или найдите устройство по его #ID в "
 "каталоге."
 
-#: .\shop\templates\shop\product\create.html:15
-#: .\shop\templates\shop\product\create.html:127
+#: .\shop\templates\shop\product\create.html:14
+#: .\shop\templates\shop\product\create.html:128
 msgid "Add New Product"
 msgstr "Добавить новый товар"
 
-#: .\shop\templates\shop\product\create.html:34
+#: .\shop\templates\shop\product\create.html:33
 msgid "Search every category by name, brand, or #ID..."
 msgstr "Поиск по всем категориям: название, бренд или #ID..."
 
-#: .\shop\templates\shop\product\create.html:38
+#: .\shop\templates\shop\product\create.html:37
 msgid "Clear search"
 msgstr "Сбросить поиск"
 
-#: .\shop\templates\shop\product\create.html:50
+#: .\shop\templates\shop\product\create.html:49
 #, python-format
 msgid "Results for “%(query)s”"
 msgstr "Результаты по запросу «%(query)s»"
 
-#: .\shop\templates\shop\product\create.html:52
+#: .\shop\templates\shop\product\create.html:51
 msgid "Across every category."
 msgstr "По всем категориям."
 
-#: .\shop\templates\shop\product\create.html:54
+#: .\shop\templates\shop\product\create.html:53
 msgid "Clear"
 msgstr "Сбросить"
 
-#: .\shop\templates\shop\product\create.html:60
+#: .\shop\templates\shop\product\create.html:59
 #, python-format
 msgid "%(counter)s item"
 msgid_plural "%(counter)s items"
@@ -1067,11 +1052,11 @@ msgstr[1] "%(counter)s товара"
 msgstr[2] "%(counter)s товаров"
 msgstr[3] "%(counter)s товара"
 
-#: .\shop\templates\shop\product\create.html:69
+#: .\shop\templates\shop\product\create.html:68
 msgid "No products match that search."
 msgstr "По этому запросу товаров не найдено."
 
-#: .\shop\templates\shop\product\create.html:86
+#: .\shop\templates\shop\product\create.html:85
 #, python-format
 msgid "%(counter)s item on sale"
 msgid_plural "%(counter)s items on sale"
@@ -1080,112 +1065,110 @@ msgstr[1] "%(counter)s товара в продаже"
 msgstr[2] "%(counter)s товаров в продаже"
 msgstr[3] "%(counter)s товара в продаже"
 
-#: .\shop\templates\shop\product\create.html:87
+#: .\shop\templates\shop\product\create.html:86
 msgid "Sold something? Mark it sold here."
 msgstr "Что-то продали? Отметьте это здесь."
 
-#: .\shop\templates\shop\product\create.html:115
+#: .\shop\templates\shop\product\create.html:114
 msgid "No active products available in inventory."
 msgstr "В наличии нет активных товаров."
 
-#: .\shop\templates\shop\product\create.html:116
+#: .\shop\templates\shop\product\create.html:115
 msgid "Add your first listing and it will appear here under its category."
 msgstr "Добавьте первый товар — он появится здесь в своей категории."
 
-#: .\shop\templates\shop\product\create.html:125
-msgid "Back to Management Hub"
-msgstr "Назад в панель управления"
-
-#: .\shop\templates\shop\product\create.html:131
+#: .\shop\templates\shop\product\create.html:132
 msgid "Authorized Portal"
 msgstr "Авторизованный портал"
 
-#: .\shop\templates\shop\product\create.html:153
+#: .\shop\templates\shop\product\create.html:154
 msgid "Brand Manufacturer"
 msgstr "Бренд-производитель"
 
-#: .\shop\templates\shop\product\create.html:160
+#: .\shop\templates\shop\product\create.html:161
 msgid "Pick a suggestion or type any new brand name."
 msgstr "Выберите из списка или введите название нового бренда."
 
-#: .\shop\templates\shop\product\create.html:164
+#: .\shop\templates\shop\product\create.html:165
 msgid "Target Category"
 msgstr "Целевая категория"
 
-#: .\shop\templates\shop\product\create.html:165
+#: .\shop\templates\shop\product\create.html:166
 msgid "+ New category"
 msgstr "+ Новая категория"
 
-#: .\shop\templates\shop\product\create.html:175
+#: .\shop\templates\shop\product\create.html:176
 msgid "Product Title"
 msgstr "Название товара"
 
-#: .\shop\templates\shop\product\create.html:187
+#: .\shop\templates\shop\product\create.html:188
 msgid "URL Slug Handle"
 msgstr "URL-адрес (slug)"
 
-#: .\shop\templates\shop\product\create.html:194
+#: .\shop\templates\shop\product\create.html:195
 msgid "Display Pricing (SOM)"
 msgstr "Цена для показа (в сомах)"
 
-#: .\shop\templates\shop\product\create.html:200
+#: .\shop\templates\shop\product\create.html:201
 msgid "Product Description"
 msgstr "Описание товара"
 
-#: .\shop\templates\shop\product\create.html:217
+#: .\shop\templates\shop\product\create.html:218
 msgid "Technical Characteristics"
 msgstr "Технические характеристики"
 
-#: .\shop\templates\shop\product\create.html:218
+#: .\shop\templates\shop\product\create.html:219
 msgid ""
 "Optional. Add only the ones that fit this product. Rows left empty are "
 "ignored."
-msgstr "Необязательно. Добавьте только те, что подходят этому товару. Пустые строки не сохраняются."
+msgstr ""
+"Необязательно. Добавьте только те, что подходят этому товару. Пустые строки "
+"не сохраняются."
 
-#: .\shop\templates\shop\product\create.html:224
-#: .\shop\templates\shop\product\create.html:238
+#: .\shop\templates\shop\product\create.html:225
+#: .\shop\templates\shop\product\create.html:239
 msgid "Name, e.g. RAM"
 msgstr "Название, напр. RAM"
 
-#: .\shop\templates\shop\product\create.html:226
-#: .\shop\templates\shop\product\create.html:240
+#: .\shop\templates\shop\product\create.html:227
+#: .\shop\templates\shop\product\create.html:241
 msgid "Value, e.g. 8 GB"
 msgstr "Значение, напр. 8 ГБ"
 
-#: .\shop\templates\shop\product\create.html:228
-#: .\shop\templates\shop\product\create.html:242
+#: .\shop\templates\shop\product\create.html:229
+#: .\shop\templates\shop\product\create.html:243
 msgid "Remove characteristic"
 msgstr "Удалить характеристику"
 
-#: .\shop\templates\shop\product\create.html:257
+#: .\shop\templates\shop\product\create.html:254
 msgid "Add characteristic"
 msgstr "Добавить характеристику"
 
-#: .\shop\templates\shop\product\create.html:259
+#: .\shop\templates\shop\product\create.html:256
 msgid "Quick add:"
 msgstr "Быстро добавить:"
 
-#: .\shop\templates\shop\product\create.html:269
+#: .\shop\templates\shop\product\create.html:266
 msgid "Product Showcase Image"
 msgstr "Главное изображение товара"
 
-#: .\shop\templates\shop\product\create.html:271
+#: .\shop\templates\shop\product\create.html:268
 msgid "The main photo shown on the catalog and product cards."
 msgstr "Главное фото, отображаемое в каталоге и на карточках товара."
 
-#: .\shop\templates\shop\product\create.html:276
+#: .\shop\templates\shop\product\create.html:273
 msgid "Additional Photos"
 msgstr "Дополнительные фото"
 
-#: .\shop\templates\shop\product\create.html:287
+#: .\shop\templates\shop\product\create.html:284
 msgid "Remove this photo?"
 msgstr "Удалить это фото?"
 
-#: .\shop\templates\shop\product\create.html:288
+#: .\shop\templates\shop\product\create.html:285
 msgid "Remove photo"
 msgstr "Удалить фото"
 
-#: .\shop\templates\shop\product\create.html:298
+#: .\shop\templates\shop\product\create.html:295
 msgid ""
 "Select multiple files to add several photos at once. They're added to the "
 "gallery below the main image."
@@ -1193,15 +1176,15 @@ msgstr ""
 "Выберите несколько файлов, чтобы добавить сразу несколько фото. Они "
 "добавятся в галерею под главным изображением."
 
-#: .\shop\templates\shop\product\create.html:304
+#: .\shop\templates\shop\product\create.html:301
 msgid "Cancel"
 msgstr "Отмена"
 
-#: .\shop\templates\shop\product\create.html:307
+#: .\shop\templates\shop\product\create.html:304
 msgid "Save Changes"
 msgstr "Сохранить изменения"
 
-#: .\shop\templates\shop\product\create.html:307
+#: .\shop\templates\shop\product\create.html:304
 msgid "Register Product"
 msgstr "Зарегистрировать товар"
 
@@ -1222,7 +1205,7 @@ msgid "No description provided for this listing."
 msgstr "Описание для этой карточки не заполнено."
 
 #: .\shop\templates\shop\product\detail.html:61
-#: .\shop\templates\shop\product\sales_report.html:187
+#: .\shop\templates\shop\product\sales_report.html:186
 msgid "Catalog ID"
 msgstr "ID в каталоге"
 
@@ -1236,11 +1219,11 @@ msgid "More in %(name)s"
 msgstr "Ещё в категории %(name)s"
 
 #: .\shop\templates\shop\product\homepage_settings.html:5
-#: .\shop\templates\shop\product\homepage_settings.html:7
+#: .\shop\templates\shop\product\homepage_settings.html:6
 msgid "Homepage Sections"
 msgstr "Блоки главной страницы"
 
-#: .\shop\templates\shop\product\homepage_settings.html:8
+#: .\shop\templates\shop\product\homepage_settings.html:7
 msgid ""
 "The two written sections wrapped around your product rows on the homepage. "
 "Everything between them is built from the catalog itself."
@@ -1248,97 +1231,97 @@ msgstr ""
 "Два текстовых блока вокруг рядов товаров на главной странице. Всё, что между "
 "ними, строится из самого каталога."
 
-#: .\shop\templates\shop\product\homepage_settings.html:11
+#: .\shop\templates\shop\product\homepage_settings.html:10
 msgid "Open homepage"
 msgstr "Открыть главную страницу"
 
-#: .\shop\templates\shop\product\homepage_settings.html:19
+#: .\shop\templates\shop\product\homepage_settings.html:18
 msgid "Order on the homepage"
 msgstr "Порядок на главной странице"
 
-#: .\shop\templates\shop\product\homepage_settings.html:23
+#: .\shop\templates\shop\product\homepage_settings.html:22
 msgid "Hero slideshow"
 msgstr "Слайдшоу вверху"
 
-#: .\shop\templates\shop\product\homepage_settings.html:24
+#: .\shop\templates\shop\product\homepage_settings.html:23
 msgid "from your categories"
 msgstr "из ваших категорий"
 
-#: .\shop\templates\shop\product\homepage_settings.html:28
-#: .\shop\templates\shop\product\homepage_settings.html:91
+#: .\shop\templates\shop\product\homepage_settings.html:27
+#: .\shop\templates\shop\product\homepage_settings.html:90
 msgid "Section 1 — Why shop here"
 msgstr "Блок 1 — Почему у нас"
 
-#: .\shop\templates\shop\product\homepage_settings.html:29
-#: .\shop\templates\shop\product\homepage_settings.html:39
+#: .\shop\templates\shop\product\homepage_settings.html:28
+#: .\shop\templates\shop\product\homepage_settings.html:38
 msgid "edited below"
 msgstr "редактируется ниже"
 
-#: .\shop\templates\shop\product\homepage_settings.html:33
+#: .\shop\templates\shop\product\homepage_settings.html:32
 msgid "\"Newest In\" product rows"
 msgstr "Ряды товаров «Новинки»"
 
-#: .\shop\templates\shop\product\homepage_settings.html:34
+#: .\shop\templates\shop\product\homepage_settings.html:33
 msgid "set per category"
 msgstr "настраивается по категориям"
 
-#: .\shop\templates\shop\product\homepage_settings.html:38
-#: .\shop\templates\shop\product\homepage_settings.html:141
+#: .\shop\templates\shop\product\homepage_settings.html:37
+#: .\shop\templates\shop\product\homepage_settings.html:140
 msgid "Section 2 — Order it in"
 msgstr "Блок 2 — Привезём под заказ"
 
-#: .\shop\templates\shop\product\homepage_settings.html:43
+#: .\shop\templates\shop\product\homepage_settings.html:42
 msgid "Footer"
 msgstr "Подвал сайта"
 
-#: .\shop\templates\shop\product\homepage_settings.html:79
+#: .\shop\templates\shop\product\homepage_settings.html:78
 msgid "Store Name"
 msgstr "Название магазина"
 
-#: .\shop\templates\shop\product\homepage_settings.html:80
+#: .\shop\templates\shop\product\homepage_settings.html:79
 msgid "Shown in the navbar, browser tab, and footer across the whole site."
 msgstr ""
 "Отображается в шапке сайта, вкладке браузера и подвале на всех страницах."
 
-#: .\shop\templates\shop\product\homepage_settings.html:83
+#: .\shop\templates\shop\product\homepage_settings.html:82
 msgid "Store / Market Name"
 msgstr "Название магазина / рынка"
 
-#: .\shop\templates\shop\product\homepage_settings.html:92
+#: .\shop\templates\shop\product\homepage_settings.html:91
 msgid "Sits between the hero slideshow and your product rows."
 msgstr "Находится между слайдшоу и рядами товаров."
 
-#: .\shop\templates\shop\product\homepage_settings.html:98
+#: .\shop\templates\shop\product\homepage_settings.html:97
 msgid "The small line above the card, e.g. \"Why shop here\"."
 msgstr "Небольшая строка над карточкой, например «Почему у нас»."
 
-#: .\shop\templates\shop\product\homepage_settings.html:102
+#: .\shop\templates\shop\product\homepage_settings.html:101
 msgid "Card Heading"
 msgstr "Заголовок карточки"
 
-#: .\shop\templates\shop\product\homepage_settings.html:107
+#: .\shop\templates\shop\product\homepage_settings.html:106
 msgid "Card Text"
 msgstr "Текст карточки"
 
-#: .\shop\templates\shop\product\homepage_settings.html:109
+#: .\shop\templates\shop\product\homepage_settings.html:108
 msgid "Your promise to the customer — what they get by buying from you."
 msgstr "Ваше обещание покупателю — что он получает, покупая у вас."
 
-#: .\shop\templates\shop\product\homepage_settings.html:113
-#: .\shop\templates\shop\product\homepage_settings.html:162
+#: .\shop\templates\shop\product\homepage_settings.html:112
+#: .\shop\templates\shop\product\homepage_settings.html:161
 msgid "Button Label"
 msgstr "Надпись на кнопке"
 
-#: .\shop\templates\shop\product\homepage_settings.html:115
+#: .\shop\templates\shop\product\homepage_settings.html:114
 msgid "Links to your catalog. Leave blank to hide the button entirely."
 msgstr "Ведёт в ваш каталог. Оставьте пустым, чтобы скрыть кнопку."
 
-#: .\shop\templates\shop\product\homepage_settings.html:120
+#: .\shop\templates\shop\product\homepage_settings.html:119
 #, python-format
 msgid "Stock counter — currently reads \"%(count)s\""
 msgstr "Счётчик наличия — сейчас показывает «%(count)s»"
 
-#: .\shop\templates\shop\product\homepage_settings.html:123
+#: .\shop\templates\shop\product\homepage_settings.html:122
 msgid ""
 "The number is counted from your catalog and updates on its own. You write "
 "the two lines under it."
@@ -1346,43 +1329,43 @@ msgstr ""
 "Число считается по вашему каталогу и обновляется само. Вы пишете две строки "
 "под ним."
 
-#: .\shop\templates\shop\product\homepage_settings.html:127
+#: .\shop\templates\shop\product\homepage_settings.html:126
 msgid "Label"
 msgstr "Подпись"
 
-#: .\shop\templates\shop\product\homepage_settings.html:131
+#: .\shop\templates\shop\product\homepage_settings.html:130
 msgid "Caption"
 msgstr "Пояснение"
 
-#: .\shop\templates\shop\product\homepage_settings.html:142
+#: .\shop\templates\shop\product\homepage_settings.html:141
 msgid "Closes the homepage, between your product rows and the footer."
 msgstr "Завершает главную страницу — между рядами товаров и подвалом."
 
-#: .\shop\templates\shop\product\homepage_settings.html:146
+#: .\shop\templates\shop\product\homepage_settings.html:145
 msgid "Eyebrow"
 msgstr "Надстрочная строка"
 
-#: .\shop\templates\shop\product\homepage_settings.html:148
+#: .\shop\templates\shop\product\homepage_settings.html:147
 msgid "The small coloured line above the heading."
 msgstr "Небольшая цветная строка над заголовком."
 
-#: .\shop\templates\shop\product\homepage_settings.html:152
+#: .\shop\templates\shop\product\homepage_settings.html:151
 msgid "Heading"
 msgstr "Заголовок"
 
-#: .\shop\templates\shop\product\homepage_settings.html:157
+#: .\shop\templates\shop\product\homepage_settings.html:156
 msgid "Text"
 msgstr "Текст"
 
-#: .\shop\templates\shop\product\homepage_settings.html:166
+#: .\shop\templates\shop\product\homepage_settings.html:165
 msgid "Links to your Contact page."
 msgstr "Ведёт на вашу страницу контактов."
 
-#: .\shop\templates\shop\product\homepage_settings.html:168
+#: .\shop\templates\shop\product\homepage_settings.html:167
 msgid "Hidden right now — you have no contact channels set up."
 msgstr "Сейчас скрыта — у вас не настроен ни один канал связи."
 
-#: .\shop\templates\shop\product\homepage_settings.html:180
+#: .\shop\templates\shop\product\homepage_settings.html:179
 msgid ""
 "Russian and Kyrgyz start out already translated. Clear one and that language "
 "falls back to the English text."
@@ -1390,7 +1373,7 @@ msgstr ""
 "Русский и кыргызский уже переведены. Очистите поле — и для этого языка будет "
 "показан английский текст."
 
-#: .\shop\templates\shop\product\homepage_settings.html:183
+#: .\shop\templates\shop\product\homepage_settings.html:182
 msgid "Save Homepage"
 msgstr "Сохранить главную страницу"
 
@@ -1418,14 +1401,14 @@ msgstr "Фильтры"
 #: .\shop\templates\shop\product\list.html:49
 #: .\shop\templates\shop\product\list.html:113
 #: .\shop\templates\shop\product\list.html:143
-#: .\shop\templates\shop\product\removed_products.html:43
-#: .\shop\templates\shop\product\sales_report.html:49
+#: .\shop\templates\shop\product\removed_products.html:42
+#: .\shop\templates\shop\product\sales_report.html:48
 msgid "Reset"
 msgstr "Сбросить"
 
 #: .\shop\templates\shop\product\list.html:55
-#: .\shop\templates\shop\product\removed_products.html:39
-#: .\shop\templates\shop\product\sales_report.html:45
+#: .\shop\templates\shop\product\removed_products.html:38
+#: .\shop\templates\shop\product\sales_report.html:44
 msgid "Search"
 msgstr "Найти"
 
@@ -1452,7 +1435,7 @@ msgid "All Brands"
 msgstr "Все бренды"
 
 #: .\shop\templates\shop\product\list.html:95
-#: .\shop\templates\shop\product\sales_report.html:190
+#: .\shop\templates\shop\product\sales_report.html:189
 msgid "Price"
 msgstr "Цена"
 
@@ -1480,12 +1463,16 @@ msgstr ""
 "Выберите раздел, чтобы редактировать каталог, просматривать продажи или "
 "менять то, что показывает витрина."
 
+#: .\shop\templates\shop\product\management_home.html:43
+msgid "Sign Out"
+msgstr "Выйти"
+
 #: .\shop\templates\shop\product\removed_products.html:5
-#: .\shop\templates\shop\product\removed_products.html:7
+#: .\shop\templates\shop\product\removed_products.html:6
 msgid "Removed Listings"
 msgstr "Удалённые товары"
 
-#: .\shop\templates\shop\product\removed_products.html:8
+#: .\shop\templates\shop\product\removed_products.html:7
 msgid ""
 "Everything taken off the catalog, newest first. Put one back on sale, or "
 "erase it for good."
@@ -1493,45 +1480,45 @@ msgstr ""
 "Всё, что снято с каталога, сначала новое. Верните товар в продажу или "
 "удалите навсегда."
 
-#: .\shop\templates\shop\product\removed_products.html:17
+#: .\shop\templates\shop\product\removed_products.html:16
 msgid "Matching"
 msgstr "Найдено"
 
-#: .\shop\templates\shop\product\removed_products.html:17
+#: .\shop\templates\shop\product\removed_products.html:16
 msgid "Removed in total"
 msgstr "Всего удалено"
 
-#: .\shop\templates\shop\product\removed_products.html:25
-#: .\shop\templates\shop\product\removed_products.html:58
+#: .\shop\templates\shop\product\removed_products.html:24
+#: .\shop\templates\shop\product\removed_products.html:57
 msgid "Deleted"
 msgstr "Удалено"
 
-#: .\shop\templates\shop\product\removed_products.html:34
+#: .\shop\templates\shop\product\removed_products.html:33
 msgid "Search removed listings"
 msgstr "Поиск по удалённым"
 
-#: .\shop\templates\shop\product\removed_products.html:35
+#: .\shop\templates\shop\product\removed_products.html:34
 msgid "Name, brand, category or #ID"
 msgstr "Название, бренд, категория или #ID"
 
-#: .\shop\templates\shop\product\removed_products.html:56
+#: .\shop\templates\shop\product\removed_products.html:55
 msgid "Removed by marking it sold, so it is counted in the sales report."
 msgstr "Снят с каталога как проданный, поэтому учтён в отчёте о продажах."
 
-#: .\shop\templates\shop\product\removed_products.html:58
+#: .\shop\templates\shop\product\removed_products.html:57
 msgid "Taken off the catalog without recording a sale."
 msgstr "Снят с каталога без записи о продаже."
 
-#: .\shop\templates\shop\product\removed_products.html:62
+#: .\shop\templates\shop\product\removed_products.html:61
 #, python-format
 msgid "removed %(when)s"
 msgstr "удалён %(when)s"
 
-#: .\shop\templates\shop\product\removed_products.html:72
+#: .\shop\templates\shop\product\removed_products.html:71
 msgid "Restore"
 msgstr "Восстановить"
 
-#: .\shop\templates\shop\product\removed_products.html:76
+#: .\shop\templates\shop\product\removed_products.html:75
 #, python-format
 msgid ""
 "%(name)s and its photos will be erased for good and cannot be restored. "
@@ -1540,15 +1527,15 @@ msgstr ""
 "Товар %(name)s и его фотографии будут стёрты безвозвратно, восстановить их "
 "не получится. Уже записанные продажи останутся в отчёте."
 
-#: .\shop\templates\shop\product\removed_products.html:79
+#: .\shop\templates\shop\product\removed_products.html:78
 msgid "Delete permanently"
 msgstr "Удалить навсегда"
 
-#: .\shop\templates\shop\product\removed_products.html:88
+#: .\shop\templates\shop\product\removed_products.html:87
 msgid "No removed listing matches that search."
 msgstr "По этому запросу среди удалённых ничего не найдено."
 
-#: .\shop\templates\shop\product\removed_products.html:90
+#: .\shop\templates\shop\product\removed_products.html:89
 msgid ""
 "Nothing removed. Listings you mark sold or delete from the Products page "
 "land here, and can be restored from here."
@@ -1556,7 +1543,7 @@ msgstr ""
 "Ничего не удалено. Товары, отмеченные проданными или удалённые на вкладке "
 "«Товары», попадают сюда, и отсюда их можно восстановить."
 
-#: .\shop\templates\shop\product\removed_products.html:99
+#: .\shop\templates\shop\product\removed_products.html:98
 msgid ""
 "Deleting permanently erases the listing and its photos, but never the sale "
 "it recorded — past months keep their revenue. To strike a sale itself, use "
@@ -1567,16 +1554,16 @@ msgstr ""
 "странице продаж."
 
 #: .\shop\templates\shop\product\sales_report.html:11
-#: .\shop\templates\shop\product\sales_report.html:13
+#: .\shop\templates\shop\product\sales_report.html:12
 msgid "All Sales"
 msgstr "Все продажи"
 
 #: .\shop\templates\shop\product\sales_report.html:11
-#: .\shop\templates\shop\product\sales_report.html:13
+#: .\shop\templates\shop\product\sales_report.html:12
 msgid "Sales Report"
 msgstr "Отчёт о продажах"
 
-#: .\shop\templates\shop\product\sales_report.html:16
+#: .\shop\templates\shop\product\sales_report.html:15
 msgid ""
 "Every sale ever recorded, newest first. A sale is filed here the moment you "
 "mark a product sold."
@@ -1584,89 +1571,89 @@ msgstr ""
 "Все записанные продажи, сначала новые. Продажа попадает сюда, как только вы "
 "отмечаете товар проданным."
 
-#: .\shop\templates\shop\product\sales_report.html:18
+#: .\shop\templates\shop\product\sales_report.html:17
 msgid ""
 "How one month went. A sale is recorded the moment you mark a product sold."
 msgstr ""
 "Как прошёл месяц. Продажа записывается, как только вы отмечаете товар "
 "проданным."
 
-#: .\shop\templates\shop\product\sales_report.html:29
-#: .\shop\templates\shop\product\sales_report.html:32
+#: .\shop\templates\shop\product\sales_report.html:28
+#: .\shop\templates\shop\product\sales_report.html:31
 msgid "A month"
 msgstr "Месяц"
 
-#: .\shop\templates\shop\product\sales_report.html:30
-#: .\shop\templates\shop\product\sales_report.html:33
+#: .\shop\templates\shop\product\sales_report.html:29
+#: .\shop\templates\shop\product\sales_report.html:32
 msgid "All time"
 msgstr "За всё время"
 
-#: .\shop\templates\shop\product\sales_report.html:40
+#: .\shop\templates\shop\product\sales_report.html:39
 msgid "Search every sale"
 msgstr "Поиск по всем продажам"
 
-#: .\shop\templates\shop\product\sales_report.html:41
+#: .\shop\templates\shop\product\sales_report.html:40
 msgid "Name, brand, category or catalog ID"
 msgstr "Название, бренд, категория или ID в каталоге"
 
-#: .\shop\templates\shop\product\sales_report.html:58
+#: .\shop\templates\shop\product\sales_report.html:57
 msgid "Month"
 msgstr "Месяц"
 
-#: .\shop\templates\shop\product\sales_report.html:66
+#: .\shop\templates\shop\product\sales_report.html:65
 msgid "Year"
 msgstr "Год"
 
-#: .\shop\templates\shop\product\sales_report.html:75
+#: .\shop\templates\shop\product\sales_report.html:74
 msgid "View Report"
 msgstr "Показать отчёт"
 
-#: .\shop\templates\shop\product\sales_report.html:84
+#: .\shop\templates\shop\product\sales_report.html:83
 msgid "Total Revenue"
 msgstr "Общая выручка"
 
-#: .\shop\templates\shop\product\sales_report.html:88
+#: .\shop\templates\shop\product\sales_report.html:87
 msgid "Items Sold"
 msgstr "Продано товаров"
 
-#: .\shop\templates\shop\product\sales_report.html:96
+#: .\shop\templates\shop\product\sales_report.html:95
 msgid "By Category"
 msgstr "По категориям"
 
-#: .\shop\templates\shop\product\sales_report.html:104
-#: .\shop\templates\shop\product\sales_report.html:123
+#: .\shop\templates\shop\product\sales_report.html:103
+#: .\shop\templates\shop\product\sales_report.html:122
 msgid "pcs"
 msgstr "шт."
 
-#: .\shop\templates\shop\product\sales_report.html:110
-#: .\shop\templates\shop\product\sales_report.html:129
+#: .\shop\templates\shop\product\sales_report.html:109
+#: .\shop\templates\shop\product\sales_report.html:128
 msgid "No sales in this period."
 msgstr "Продаж за этот период нет."
 
-#: .\shop\templates\shop\product\sales_report.html:115
+#: .\shop\templates\shop\product\sales_report.html:114
 msgid "By Brand"
 msgstr "По брендам"
 
-#: .\shop\templates\shop\product\sales_report.html:137
+#: .\shop\templates\shop\product\sales_report.html:136
 msgid "Every sale"
 msgstr "Все продажи"
 
-#: .\shop\templates\shop\product\sales_report.html:137
+#: .\shop\templates\shop\product\sales_report.html:136
 msgid "Sales in This Period"
 msgstr "Продажи за период"
 
-#: .\shop\templates\shop\product\sales_report.html:149
-#: .\shop\templates\shop\product\sales_report.html:210
+#: .\shop\templates\shop\product\sales_report.html:148
+#: .\shop\templates\shop\product\sales_report.html:209
 msgid "The listing itself was deleted; this record keeps the sale."
 msgstr "Саму карточку удалили, но запись о продаже сохранилась."
 
-#: .\shop\templates\shop\product\sales_report.html:150
-#: .\shop\templates\shop\product\sales_report.html:211
+#: .\shop\templates\shop\product\sales_report.html:149
+#: .\shop\templates\shop\product\sales_report.html:210
 msgid "Listing deleted"
 msgstr "Карточка удалена"
 
-#: .\shop\templates\shop\product\sales_report.html:167
-#: .\shop\templates\shop\product\sales_report.html:221
+#: .\shop\templates\shop\product\sales_report.html:166
+#: .\shop\templates\shop\product\sales_report.html:220
 msgid ""
 "Strike this sale from the report? The product stays removed from the "
 "catalog; restore it from the Removed page if it should be back on sale."
@@ -1674,37 +1661,37 @@ msgstr ""
 "Вычеркнуть эту продажу из отчёта? Товар останется удалённым из каталога; "
 "если он снова в продаже — восстановите его в разделе «Удалённые»."
 
-#: .\shop\templates\shop\product\sales_report.html:172
-#: .\shop\templates\shop\product\sales_report.html:226
+#: .\shop\templates\shop\product\sales_report.html:171
+#: .\shop\templates\shop\product\sales_report.html:225
 msgid "Not a sale — strike from the report"
 msgstr "Это не продажа — вычеркнуть из отчёта"
 
-#: .\shop\templates\shop\product\sales_report.html:185
+#: .\shop\templates\shop\product\sales_report.html:184
 msgid "Date"
 msgstr "Дата"
 
-#: .\shop\templates\shop\product\sales_report.html:186
+#: .\shop\templates\shop\product\sales_report.html:185
 msgid "Product"
 msgstr "Товар"
 
-#: .\shop\templates\shop\product\sales_report.html:188
+#: .\shop\templates\shop\product\sales_report.html:187
 msgid "Brand"
 msgstr "Бренд"
 
-#: .\shop\templates\shop\product\sales_report.html:191
+#: .\shop\templates\shop\product\sales_report.html:190
 msgid "Actions"
 msgstr "Действия"
 
-#: .\shop\templates\shop\product\sales_report.html:239
+#: .\shop\templates\shop\product\sales_report.html:238
 msgid "No sale matches that search."
 msgstr "По этому запросу продаж не найдено."
 
-#: .\shop\templates\shop\product\sales_report.html:241
+#: .\shop\templates\shop\product\sales_report.html:240
 msgid ""
 "Nothing sold yet. Marking a product as sold files it here automatically."
 msgstr "Продаж пока нет. Отметьте товар проданным — он попадёт сюда сам."
 
-#: .\shop\templates\shop\product\sales_report.html:243
+#: .\shop\templates\shop\product\sales_report.html:242
 msgid "No sales recorded for this period yet."
 msgstr "За этот период продаж пока не зафиксировано."
 
@@ -1720,66 +1707,71 @@ msgstr "Назад к товару"
 msgid "No technical specifications have been provided for this product."
 msgstr "Технические характеристики для этого товара не указаны."
 
-#: .\shop\views.py:201
+#: .\shop\views.py:214
 #, python-format
 msgid "%(brand)s %(name)s — available in store."
 msgstr "%(brand)s %(name)s — в наличии в магазине."
 
-#: .\shop\views.py:254
+#: .\shop\views.py:267
 #, python-format
 msgid "Hi! I'm interested in the %(name)s (%(url)s). Is it still available?"
 msgstr "Здравствуйте! Меня интересует %(name)s (%(url)s). Он ещё в наличии?"
 
-#: .\shop\views.py:260
+#: .\shop\views.py:273
 #, python-format
 msgid "Hi! I have a question about a product at %(site_name)s."
 msgstr "Здравствуйте! У меня есть вопрос о товаре в %(site_name)s."
 
-#: .\shop\views.py:340
+#: .\shop\views.py:356
+#, python-format
+msgid "Additional photo “%(name)s”: %(error)s"
+msgstr "Дополнительное фото «%(name)s»: %(error)s"
+
+#: .\shop\views.py:366
 msgid "Model"
 msgstr "Модель"
 
-#: .\shop\views.py:340
+#: .\shop\views.py:366
 msgid "CPU"
 msgstr "Процессор"
 
-#: .\shop\views.py:340
+#: .\shop\views.py:366
 msgid "RAM"
 msgstr "Оперативная память"
 
-#: .\shop\views.py:340
+#: .\shop\views.py:366
 msgid "Storage"
 msgstr "Встроенная память"
 
-#: .\shop\views.py:341
+#: .\shop\views.py:367
 msgid "Screen"
 msgstr "Экран"
 
-#: .\shop\views.py:341
+#: .\shop\views.py:367
 msgid "Camera"
 msgstr "Камера"
 
-#: .\shop\views.py:341
+#: .\shop\views.py:367
 msgid "Battery"
 msgstr "Аккумулятор"
 
-#: .\shop\views.py:341
+#: .\shop\views.py:367
 msgid "Color"
 msgstr "Цвет"
 
-#: .\shop\views.py:368
+#: .\shop\views.py:394
 msgid "Product successfully updated!"
 msgstr "Товар успешно обновлён!"
 
-#: .\shop\views.py:370
+#: .\shop\views.py:396
 msgid "Product successfully cataloged!"
 msgstr "Товар успешно добавлен в каталог!"
 
-#: .\shop\views.py:373 .\shop\views.py:700
+#: .\shop\views.py:399 .\shop\views.py:724
 msgid "Please correct the entry errors down below."
 msgstr "Пожалуйста, исправьте ошибки ввода ниже."
 
-#: .\shop\views.py:528
+#: .\shop\views.py:552
 #, python-format
 msgid ""
 "\"%(name)s\" was marked as sold and removed from the catalog. You can undo "
@@ -1788,7 +1780,7 @@ msgstr ""
 "«%(name)s» отмечен как проданный и убран из каталога. Отменить можно в "
 "разделе «Удалённые»."
 
-#: .\shop\views.py:547
+#: .\shop\views.py:571
 #, python-format
 msgid ""
 "\"%(name)s\" was removed from the catalog (not counted as a sale). You can "
@@ -1797,31 +1789,31 @@ msgstr ""
 "«%(name)s» удалён из каталога (не засчитан как продажа). Отменить можно в "
 "разделе «Удалённые»."
 
-#: .\shop\views.py:571
+#: .\shop\views.py:595
 #, python-format
 msgid "\"%(name)s\" is back in the catalog."
 msgstr "«%(name)s» снова в каталоге."
 
-#: .\shop\views.py:606
+#: .\shop\views.py:630
 #, python-format
 msgid "\"%(name)s\" was permanently deleted, along with its photos."
 msgstr "«%(name)s» удалён навсегда вместе с фотографиями."
 
-#: .\shop\views.py:635
+#: .\shop\views.py:659
 #, python-format
 msgid "Category \"%(name)s\" was deleted, along with its products: %(count)s."
 msgstr "Категория «%(name)s» удалена вместе с товарами: %(count)s."
 
-#: .\shop\views.py:654
+#: .\shop\views.py:678
 #, python-format
 msgid "\"%(name)s\" was struck from the sales report."
 msgstr "«%(name)s» вычеркнут из отчёта о продажах."
 
-#: .\shop\views.py:676
+#: .\shop\views.py:700
 msgid "Photo removed from the gallery."
 msgstr "Фото удалено из галереи."
 
-#: .\shop\views.py:694
+#: .\shop\views.py:718
 msgid ""
 "Category created! It now appears in the catalog filter and will get its own "
 "homepage row once it has products."
@@ -1829,59 +1821,83 @@ msgstr ""
 "Категория создана! Теперь она отображается в фильтре каталога и получит "
 "собственный блок на главной странице, как только в ней появятся товары."
 
-#: .\shop\views.py:729
+#: .\shop\views.py:753
 #, python-format
 msgid "\"%(name)s\" added to the homepage announcement slideshow."
 msgstr "«%(name)s» добавлена в слайд-шоу анонсов на главной."
 
-#: .\shop\views.py:731
+#: .\shop\views.py:755
 #, python-format
 msgid "\"%(name)s\" removed from the homepage announcement slideshow."
 msgstr "«%(name)s» удалена из слайд-шоу анонсов на главной."
 
-#: .\shop\views.py:744
+#: .\shop\views.py:768
 #, python-format
 msgid "\"%(name)s\" now has a \"Newest In\" row on the homepage."
 msgstr "У «%(name)s» теперь есть блок «Новинки» на главной странице."
 
-#: .\shop\views.py:746
+#: .\shop\views.py:770
 #, python-format
 msgid "\"%(name)s\"'s \"Newest In\" row is hidden from the homepage."
 msgstr "Блок «Новинки» для «%(name)s» скрыт с главной страницы."
 
-#: .\shop\views.py:764
+#: .\shop\views.py:788
 msgid "Contact channels updated!"
 msgstr "Каналы связи обновлены!"
 
-#: .\shop\views.py:767 .\shop\views.py:792 .\shop\views.py:934
+#: .\shop\views.py:791 .\shop\views.py:816 .\shop\views.py:962
 msgid "Please correct the entry errors below."
 msgstr "Пожалуйста, исправьте ошибки ввода ниже."
 
-#: .\shop\views.py:789
+#: .\shop\views.py:813
 msgid "About page updated!"
 msgstr "Страница «О нас» обновлена!"
 
-#: .\shop\views.py:931
+#: .\shop\views.py:959
 msgid "Homepage sections updated!"
 msgstr "Блоки главной страницы обновлены!"
 
-#: .\templates\admin\login.html:8
+#: .\templates\404.html:9 .\templates\404.html:16
+msgid "Page not found"
+msgstr "Страница не найдена"
+
+#: .\templates\404.html:18
+msgid "This page doesn't exist, or the device on it has already been sold."
+msgstr "Такой страницы нет, или это устройство уже продано."
+
+#: .\templates\500.html:12 .\templates\500.html:28
+msgid "Something went wrong"
+msgstr "Что-то пошло не так"
+
+#: .\templates\500.html:29
+msgid ""
+"The page couldn't be loaded because of a problem on our side. Please try "
+"again in a minute."
+msgstr ""
+"Страница не загрузилась из-за ошибки на нашей стороне. Попробуйте ещё раз "
+"через минуту."
+
+#: .\templates\500.html:30 .\templates\admin\login.html:91
+msgid "Back to store"
+msgstr "Назад в магазин"
+
+#: .\templates\admin\login.html:10
 msgid "Admin Access"
 msgstr "Доступ администратора"
 
-#: .\templates\admin\login.html:29
+#: .\templates\admin\login.html:43
 msgid "Staff Access Only"
 msgstr "Только для сотрудников"
 
-#: .\templates\admin\login.html:36
+#: .\templates\admin\login.html:45
 msgid "Admin Sign In"
 msgstr "Вход администратора"
 
-#: .\templates\admin\login.html:37
+#: .\templates\admin\login.html:46
 msgid "Sign in to manage the product catalog."
 msgstr "Войдите, чтобы управлять каталогом товаров."
 
-#: .\templates\admin\login.html:42
+#: .\templates\admin\login.html:50
 #, python-format
 msgid ""
 "You are signed in as %(username)s, but that account cannot access catalog "
@@ -1890,21 +1906,14 @@ msgstr ""
 "Вы вошли как %(username)s, но эта учётная запись не имеет доступа к "
 "управлению каталогом. Войдите под другой учётной записью ниже."
 
-#: .\templates\admin\login.html:63 .\templates\admin\login.html:67
+#: .\templates\admin\login.html:68 .\templates\admin\login.html:70
 msgid "Username"
 msgstr "Имя пользователя"
 
-#: .\templates\admin\login.html:75
+#: .\templates\admin\login.html:77
 msgid "Password"
 msgstr "Пароль"
 
-#: .\templates\admin\login.html:88
+#: .\templates\admin\login.html:86
 msgid "Sign In"
 msgstr "Войти"
-
-#: .\templates\admin\login.html:96
-msgid "Back to store"
-msgstr "Назад в магазин"
-
-#~ msgid "No detailed specification parameters logged for this product."
-#~ msgstr "Подробные характеристики для этого товара не указаны."

@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy as _  # 🌐 Translation Engine
@@ -65,7 +66,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',  # 🌐 Multi-language engine
+    'shop.middleware.SiteLanguageMiddleware',  # 🌐 Russian unless the visitor switches
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -105,7 +106,10 @@ DATABASE_URL = os.getenv('DATABASE_URL')
 
 if DATABASE_URL:
     DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
+        # conn_health_checks: a pooled connection the database has since
+        # dropped (a restart, an idle timeout on the managed plan) is replaced
+        # instead of failing the next request with a 500.
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, conn_health_checks=True, ssl_require=True)
     }
 else:
     DATABASES = {
@@ -138,7 +142,10 @@ AUTH_PASSWORD_VALIDATORS = [
 # 🌐 INTERNATIONALIZATION & MULTI-LANGUAGE
 # ==========================================
 
-LANGUAGE_CODE = 'en'  # Default Language
+# Every visitor gets Russian until they choose another language in the
+# navbar switcher (see shop.middleware.SiteLanguageMiddleware, which ignores
+# the browser's Accept-Language on purpose).
+LANGUAGE_CODE = 'ru'
 
 LANGUAGES = [
     ('en', _('English')),
@@ -146,12 +153,21 @@ LANGUAGES = [
     ('ky', _('Kyrgyz')),
 ]
 
+# The switcher's choice is kept for a year. Django's default is a session
+# cookie, so anyone who picked English or Kyrgyz would be back in Russian
+# every time they reopened the browser.
+LANGUAGE_COOKIE_AGE = 60 * 60 * 24 * 365
+LANGUAGE_COOKIE_SAMESITE = 'Lax'
+
 # Directory where translation files (.po / .mo) will be stored
 LOCALE_PATHS = [
     os.path.join(BASE_DIR, 'locale'),
 ]
 
-TIME_ZONE = 'UTC'
+# The store's own clock. Timestamps are still stored in UTC (USE_TZ), but
+# everything shown to staff — sale times, and which month a sale counts
+# towards on the report — is Bishkek time, not six hours behind it.
+TIME_ZONE = 'Asia/Bishkek'
 
 USE_I18N = True
 
@@ -223,6 +239,12 @@ STORAGES = {
         'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
     },
 }
+
+# The test suite runs with DEBUG off, where the manifest storage insists on a
+# collectstatic having been run (and matching the current files). Tests only
+# need the URLs, so they get the plain storage instead.
+if sys.argv[1:2] == ['test']:
+    STORAGES['staticfiles'] = {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}
 
 # ==========================================
 # 📑 DRF & API DOCUMENTATION SETTINGS
@@ -315,6 +337,7 @@ if not DEBUG:
     # Send cookies over HTTPS only
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    LANGUAGE_COOKIE_SECURE = True
 
     # HTTP Strict Transport Security (HSTS)
     SECURE_HSTS_SECONDS = 31536000  # 1 year

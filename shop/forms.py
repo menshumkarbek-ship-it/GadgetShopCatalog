@@ -3,19 +3,20 @@ from django.utils.translation import gettext_lazy as _
 from .models import Product, Category, ContactSettings, AboutPageContent, HomePageContent
 from .utils import build_unique_slug
 
-# Shared widget styling for the many near-identical translated-field inputs
-# added below (Russian/Kyrgyz variants of name/description/heading/etc.),
-# kept as constants so all of them stay visually consistent.
-TEXT_INPUT_CLASS = 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all'
-TEXTAREA_CLASS = TEXT_INPUT_CLASS
-
-# The panel is light, so its inputs are too: quiet gray at rest, white with
-# a soft indigo halo once focused. (The forms above still carry the dark
-# style from the panel's previous look; the Categories page uses this.)
+# Shared widget styling for every input in the management panel. The panel
+# is light, so its inputs are too: quiet gray at rest, white with a soft
+# indigo halo once focused.
 LIGHT_INPUT_CLASS = (
     'w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 '
     'placeholder-gray-400 focus:outline-none focus:bg-white focus:border-indigo-500 '
     'focus:ring-4 focus:ring-indigo-500/10 transition-all'
+)
+TEXT_INPUT_CLASS = LIGHT_INPUT_CLASS
+TEXTAREA_CLASS = LIGHT_INPUT_CLASS
+SELECT_CLASS = LIGHT_INPUT_CLASS + ' cursor-pointer'
+FILE_INPUT_CLASS = (
+    'text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 '
+    'file:text-xs file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer'
 )
 
 # Every translated field carries the same 'leave it blank and the base
@@ -33,14 +34,14 @@ class ProductCreateForm(forms.ModelForm):
     slug = forms.CharField(
         required=False,
         widget=forms.TextInput(attrs={
-            'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
+            'class': TEXT_INPUT_CLASS,
             'placeholder': _('Auto-generated if empty (e.g., iphone-15-pro-max)')
         })
     )
 
     description = forms.CharField(
         widget=forms.Textarea(attrs={
-            'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
+            'class': TEXT_INPUT_CLASS,
             'placeholder': _('Describe the product, condition, and included accessories.'),
             'rows': 4,
         })
@@ -53,15 +54,15 @@ class ProductCreateForm(forms.ModelForm):
             'description', 'description_ru', 'description_ky', 'image',
         ]
         widgets = {
-            'category': forms.Select(attrs={'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all cursor-pointer'}),
-            'brand': forms.TextInput(attrs={'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all', 'placeholder': _('Type any brand, e.g. Apple, Samsung, Anker...'), 'list': 'brand-suggestions', 'autocomplete': 'off'}),
-            'name': forms.TextInput(attrs={'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all', 'placeholder': _('e.g., iPhone 15 Pro Max')}),
+            'category': forms.Select(attrs={'class': SELECT_CLASS}),
+            'brand': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Type any brand, e.g. Apple, Samsung, Anker...'), 'list': 'brand-suggestions', 'autocomplete': 'off'}),
+            'name': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('e.g., iPhone 15 Pro Max')}),
             'name_ru': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the title above if left blank')}),
             'name_ky': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the title above if left blank')}),
-            'price': forms.NumberInput(attrs={'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all', 'placeholder': '999.99'}),
+            'price': forms.NumberInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': '999.99'}),
             'description_ru': forms.Textarea(attrs={'class': TEXTAREA_CLASS, 'placeholder': _('Optional — falls back to the description above if left blank'), 'rows': 4}),
             'description_ky': forms.Textarea(attrs={'class': TEXTAREA_CLASS, 'placeholder': _('Optional — falls back to the description above if left blank'), 'rows': 4}),
-            'image': forms.FileInput(attrs={'class': 'text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer'}),
+            'image': forms.FileInput(attrs={'class': FILE_INPUT_CLASS}),
         }
 
     def clean_slug(self):
@@ -85,8 +86,8 @@ class ProductCreateForm(forms.ModelForm):
     # Technical characteristics are free-form: a charger may list only its
     # model, a phone its CPU, RAM, storage and cameras, and a cable nothing
     # at all. The template posts them as parallel `spec_name` / `spec_value`
-    # lists (one pair per row the admin added), stored in order on
-    # Product.specifications.
+    # lists (one pair per row the admin added), stored in that order as
+    # [name, value] pairs on Product.specifications.
     SPEC_NAME_MAX_LENGTH = 60
     SPEC_VALUE_MAX_LENGTH = 200
 
@@ -94,11 +95,11 @@ class ProductCreateForm(forms.ModelForm):
         """The (name, value) rows to render: what was posted, or what's saved."""
         if self.is_bound:
             return list(zip(self.data.getlist('spec_name'), self.data.getlist('spec_value')))
-        return list((self.instance.specifications or {}).items())
+        return self.instance.spec_items
 
     def clean(self):
         cleaned_data = super().clean()
-        specifications = {}
+        specifications, seen = [], set()
         for name, value in self.spec_rows():
             name, value = name.strip(), value.strip()
             if not name and not value:
@@ -112,10 +113,11 @@ class ProductCreateForm(forms.ModelForm):
             if len(name) > self.SPEC_NAME_MAX_LENGTH or len(value) > self.SPEC_VALUE_MAX_LENGTH:
                 self.add_error(None, _('The characteristic “%(name)s” is too long.') % {'name': name[:40]})
                 continue
-            if name.casefold() in (existing.casefold() for existing in specifications):
+            if name.casefold() in seen:
                 self.add_error(None, _('The characteristic “%(name)s” is listed twice.') % {'name': name})
                 continue
-            specifications[name] = value
+            seen.add(name.casefold())
+            specifications.append([name, value])
         cleaned_data['specifications'] = specifications
         return cleaned_data
 
@@ -195,23 +197,23 @@ class ContactSettingsForm(forms.ModelForm):
         fields = ['email', 'phone_number', 'whatsapp_number', 'telegram_username', 'instagram_username']
         widgets = {
             'email': forms.EmailInput(attrs={
-                'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
+                'class': TEXT_INPUT_CLASS,
                 'placeholder': _('e.g. hello@yourstore.com')
             }),
             'phone_number': forms.TextInput(attrs={
-                'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
+                'class': TEXT_INPUT_CLASS,
                 'placeholder': '+996 700 123 456'
             }),
             'whatsapp_number': forms.TextInput(attrs={
-                'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
+                'class': TEXT_INPUT_CLASS,
                 'placeholder': _('996700123456 (country code, digits only)')
             }),
             'telegram_username': forms.TextInput(attrs={
-                'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
+                'class': TEXT_INPUT_CLASS,
                 'placeholder': _('username, without the @')
             }),
             'instagram_username': forms.TextInput(attrs={
-                'class': 'w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all',
+                'class': TEXT_INPUT_CLASS,
                 'placeholder': _('username, without the @')
             }),
         }
@@ -273,7 +275,7 @@ class AboutPageContentForm(forms.ModelForm):
             'map_url': forms.URLInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': 'https://maps.app.goo.gl/…'}),
 
             'store_image': forms.FileInput(attrs={
-                'class': 'text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer'
+                'class': FILE_INPUT_CLASS
             }),
 
             'cta_heading': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Ready to Find Your Next Device?')}),

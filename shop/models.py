@@ -441,9 +441,14 @@ class Product(models.Model):
     # instead of scrolling through the whole catalog.
     category_number = models.PositiveIntegerField(default=0, db_index=True)
 
+    # Technical characteristics as [name, value] pairs, in the order staff
+    # entered them. A list rather than an object: Postgres's jsonb re-sorts
+    # object keys (shortest first), which scrambled the order on the page.
+    # Read them through `spec_items`, which also copes with rows saved in the
+    # older object form.
     specifications = models.JSONField(
-        default=dict,
-        help_text="Store characteristics as JSON. (e.g., {'RAM': '16GB', 'Storage': '512GB'})"
+        default=list, blank=True,
+        help_text="Characteristics as [name, value] pairs, in display order, e.g. [[\"RAM\", \"16 GB\"], [\"Storage\", \"512 GB\"]]"
     )
 
     is_sold = models.BooleanField(default=False, db_index=True)
@@ -482,6 +487,14 @@ class Product(models.Model):
 
     translated_name = translatable_property('name')
     translated_description = translatable_property('description')
+
+    @property
+    def spec_items(self):
+        """The characteristics as (name, value) pairs, in display order."""
+        specs = self.specifications or []
+        if isinstance(specs, dict):  # the older object form
+            return list(specs.items())
+        return [(name, value) for name, value in specs]
 
     def save(self, *args, **kwargs):
         if self.pk is None and self.category_id:

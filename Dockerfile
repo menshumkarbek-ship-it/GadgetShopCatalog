@@ -29,5 +29,10 @@ COPY . /app/
 # collected so WhiteNoise can serve them.
 RUN SECRET_KEY=build-only DEBUG=True python manage.py collectstatic --no-input
 
+# Run as an unprivileged user, not root. It owns /app so local media uploads
+# (used when no R2 bucket is configured) can still be written.
+RUN useradd --create-home --uid 1000 app && chown -R app:app /app
+USER app
+
 EXPOSE 8000
 CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "60"]

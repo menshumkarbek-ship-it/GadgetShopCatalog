@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n static %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:'en' }}">
 <head>
@@ -30,39 +30,9 @@
     <meta name="twitter:image" content="{{ og_image }}">
     {% endif %}
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Design tokens from DESIGN.md. Names avoid Tailwind's own scale names
-        // (slate, indigo, sky…) so nothing that still relies on the defaults —
-        // the management panel does — is disturbed.
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        ink: '#1d1d1f',
-                        midgray: '#707070',
-                        deepgray: '#474747',
-                        hairline: '#d6d6d6',
-                        canvas: '#f5f5f7',
-                        paper: '#ffffff',
-                        coolwash: '#e8e8ed',
-                        faded: '#fafafc',
-                        quietdot: '#777779',
-                        electric: '#0071e3',
-                        linkblue: '#0066cc',
-                        ember: '#b64400',
-                    },
-                    borderRadius: {
-                        card: '28px',
-                        pill: '980px',
-                    },
-                    maxWidth: {
-                        page: '1200px',
-                    },
-                },
-            },
-        };
-    </script>
+    <link rel="icon" href="{% static 'shop/favicon.svg' %}" type="image/svg+xml">
+    <link rel="icon" href="{% static 'shop/favicon.ico' %}" sizes="any">
+    <link rel="apple-touch-icon" href="{% static 'shop/apple-touch-icon.png' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -194,6 +164,16 @@
         /* The management panel keeps its own look; it only needs the body
            font reset above, not the storefront's type scale. */
     </style>
+    {% comment %}
+      Tailwind, built ahead of time from tailwind.config.js (which also holds
+      the design tokens) — not the in-browser CDN compiler, which Tailwind
+      warns against in production. Rebuild with `npm run build:css`.
+
+      Linked after the <style> above on purpose: utilities have to win over
+      the site's own classes (e.g. `py-10` on a `.wrap`), which is the order
+      the CDN script used to produce by injecting itself at the end of head.
+    {% endcomment %}
+    <link rel="stylesheet" href="{% static 'shop/css/site.css' %}">
     {% block extra_head %}{% endblock %}
 </head>
 <body class="bg-paper text-ink antialiased min-h-screen flex flex-col selection:bg-electric/20 m-0 p-0">

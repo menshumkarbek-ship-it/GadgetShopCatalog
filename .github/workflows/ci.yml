@@ -48,6 +48,20 @@ jobs:
           python-version: '3.12'
           cache: pip
 
+      # The site's stylesheet is built from the templates and committed.
+      # Rebuild it here and fail if the committed copy is stale, so a class
+      # added to a template can't ship without its CSS.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Check the built stylesheet is up to date
+        run: |
+          npm ci
+          npm run build:css
+          git diff --exit-code -- shop/static/shop/css/site.css             || (echo "::error::shop/static/shop/css/site.css is stale. Run 'npm run build:css' and commit it." && exit 1)
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip

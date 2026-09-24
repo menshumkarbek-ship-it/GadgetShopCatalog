@@ -68,7 +68,7 @@
         <div>
             <h2 class="t-subheading text-ink">{% translate "Technical Specifications" %}</h2>
             <dl class="mt-5 card bg-paper p-7 divide-y divide-hairline">
-                {% for key, value in product.specifications.items %}
+                {% for key, value in product.spec_items %}
                 <div class="flex items-baseline justify-between gap-6 py-3 first:pt-0 last:pb-0">
                     <dt class="t-body-sm text-midgray capitalize">{{ key }}</dt>
                     <dd class="t-body-sm text-ink text-right figures">{{ value }}</dd>

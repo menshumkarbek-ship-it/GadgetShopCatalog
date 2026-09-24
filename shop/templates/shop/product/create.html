@@ -5,7 +5,6 @@
 {% block title %}
     {% if product_instance %}{% translate "Update Product" %}{% else %}{% translate "Products" %}{% endif %} | {{ store_name }}
 {% endblock %}
-{% block breadcrumb %}{% translate "Products" %}{% endblock %}
 {% block page_heading %}{% translate "Products" %}{% endblock %}
 {% block page_intro %}{% translate "Add a listing, mark one sold, or find a device by its catalog #ID." %}{% endblock %}
 {% block page_actions %}
@@ -121,7 +120,9 @@
     <section class="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 sm:p-8">
         <div class="mb-6 pb-4 border-b border-gray-50 flex items-center justify-between">
             <div>
-                <a href="{% url 'shop:create_product' %}" class="text-xs font-bold text-indigo-600 hover:underline mb-1 inline-block">&larr; {% translate "Back to Management Hub" %}</a>
+                <a href="{% url 'shop:create_product' %}" class="text-xs font-bold text-indigo-600 hover:underline mb-1 inline-flex items-center gap-1.5">
+                    <i class="fa-solid fa-chevron-left text-[10px]"></i><span>{% translate "Products" %}</span>
+                </a>
                 <h2 class="text-lg font-black text-gray-950">
                     {% if product_instance %}{% translate "Update Product" %}: {{ product_instance.name }}{% else %}{% translate "Add New Product" %}{% endif %}
                 </h2>
@@ -289,7 +290,7 @@
                 {% endif %}
 
                 <input type="file" name="extra_images" multiple accept="image/*"
-                       class="text-sm text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
+                       class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
                 <p class="text-[10px] text-gray-400">{% translate "Select multiple files to add several photos at once. They're added to the gallery below the main image." %}</p>
             </div>
 

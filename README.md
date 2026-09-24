@@ -66,6 +66,31 @@ This keeps the default path scanners probe from returning anything, but it is ob
 rather than a control — any protected page still redirects to the real login URL, so treat
 the admin as publicly known and rely on strong credentials.
 
+## Styles (Tailwind)
+
+Pages use one prebuilt stylesheet, `shop/static/shop/css/site.css`, compiled by Tailwind from the
+classes in the templates (and in `shop/forms.py`, where the panel's inputs get theirs). The design
+tokens (colours, radii) live in `tailwind.config.js`. After adding or changing classes, rebuild it
+and commit the result:
+
+```powershell
+npm install        # once
+npm run build:css
+```
+
+Deploys don't need Node — the built file is committed. CI rebuilds it and fails if the committed
+copy is stale, so a class can't ship without its CSS.
+
+## Language and time zone
+
+The site opens in **Russian** for every visitor, whatever their browser's language; the navbar
+switcher changes it and the choice is remembered for a year. Admin-entered content (product titles,
+page copy) is written per language in the panel, and falls back to the main (EN tab) text when a
+Russian or Kyrgyz version is left blank.
+
+Times are stored in UTC but shown — and grouped into months on the sales report — in
+**Asia/Bishkek** time (`TIME_ZONE` in `config/settings.py`).
+
 ## Useful commands
 
 ```powershell
@@ -81,10 +106,15 @@ against PostgreSQL and the Python version pinned in `runtime.txt`.
 
 ## The management panel
 
-Staff run the store from `/admin/` (the in-app panel, not Django's admin): products by category,
-categories with their homepage switches, removed listings, the sales report, and the copy on the
-homepage, About and Contact pages. Every action there is posted in the background and the page
-updates in place; the same forms still work as ordinary posts with scripts off.
+Staff run the store from **Settings** in the navbar (`/management/`; `/admin/` opens Products
+directly). Its front page is a set of cards — Products, Categories, Removed, Sales, Homepage, About,
+Contacts, and Sign Out — and each section opens on its own with a back arrow to the cards. Every
+action there is posted in the background and the page updates in place; the same forms still work
+as ordinary posts with scripts off.
+
+Each product can carry its own **technical characteristics** as free name/value rows (a charger
+may have just "Model", a phone CPU, RAM, cameras…, a cable none). They are edited on the product
+form, kept in the order entered, and listed on the product page.
 
 ## Removing products is reversible
 

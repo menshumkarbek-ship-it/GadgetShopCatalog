@@ -2,9 +2,9 @@
 {% load i18n %}
 
 {% comment %}
-  The panel's front door. Passes no `active` key, which is what makes the
-  shell show the section list on its own on phones; from `lg` up the list is
-  the sidebar as usual and this overview fills the column beside it.
+  The panel's front door, and its only menu: one card per section, grouped,
+  and Sign Out at the end. Passes no `active` key, which is what tells the
+  shell to leave out the Back link every section page carries.
 {% endcomment %}
 
 {% block title %}{% translate "Management" %} | {{ store_name }}{% endblock %}
@@ -14,8 +14,8 @@
 {% block management_content %}
     {% for group in management_groups %}
     <section>
-        <p class="px-1 pb-2 text-[10px] font-black uppercase tracking-wider text-gray-300">{{ group.label }}</p>
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+        <p class="px-1 pb-2 text-[10px] font-black uppercase tracking-wider text-gray-400">{{ group.label }}</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {% for item in group.items %}
             <a href="{{ item.url }}" class="group flex items-center gap-3.5 bg-white border border-gray-100 rounded-2xl shadow-sm px-4 py-3.5 hover:border-indigo-200 hover:shadow-md transition-all">
                 <span class="w-10 h-10 shrink-0 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
@@ -29,4 +29,20 @@
         </div>
     </section>
     {% endfor %}
+
+    <!-- The way out. A full page load (data-reload), not a background post:
+         after signing out there is no panel left to update. -->
+    <section class="pt-2">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <form method="POST" action="{% url 'admin:logout' %}" data-reload>
+                {% csrf_token %}
+                <button type="submit" class="group w-full flex items-center gap-3.5 bg-white border border-gray-100 rounded-2xl shadow-sm px-4 py-3.5 hover:border-red-200 hover:shadow-md transition-all text-left">
+                    <span class="w-10 h-10 shrink-0 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </span>
+                    <span class="min-w-0 flex-1 text-sm font-black text-gray-950 truncate">{% translate "Sign Out" %}</span>
+                </button>
+            </form>
+        </div>
+    </section>
 {% endblock %}

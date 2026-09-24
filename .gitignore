@@ -3,6 +3,9 @@ venv/
 __pycache__/
 *.py[cod]
 
+# Node (only used to build the Tailwind stylesheet)
+node_modules/
+
 # Django
 db.sqlite3
 media/
