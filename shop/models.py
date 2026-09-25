@@ -2,7 +2,7 @@ import logging
 
 from django.conf import settings
 from django.db import models
-from .utils import process_no_bg_image, translatable_property
+from .utils import derive_id_prefix, process_no_bg_image, translatable_property
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +29,24 @@ class Category(models.Model):
     name_ru = models.CharField(max_length=100, blank=True, verbose_name="Name (Russian)")
     name_ky = models.CharField(max_length=100, blank=True, verbose_name="Name (Kyrgyz)")
 
+    # How the IDs of products filed here start: every listing is numbered
+    # <prefix>-<n>, e.g. L-12 for laptops. Chosen by staff when creating the
+    # category and editable later; letters and digits, stored upper-case, and
+    # unique, so no two listings anywhere share an ID.
+    id_prefix = models.CharField(
+        max_length=10, unique=True, verbose_name="ID prefix",
+        help_text="Start of every product ID in this category, e.g. L gives L-1, L-2, …"
+    )
+    id_digits = models.PositiveSmallIntegerField(
+        default=1, verbose_name="Number length",
+        help_text="Minimum digits in the number; shorter numbers get leading zeros (3 gives L-007)."
+    )
+
+    # Which of the name fields above were filled in by the automatic
+    # translator (shop/translation.py) rather than typed by staff — those
+    # are the only ones it may later rewrite.
+    machine_translated = models.JSONField(default=list, blank=True, editable=False)
+
     class Meta:
         verbose_name_plural = "Categories"
         ordering = ['name']
@@ -37,6 +55,24 @@ class Category(models.Model):
         return self.name
 
     translated_name = translatable_property('name')
+
+    def format_product_id(self, number):
+        """The ID of this category's product number `number`, e.g. 'L-012'."""
+        return f"{self.id_prefix}-{number:0{self.id_digits}d}"
+
+    @property
+    def id_example(self):
+        """What IDs here look like, from the first one: 'L-1' or 'L-001'."""
+        return self.format_product_id(1)
+
+    def save(self, *args, **kwargs):
+        # The panel's form always sets a prefix. Categories made any other
+        # way (Django admin, a shell, tests) get one derived from the name.
+        if not self.id_prefix:
+            taken = Category.objects.exclude(pk=self.pk).values_list('id_prefix', flat=True)
+            self.id_prefix = derive_id_prefix(self.name, taken)
+        self.id_prefix = self.id_prefix.upper()
+        super().save(*args, **kwargs)
 
 
 # ==========================================
@@ -434,11 +470,16 @@ class Product(models.Model):
     description_ru = models.TextField(blank=True, verbose_name="Product Description (Russian)")
     description_ky = models.TextField(blank=True, verbose_name="Product Description (Kyrgyz)")
 
-    # A short, stable, per-category catalog number (0, 1, 2, ...), assigned
-    # once when the product is first created and never changed afterward.
-    # Shown to customers on product cards, and lets an admin quickly find and
-    # delete the exact listing once it's sold, by searching for its number
-    # instead of scrolling through the whole catalog.
+    # Which of the title/description fields were filled in by the automatic
+    # translator (shop/translation.py) rather than typed by staff — those
+    # are the only ones it may later rewrite, e.g. after the source changes.
+    machine_translated = models.JSONField(default=list, blank=True, editable=False)
+
+    # A short, stable, per-category number (1, 2, 3, ...), assigned once
+    # when the product is created and never changed afterwards. With the
+    # category's prefix it makes the product's ID (see catalog_code), which
+    # customers see on the product page and staff search by to find the
+    # exact listing once it's sold.
     category_number = models.PositiveIntegerField(default=0, db_index=True)
 
     # Technical characteristics as [name, value] pairs, in the order staff
@@ -481,9 +522,9 @@ class Product(models.Model):
 
     @property
     def catalog_code(self):
-        """Short, human-friendly, searchable code shown on cards, e.g. 'PHONES-3'."""
-        prefix = ''.join(ch for ch in self.category.name.upper() if ch.isalnum())[:6] or 'ITEM'
-        return f"{prefix}-{self.category_number}"
+        """The product's ID: its category's prefix and its number there,
+        padded to the category's number length, e.g. 'L-12' or 'L-012'."""
+        return self.category.format_product_id(self.category_number)
 
     translated_name = translatable_property('name')
     translated_description = translatable_property('description')
@@ -503,7 +544,7 @@ class Product(models.Model):
             last_number = Product.all_objects.filter(category_id=self.category_id).aggregate(
                 models.Max('category_number')
             )['category_number__max']
-            self.category_number = 0 if last_number is None else last_number + 1
+            self.category_number = 1 if last_number is None else last_number + 1
 
         if self.image and hasattr(self.image, 'file'):
             try:

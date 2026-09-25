@@ -11,7 +11,7 @@
         {% endif %}
         <div class="min-w-0">
             <p class="text-xs font-black text-gray-900 break-words group-hover:text-indigo-600">{{ p.name }}</p>
-            <p class="text-[10px] text-gray-400 uppercase font-bold">{{ p.brand }} &middot; <span class="text-indigo-500">#{{ p.category_number }}</span></p>
+            <p class="text-[10px] text-gray-400 uppercase font-bold">{{ p.brand }} &middot; <span class="text-indigo-500 font-mono normal-case">{{ p.catalog_code }}</span></p>
         </div>
     </a>
     <div class="flex items-center gap-1.5 shrink-0 sm:ml-2">

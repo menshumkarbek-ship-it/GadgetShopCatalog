@@ -36,6 +36,7 @@ urlpatterns = [
     path('management/product/<int:product_id>/purge/', views.purge_product, name='purge_product'),
     path('management/product/image/<int:image_id>/delete/', views.delete_product_image, name='delete_product_image'),
     path('management/category/add/', views.create_category, name='create_category'),
+    path('management/category/<int:category_id>/edit/', views.edit_category, name='edit_category'),
     path('management/category/<int:category_id>/toggle-hero/', views.toggle_category_hero, name='toggle_category_hero'),
     path('management/category/<int:category_id>/toggle-newest/', views.toggle_category_newest, name='toggle_category_newest'),
     path('management/category/<int:category_id>/delete/', views.delete_category, name='delete_category'),

@@ -23,7 +23,7 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug', 'is_featured_in_hero', 'show_newest_row')
+    list_display = ('name', 'slug', 'id_prefix', 'is_featured_in_hero', 'show_newest_row')
     list_editable = ('is_featured_in_hero', 'show_newest_row')
     prepopulated_fields = {'slug': ('name',)}
 

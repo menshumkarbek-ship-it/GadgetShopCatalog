@@ -2,22 +2,33 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}{% translate "Category Management" %} | {{ store_name }}{% endblock %}
+{% block title %}{% if category_instance %}{% translate "Edit Category" %}{% else %}{% translate "Category Management" %}{% endif %} | {{ store_name }}{% endblock %}
 {% block page_heading %}{% translate "Categories" %}{% endblock %}
 {% block page_intro %}{% translate 'New categories (e.g. Headphones, Powerbanks, Smartwatches) show up immediately in the catalog filter, and automatically get their own "Newest In" slideshow on the homepage as soon as they have at least one product.' %}{% endblock %}
 
 {% block management_content %}
-    <!-- ── Add a category ────────────────────────────────────────────── -->
+    <!-- ── Add a category, or edit one ───────────────────────────────── -->
+    {% if category_instance %}
+    <a href="{% url 'shop:create_category' %}" class="inline-flex items-center gap-2 -ml-1 px-1 py-1 text-sm font-bold text-indigo-600 hover:text-indigo-800 transition-colors">
+        <i class="fa-solid fa-chevron-left text-xs"></i>
+        <span>{% translate "Categories" %}</span>
+    </a>
+    {% endif %}
     <section class="bg-white border border-gray-200/80 rounded-2xl shadow-sm overflow-hidden">
         <div class="px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center gap-3">
-            <span class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center"><i class="fa-solid fa-folder-plus"></i></span>
+            <span class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center"><i class="fa-solid {% if category_instance %}fa-pen{% else %}fa-folder-plus{% endif %}"></i></span>
             <div>
+                {% if category_instance %}
+                <h2 class="text-sm font-black text-gray-950">{% translate "Edit Category" %}: {{ category_instance.name }}</h2>
+                <p class="text-[11px] text-gray-400">{% translate "Changes apply to the catalog, the homepage and product IDs at once." %}</p>
+                {% else %}
                 <h2 class="text-sm font-black text-gray-950">{% translate "Add New Category" %}</h2>
                 <p class="text-[11px] text-gray-400">{% translate "Name it in any language you like; the others fall back to English." %}</p>
+                {% endif %}
             </div>
         </div>
 
-        <form method="POST" class="p-5 sm:p-6 space-y-6" data-after="append" data-target="#category-list">
+        <form method="POST" class="p-5 sm:p-6 space-y-6" {% if category_instance %}action="{% url 'shop:edit_category' category_instance.id %}"{% else %}data-after="append" data-target="#category-list"{% endif %}>
             {% csrf_token %}
 
             {% if form.errors %}
@@ -59,6 +70,34 @@
                 </div>
             </div>
 
+            <!-- Product IDs: every listing filed here is numbered <prefix>-<n> -->
+            <div>
+                <p class="text-[11px] font-black uppercase tracking-wider text-gray-500 mb-2">{% translate "Product IDs" %}</p>
+                <div class="rounded-2xl border border-gray-200 p-4 space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_12rem] gap-4">
+                        <div>
+                            <label for="{{ form.id_prefix.id_for_label }}" class="block text-xs font-bold text-gray-700 mb-1.5">{% translate "ID prefix" %}</label>
+                            {{ form.id_prefix }}
+                            <p class="text-[11px] text-gray-400 mt-1.5">{% translate "Letters and digits, e.g. L for laptops or A1. Each category needs its own." %}</p>
+                        </div>
+                        <div>
+                            <label for="{{ form.id_digits.id_for_label }}" class="block text-xs font-bold text-gray-700 mb-1.5">{% translate "Number length" %}</label>
+                            {{ form.id_digits }}
+                            <p class="text-[11px] text-gray-400 mt-1.5">{% translate "Shorter numbers get leading zeros." %}</p>
+                        </div>
+                    </div>
+                    <p class="flex items-center gap-2 rounded-xl bg-indigo-50/70 px-3.5 py-2.5 text-xs text-indigo-900">
+                        <i class="fa-solid fa-hashtag text-indigo-400"></i>
+                        <span>{% translate "IDs will look like" %} <strong class="font-mono" data-id-preview>{% if form.instance.id_prefix %}{{ form.instance.id_prefix }}-1{% else %}L-1{% endif %}</strong></span>
+                    </p>
+                    {% if category_instance and product_count %}
+                    <p class="text-[11px] text-gray-500 leading-relaxed">
+                        {% blocktranslate count counter=product_count %}A new prefix or length changes the ID of the {{ counter }} product in this category; its number stays the same. Sales already recorded keep the ID they were sold under.{% plural %}A new prefix or length changes the IDs of all {{ counter }} products in this category; their numbers stay the same. Sales already recorded keep the ID they were sold under.{% endblocktranslate %}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+
             <!-- Homepage options: two switch rows -->
             <div>
                 <p class="text-[11px] font-black uppercase tracking-wider text-gray-500 mb-2">{% translate "On the homepage" %}</p>
@@ -92,13 +131,19 @@
 
             <div class="flex items-center justify-end">
                 <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-6 py-3 rounded-xl transition-all shadow-md shadow-indigo-600/30 active:scale-95">
+                    {% if category_instance %}
+                    <i class="fa-solid fa-check text-[10px]"></i>
+                    <span>{% translate "Save Changes" %}</span>
+                    {% else %}
                     <i class="fa-solid fa-plus text-[10px]"></i>
                     <span>{% translate "Create Category" %}</span>
+                    {% endif %}
                 </button>
             </div>
         </form>
     </section>
 
+    {% if not category_instance %}
     <!-- ── Existing categories ───────────────────────────────────────── -->
     <section class="bg-white border border-gray-200/80 rounded-2xl shadow-sm overflow-hidden">
         <div class="px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between gap-3">
@@ -110,7 +155,7 @@
         </div>
 
         <!-- Column labels for the two switches, so each row can stay quiet -->
-        <div class="hidden sm:grid grid-cols-[minmax(0,1fr)_5rem_5rem_3rem] gap-3 px-5 sm:px-6 py-2 bg-gray-50/70 text-[10px] font-black uppercase tracking-wider text-gray-400">
+        <div class="hidden sm:grid grid-cols-[minmax(0,1fr)_5rem_5rem_5.5rem] gap-3 px-5 sm:px-6 py-2 bg-gray-50/70 text-[10px] font-black uppercase tracking-wider text-gray-400">
             <span>{% translate "Category" %}</span>
             <span class="text-center">{% translate "Slide" %}</span>
             <span class="text-center">{% translate "Row" %}</span>
@@ -128,8 +173,8 @@
             {% endfor %}
         </ul>
 
-        <p class="px-5 sm:px-6 py-3 border-t border-gray-100 text-[11px] text-gray-400">{% translate "Need to rename a category? Use the full Django admin panel for that." %}</p>
     </section>
+    {% endif %}
 
 <style>
     /* Toggle switches. Two flavours: a checkbox inside the create form
@@ -161,12 +206,34 @@
         const slugInput = document.querySelector('input[name="slug"]');
 
         if (nameInput && slugInput) {
+            // An address that already exists (editing) is kept unless the
+            // admin changes it — renaming must not move the category's URL.
+            if (slugInput.value.trim()) slugInput.dataset.touched = "true";
+            slugInput.form.addEventListener('reset', function () { delete slugInput.dataset.touched; });
             nameInput.addEventListener('input', function() {
                 if (!slugInput.dataset.touched || slugInput.value.trim() === '') {
                     slugInput.value = nameInput.value.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
                 }
             });
             slugInput.addEventListener('input', function() { slugInput.dataset.touched = "true"; });
+        }
+
+        // "IDs will look like L-001": the prefix and number length, live.
+        const prefixInput = document.querySelector('input[name="id_prefix"]');
+        const digitsSelect = document.querySelector('select[name="id_digits"]');
+        const preview = document.querySelector('[data-id-preview]');
+        if (prefixInput && digitsSelect && preview) {
+            const update = function () {
+                const prefix = prefixInput.value.trim().toUpperCase() || 'L';
+                const digits = parseInt(digitsSelect.value, 10) || 1;
+                preview.textContent = [1, 2, 3].map(function (n) {
+                    return prefix + '-' + String(n).padStart(digits, '0');
+                }).join(', ') + ' …';
+            };
+            prefixInput.addEventListener('input', update);
+            digitsSelect.addEventListener('change', update);
+            prefixInput.form.addEventListener('reset', function () { setTimeout(update, 0); });
+            update();
         }
     })();
 </script>

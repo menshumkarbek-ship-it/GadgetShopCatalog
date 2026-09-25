@@ -3,27 +3,33 @@
    Category annotated with product_count). The row is also what the
    background actions send back — a new category is appended as one of
    these, and a toggled one is swapped for a fresh copy. {% endcomment %}
-<li data-row="category-{{ cat.id }}" class="grid grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[minmax(0,1fr)_5rem_5rem_3rem] gap-x-3 gap-y-3 items-center px-5 sm:px-6 py-3.5">
+<li data-row="category-{{ cat.id }}" class="grid grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[minmax(0,1fr)_5rem_5rem_5.5rem] gap-x-3 gap-y-3 items-center px-5 sm:px-6 py-3.5">
     <div class="min-w-0 flex items-center gap-3">
         <span class="w-9 h-9 shrink-0 rounded-xl {% if cat.is_featured_in_hero %}bg-indigo-50 text-indigo-600{% else %}bg-gray-100 text-gray-400{% endif %} flex items-center justify-center"><i class="fa-solid fa-folder"></i></span>
         <div class="min-w-0">
             <p class="text-sm font-bold text-gray-900 truncate">{{ cat.name }}</p>
             <p class="text-[11px] text-gray-400 truncate">
-                <span class="font-mono">/catalog/{{ cat.slug }}/</span>
+                <span class="font-mono text-indigo-500" title="{% translate 'Product IDs' %}">{{ cat.id_example }}</span>
+                &middot; <span class="font-mono">/catalog/{{ cat.slug }}/</span>
                 &middot; {% blocktranslate count counter=cat.product_count %}{{ counter }} product{% plural %}{{ counter }} products{% endblocktranslate %}
             </p>
         </div>
     </div>
 
-    <!-- Delete: takes its products with it, so it names the count
-         and goes through the confirm gate first. -->
-    <form method="POST" action="{% url 'shop:delete_category' cat.id %}" class="sm:order-last justify-self-end" data-after="remove-row"
+    <!-- Edit, and Delete — which takes its products with it, so it
+         names the count and goes through the confirm gate first. -->
+    <div class="sm:order-last justify-self-end flex items-center gap-1">
+    <a href="{% url 'shop:edit_category' cat.id %}" title="{% translate 'Edit category' %}" class="w-9 h-9 rounded-xl text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 flex items-center justify-center transition-colors">
+        <i class="fa-solid fa-pen"></i>
+    </a>
+    <form method="POST" action="{% url 'shop:delete_category' cat.id %}" data-after="remove-row"
           data-confirm-delete="{% blocktranslate with name=cat.name total=cat.product_count %}The category {{ name }} will be deleted together with everything filed under it — products, including any sitting in Removed: {{ total }}. Their photos go too. Sales already recorded stay in the report.{% endblocktranslate %}">
         {% csrf_token %}
         <button type="submit" title="{% translate 'Delete category and its products' %}" class="w-9 h-9 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition-colors">
             <i class="fa-solid fa-trash-can"></i>
         </button>
     </form>
+    </div>
 
     <!-- The two switches. On phones they sit on their own line
          with their labels beside them. -->

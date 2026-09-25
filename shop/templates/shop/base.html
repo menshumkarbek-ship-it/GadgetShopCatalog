@@ -174,6 +174,7 @@
       the CDN script used to produce by injecting itself at the end of head.
     {% endcomment %}
     <link rel="stylesheet" href="{% static 'shop/css/site.css' %}">
+    <script src="{% static 'shop/js/dropdowns.js' %}" defer></script>
     {% block extra_head %}{% endblock %}
 </head>
 <body class="bg-paper text-ink antialiased min-h-screen flex flex-col selection:bg-electric/20 m-0 p-0">
@@ -205,11 +206,13 @@
                     <form action="{% url 'set_language' %}" method="post" id="language-switcher-form">
                         {% csrf_token %}
                         <input name="next" type="hidden" value="{{ request.get_full_path }}">
-                        <select name="language" onchange="this.form.submit()" class="bg-transparent text-deepgray hover:text-ink focus:outline-none cursor-pointer">
+                        {# Each language in its own name (English, Русский, Кыргызча), #}
+                        {# so a visitor can find theirs whatever the page is in now.     #}
+                        <select name="language" onchange="this.form.submit()" aria-label="{% translate 'Language' %}" class="bg-transparent text-deepgray hover:text-ink focus:outline-none cursor-pointer">
                             {% get_current_language as CURRENT_LANG %}
-                            {% get_available_languages as AVAILABLE_LANGS %}
-                            {% for lang_code, lang_name in AVAILABLE_LANGS %}
-                                <option value="{{ lang_code }}" {% if lang_code == CURRENT_LANG %}selected{% endif %}>{{ lang_name }}</option>
+                            {% get_language_info_list for LANGUAGES as AVAILABLE_LANGS %}
+                            {% for lang in AVAILABLE_LANGS %}
+                                <option value="{{ lang.code }}" lang="{{ lang.code }}" {% if lang.code == CURRENT_LANG %}selected{% endif %}>{{ lang.name_local|capfirst }}</option>
                             {% endfor %}
                         </select>
                     </form>

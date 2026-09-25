@@ -11,12 +11,20 @@ from django.utils.translation import get_language
 TRANSLATABLE_LANGUAGES = ('ru', 'ky')
 
 
+# Where each language looks when its own variant is left blank, before the
+# base field. Kyrgyz readers read Russian, and the site is Russian-first, so
+# a listing written in Russian but not yet in Kyrgyz shows its Russian text
+# on the Kyrgyz site rather than the base (English-tab) one.
+FALLBACK_LANGUAGES = {
+    'ky': ('ru',),
+}
+
+
 def translatable_property(base_field):
     """
     Build a @property for a model that returns the current-language variant
-    of `base_field`, falling back to the plain `base_field` value when no
-    translation is set for the active language (or the active language is
-    the default one the base field is already written in).
+    of `base_field`. When that variant is blank it tries the language's
+    fallbacks (Kyrgyz -> Russian), then the plain `base_field` value.
 
     Usage on a model that has `name`, `name_ru`, `name_ky` fields:
         translated_name = translatable_property('name')
@@ -26,9 +34,10 @@ def translatable_property(base_field):
     def getter(self):
         language = (get_language() or 'en').split('-')[0]
         if language in TRANSLATABLE_LANGUAGES:
-            value = getattr(self, f'{base_field}_{language}', '')
-            if value:
-                return value
+            for candidate in (language, *FALLBACK_LANGUAGES.get(language, ())):
+                value = getattr(self, f'{base_field}_{candidate}', '')
+                if value:
+                    return value
         return getattr(self, base_field)
 
     return property(getter)
@@ -94,6 +103,23 @@ def process_no_bg_image(image_field_file, filename_prefix):
 
     filename = f"{filename_prefix}_nobg.png"
     return filename, ContentFile(buffer.read())
+
+
+def derive_id_prefix(name, taken, max_length=10):
+    """
+    A product-ID prefix for a category that wasn't given one: the first six
+    letters/digits of its name, upper-cased ('Phones' -> 'PHONES') — the form
+    IDs took before prefixes could be set — made unique against `taken` by
+    appending 2, 3, …
+    """
+    base = ''.join(ch for ch in name.upper() if ch.isalnum())[:6] or 'ITEM'
+    taken = {prefix.upper() for prefix in taken}
+    prefix, suffix = base, 2
+    while prefix in taken:
+        tail = str(suffix)
+        prefix = base[:max_length - len(tail)] + tail
+        suffix += 1
+    return prefix
 
 
 def build_unique_slug(name, queryset, fallback_prefix='item'):

@@ -1,11 +1,16 @@
+import io
+import json
 import re
 from datetime import datetime, timedelta, timezone as dt_timezone
 from decimal import Decimal
 from io import BytesIO
+from types import SimpleNamespace
+from unittest import mock
 
 from PIL import Image
 
 from django.contrib.auth.models import User, Group
+from django.core.management import call_command
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import connection
 from django.conf import settings
@@ -14,7 +19,11 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone, translation
 
+from . import translation as translator
 from .models import AboutPageContent, Category, ContactSettings, HomePageContent, Product, Sale
+
+# The real request function, kept before any test patches it out.
+REAL_REQUEST = translator.request_translations
 
 
 def in_language(client, language):
@@ -182,7 +191,7 @@ class StorefrontTests(TestCase):
         staff = User.objects.create_user(username='manager', password='manager-password-123', is_staff=True)
         self.client.force_login(staff)
 
-        response = self.client.post(reverse('shop:create_category'), {'name': 'Headphones', 'slug': ''}, follow=True)
+        response = self.client.post(reverse('shop:create_category'), {'name': 'Headphones', 'slug': '', 'id_prefix': 'H', 'id_digits': '1'}, follow=True)
 
         self.assertEqual(response.status_code, 200)
         category = Category.objects.get(name='Headphones')
@@ -200,7 +209,7 @@ class StorefrontTests(TestCase):
         staff = User.objects.create_user(username='manager', password='manager-password-123', is_staff=True)
         self.client.force_login(staff)
 
-        self.client.post(reverse('shop:create_category'), {'name': 'Наушники', 'slug': ''})
+        self.client.post(reverse('shop:create_category'), {'name': 'Наушники', 'slug': '', 'id_prefix': 'Н', 'id_digits': '1'})
 
         category = Category.objects.get(name='Наушники')
         self.assertEqual(category.slug, 'naushniki')
@@ -251,7 +260,7 @@ class StorefrontTests(TestCase):
         self.client.force_login(staff)
 
         self.client.post(reverse('shop:create_category'), {
-            'name': 'Powerbanks', 'slug': '', 'is_featured_in_hero': 'on',
+            'name': 'Powerbanks', 'slug': '', 'id_prefix': 'PB', 'id_digits': '1', 'is_featured_in_hero': 'on',
         })
 
         category = Category.objects.get(name='Powerbanks')
@@ -597,6 +606,49 @@ class StorefrontTests(TestCase):
         response = self.client.get(reverse('shop:product_list'), {'search': 'наушники'})
         self.assertEqual([p.pk for p in response.context['products']], [product.pk])
 
+    def test_kyrgyz_shows_kyrgyz_text_then_russian_then_the_main_text(self):
+        product = self.make_product('Phone', 'phone', '100.00')
+        url = reverse('shop:product_detail', args=[product.slug])
+        in_language(self.client, 'ky')
+
+        # Nothing translated: the main text.
+        self.assertContains(self.client.get(url), 'A tested product.')
+        # Russian only: Kyrgyz readers get the Russian.
+        product.description_ru = 'Проверенный товар.'
+        product.save()
+        self.assertContains(self.client.get(url), 'Проверенный товар.')
+        # Kyrgyz written: that wins.
+        product.description_ky = 'Текшерилген товар.'
+        product.save()
+        response = self.client.get(url)
+        self.assertContains(response, 'Текшерилген товар.')
+        self.assertNotContains(response, 'Проверенный товар.')
+        # Russian and English visitors are unaffected.
+        in_language(self.client, 'ru')
+        self.assertContains(self.client.get(url), 'Проверенный товар.')
+        in_language(self.client, 'en')
+        self.assertContains(self.client.get(url), 'A tested product.')
+
+    def test_product_id_is_shown_on_the_product_page_only(self):
+        self.category.id_prefix = 'L'
+        self.category.id_digits = 3
+        self.category.save()
+        product = self.make_product('Phone', 'phone', '100.00')
+        self.assertEqual(product.catalog_code, 'L-001')
+
+        self.assertContains(self.client.get(reverse('shop:product_detail', args=[product.slug])), 'L-001')
+        for page in (reverse('shop:home'), reverse('shop:product_list'),
+                     reverse('shop:product_list_by_category', args=[self.category.slug])):
+            with self.subTest(page=page):
+                self.assertNotContains(self.client.get(page), 'L-001')
+
+    def test_language_switcher_names_each_language_in_itself(self):
+        response = self.client.get(reverse('shop:home'))
+        # Drawn as the site's own dropdown, not the browser's.
+        self.assertContains(response, 'shop/js/dropdowns.js')
+        for name in ('English', 'Русский', 'Кыргызча'):
+            self.assertContains(response, f'>{name}</option>')
+
     def test_about_page_shows_hours_and_directions_only_when_set(self):
         contact = ContactSettings.get_solo()
         contact.whatsapp_number = '996700123456'
@@ -617,13 +669,14 @@ class StorefrontTests(TestCase):
         self.assertContains(response, 'Mon-Sat 10:00-20:00')
         self.assertContains(response, 'https://maps.example.com/store')
 
-        # The hours follow the visitor's language, falling back to English.
+        # The hours follow the visitor's language; Kyrgyz with none of its
+        # own falls back to Russian.
         in_language(self.client, 'ru')
         response = self.client.get(reverse('shop:about_us'))
         self.assertContains(response, 'Пн-Сб 10:00-20:00')
         in_language(self.client, 'ky')
         response = self.client.get(reverse('shop:about_us'))
-        self.assertContains(response, 'Mon-Sat 10:00-20:00')
+        self.assertContains(response, 'Пн-Сб 10:00-20:00')
 
 
 @override_settings(LANGUAGE_CODE='en')
@@ -679,7 +732,13 @@ class ManagementPanelTests(TestCase):
         groups = {g['category'].slug: [p.slug for p in g['products']] for g in response.context['search_groups']}
         self.assertEqual(groups, {'laptops': ['book'], 'phones': ['galaxy-phone']})
 
-        response = self.client.get(reverse('shop:create_product'), {'q': '#1'})
+        response = self.client.get(reverse('shop:create_product'), {'q': '#2'})
+        groups = {g['category'].slug: [p.slug for p in g['products']] for g in response.context['search_groups']}
+        self.assertEqual(groups, {'phones': ['other-phone']})
+
+        # The whole ID, as a customer would read it off the product page.
+        code = Product.objects.get(slug='other-phone').catalog_code
+        response = self.client.get(reverse('shop:create_product'), {'q': code.lower()})
         groups = {g['category'].slug: [p.slug for p in g['products']] for g in response.context['search_groups']}
         self.assertEqual(groups, {'phones': ['other-phone']})
 
@@ -844,8 +903,76 @@ class ManagementPanelTests(TestCase):
         february = self.client.get(reverse('shop:sales_report'), {'year': '2026', 'month': '2'})
         self.assertEqual(february.context['total_count'], 0)
 
+    # --- product IDs ----------------------------------------------------
+
+    def post_category(self, **fields):
+        data = {'name': 'Laptops', 'slug': '', 'id_prefix': 'L', 'id_digits': '1', 'show_newest_row': 'on'}
+        data.update(fields)
+        return self.client.post(reverse('shop:create_category'), data, **self.AJAX)
+
+    def test_a_new_category_sets_its_own_id_prefix_and_products_are_numbered_from_1(self):
+        self.assertTrue(self.post_category(id_prefix='a1', id_digits='3').json()['ok'])
+        laptops = Category.objects.get(name='Laptops')
+        self.assertEqual((laptops.id_prefix, laptops.id_digits), ('A1', 3))
+
+        response = self.client.post(reverse('shop:create_product'), {
+            'name': 'ThinkPad', 'slug': '', 'brand': 'Lenovo', 'category': laptops.id,
+            'price': '900.00', 'description': 'A laptop.',
+        }, **self.AJAX)
+        product = Product.objects.get(name='ThinkPad')
+        self.assertEqual(product.catalog_code, 'A1-001')
+        # The admin sees the new ID straight away.
+        self.assertIn('A1-001', response.json()['messages'][0]['text'])
+
+    def test_an_id_prefix_must_be_letters_and_digits_and_unique(self):
+        self.category.id_prefix = 'P'
+        self.category.save()
+        for prefix in ('p', 'L-1', 'L 1', ''):
+            with self.subTest(prefix=prefix):
+                response = self.post_category(id_prefix=prefix)
+                self.assertEqual(response.status_code, 400)
+                self.assertIn('id_prefix', [e['field'] for e in response.json()['errors']])
+        self.assertFalse(Category.objects.filter(name='Laptops').exists())
+
+    def test_a_category_can_be_edited_later_and_its_ids_follow(self):
+        product = self.make_product('Phone', 'phone', '250.00')
+        url = reverse('shop:edit_category', args=[self.category.id])
+        page = self.client.get(url)
+        self.assertEqual(page.status_code, 200)
+        self.assertContains(page, f'value="{self.category.id_prefix}"')
+
+        response = self.client.post(url, {
+            'name': 'Phones', 'name_ru': 'Телефоны', 'slug': 'phones', 'id_prefix': 'T', 'id_digits': '2',
+            'show_newest_row': 'on',
+        }, **self.AJAX)
+        self.assertEqual(response.json(), {'ok': True, 'messages': [], 'redirect': reverse('shop:create_category')})
+        self.category.refresh_from_db()
+        self.assertEqual((self.category.name_ru, self.category.id_prefix), ('Телефоны', 'T'))
+        product.refresh_from_db()
+        self.assertEqual(product.catalog_code, 'T-01')
+        # The list it returns to says so, and links back to the editor.
+        listing = self.client.get(reverse('shop:create_category'))
+        self.assertContains(listing, 'saved')
+        self.assertContains(listing, url)
+
+    def test_a_category_can_keep_its_own_prefix_when_edited(self):
+        url = reverse('shop:edit_category', args=[self.category.id])
+        response = self.client.post(url, {
+            'name': 'Phones', 'slug': 'phones', 'id_prefix': self.category.id_prefix.lower(), 'id_digits': '1',
+        }, **self.AJAX)
+        self.assertTrue(response.json()['ok'])
+
+    def test_removed_page_finds_a_listing_by_its_full_id(self):
+        product = self.make_product('Phone', 'phone', '250.00')
+        other = self.make_product('Other', 'other', '250.00')
+        self.client.post(reverse('shop:remove_product', args=[product.id]))
+        self.client.post(reverse('shop:remove_product', args=[other.id]))
+
+        response = self.client.get(reverse('shop:removed_products'), {'search': product.catalog_code})
+        self.assertEqual([p.pk for p in response.context['removed_products']], [product.pk])
+
     def test_category_actions_in_the_background_hand_back_the_row(self):
-        response = self.client.post(reverse('shop:create_category'), {'name': 'Laptops', 'slug': 'laptops'}, **self.AJAX)
+        response = self.client.post(reverse('shop:create_category'), {'name': 'Laptops', 'slug': 'laptops', 'id_prefix': 'L', 'id_digits': '1'}, **self.AJAX)
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -1153,3 +1280,204 @@ class ManagementPanelTests(TestCase):
 
         self.assertRedirects(response, reverse('shop:sales_archive'))
         self.assertFalse(Sale.objects.exists())
+
+
+# ── Automatic translation ──────────────────────────────────────────────────
+
+def detect(text):
+    """The fake translator's language detector: good enough for the tests."""
+    if not text:
+        return 'empty'
+    if re.search('[ңөүҢӨҮ]', text):
+        return 'ky'
+    if re.search('[а-яА-ЯёЁ]', text):
+        return 'ru'
+    return 'en'
+
+
+class FakeClaude:
+    """Stands in for request_translations(): answers the way the real model
+    would, marking each translation with its language so tests can see
+    what came from where."""
+
+    def __init__(self, fail=False, during=None):
+        self.calls, self.fail, self.during = [], fail, during
+
+    def __call__(self, texts):
+        self.calls.append(texts)
+        if self.during:
+            self.during()
+        if self.fail:
+            raise translator.TranslationError('Claude API error 529: Overloaded')
+        answer = {}
+        for field, slots in texts.items():
+            detected = {lang: detect(text) for lang, text in slots.items()}
+            source = next(text for text in slots.values() if text)
+            answer[field] = {'detected': detected}
+            for lang in ('en', 'ru', 'ky'):
+                if detected[lang] == lang:
+                    answer[field][lang] = slots[lang]
+                elif field == 'name' and source == 'iPhone 15':
+                    answer[field][lang] = source  # a bare brand and model
+                else:
+                    answer[field][lang] = f'[{lang}] {source}'
+        return answer
+
+
+@override_settings(LANGUAGE_CODE='en', TRANSLATION_ENABLED=True, ANTHROPIC_API_KEY='test-key')
+class AutomaticTranslationTests(TestCase):
+    AJAX = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
+
+    def setUp(self):
+        self.category = Category.objects.create(
+            name='Chargers', name_ru='Зарядки', name_ky='Кубаттагычтар', slug='chargers',
+        )
+        staff = User.objects.create_user(username='manager', password='manager-password-123', is_staff=True)
+        self.client.force_login(staff)
+        self.fake = FakeClaude()
+        patcher = mock.patch.object(translator, 'request_translations', self.fake)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def save_product(self, product=None, **fields):
+        data = {'name': 'Wireless Charger', 'slug': 'charger', 'brand': 'Anker', 'category': self.category.id,
+                'price': '1500', 'description': ''}
+        if product:
+            data.update({f: getattr(product, f) for f in ('name', 'name_ru', 'name_ky', 'slug',
+                                                          'description', 'description_ru', 'description_ky')})
+        data.update(fields)
+        url = reverse('shop:update_product', args=[product.id]) if product else reverse('shop:create_product')
+        return self.client.post(url, data, **self.AJAX)
+
+    def test_a_product_written_in_one_language_gets_the_other_two(self):
+        response = self.save_product(description='Fast 15W wireless charging.')
+
+        product = Product.objects.get(slug='charger')
+        self.assertEqual(product.description, 'Fast 15W wireless charging.')
+        self.assertEqual(product.description_ru, '[ru] Fast 15W wireless charging.')
+        self.assertEqual(product.description_ky, '[ky] Fast 15W wireless charging.')
+        self.assertEqual(product.name_ky, '[ky] Wireless Charger')
+        self.assertEqual(sorted(product.machine_translated),
+                         ['description_ky', 'description_ru', 'name_ky', 'name_ru'])
+        # The admin is told the other languages are on their way.
+        self.assertIn('translated automatically', ' '.join(m['text'] for m in response.json()['messages']))
+        # And the Kyrgyz site now reads Kyrgyz.
+        in_language(self.client, 'ky')
+        self.assertContains(self.client.get(reverse('shop:product_detail', args=['charger'])),
+                            '[ky] Fast 15W wireless charging.')
+
+    def test_russian_typed_into_the_english_tab_moves_to_the_russian_one(self):
+        self.save_product(name='Беспроводная зарядка', description='Быстрая зарядка 15 Вт.')
+
+        product = Product.objects.get(slug='charger')
+        self.assertEqual(product.description_ru, 'Быстрая зарядка 15 Вт.')
+        self.assertEqual(product.description, '[en] Быстрая зарядка 15 Вт.')
+        self.assertEqual(product.description_ky, '[ky] Быстрая зарядка 15 Вт.')
+        self.assertEqual(product.name_ru, 'Беспроводная зарядка')
+        # The moved original is the admin's text, not a machine translation.
+        self.assertNotIn('description_ru', product.machine_translated)
+        self.assertIn('description', product.machine_translated)
+
+    def test_a_translation_staff_correct_is_theirs_and_never_overwritten(self):
+        self.save_product(description='Fast charging.')
+        product = Product.objects.get(slug='charger')
+
+        self.save_product(product, description_ky='Тез кубаттоо.')
+        product.refresh_from_db()
+        self.assertEqual(product.description_ky, 'Тез кубаттоо.')
+        self.assertNotIn('description_ky', product.machine_translated)
+
+        # The source changes: the machine-made Russian follows it, the
+        # corrected Kyrgyz does not.
+        self.save_product(product, description='Very fast charging.')
+        product.refresh_from_db()
+        self.assertEqual(product.description_ru, '[ru] Very fast charging.')
+        self.assertEqual(product.description_ky, 'Тез кубаттоо.')
+
+    def test_saving_again_without_changes_asks_nothing(self):
+        self.save_product(description='Fast charging.')
+        calls = len(self.fake.calls)
+        self.save_product(Product.objects.get(slug='charger'))
+        self.assertEqual(len(self.fake.calls), calls)
+
+    def test_a_product_written_in_every_language_asks_nothing(self):
+        self.save_product(name='Charger', name_ru='Зарядка', name_ky='Кубаттагыч',
+                          description='Fast.', description_ru='Быстрая.', description_ky='Тез.')
+        self.assertEqual(self.fake.calls, [])
+
+    def test_a_bare_brand_and_model_name_is_not_copied_into_every_tab(self):
+        self.save_product(name='iPhone 15', description='A phone.')
+        product = Product.objects.get(slug='charger')
+        self.assertEqual((product.name_ru, product.name_ky), ('', ''))
+        self.assertNotIn('name_ru', product.machine_translated)
+
+    def test_a_failed_translation_still_saves_the_product(self):
+        self.fake.fail = True
+        with self.assertLogs('shop.translation', level='WARNING'):
+            response = self.save_product(description='Fast charging.')
+        self.assertTrue(response.json()['ok'])
+        product = Product.objects.get(slug='charger')
+        self.assertEqual((product.description_ru, product.description_ky), ('', ''))
+        self.assertEqual(product.machine_translated, [])
+
+    def test_an_edit_made_while_translating_is_not_overwritten(self):
+        def staff_types_kyrgyz_meanwhile():
+            Product.all_objects.filter(slug='charger').update(description_ky='Адам жазган.')
+        self.fake.during = staff_types_kyrgyz_meanwhile
+
+        self.save_product(description='Fast charging.')
+        product = Product.objects.get(slug='charger')
+        self.assertEqual(product.description_ky, 'Адам жазган.')
+        self.assertEqual(product.description_ru, '[ru] Fast charging.')
+        self.assertNotIn('description_ky', product.machine_translated)
+
+    @override_settings(TRANSLATION_ENABLED=False)
+    def test_without_a_key_nothing_is_sent_and_nothing_is_promised(self):
+        response = self.save_product(description='Fast charging.')
+        self.assertEqual(self.fake.calls, [])
+        self.assertNotIn('translated automatically', ' '.join(m['text'] for m in response.json()['messages']))
+
+    def test_category_names_are_translated_too(self):
+        response = self.client.post(reverse('shop:create_category'), {
+            'name': 'Power Banks', 'slug': '', 'id_prefix': 'PB', 'id_digits': '1',
+        }, **self.AJAX)
+        self.assertTrue(response.json()['ok'])
+        category = Category.objects.get(name='Power Banks')
+        self.assertEqual(category.name_ky, '[ky] Power Banks')
+
+    def test_translate_catalog_fills_in_what_is_already_there(self):
+        Product.objects.create(category=self.category, brand='Anker', name='Cable', slug='cable',
+                               price=Decimal('300'), description='Braided USB-C cable.')
+        out = io.StringIO()
+        call_command('translate_catalog', stdout=out)
+        product = Product.objects.get(slug='cable')
+        self.assertEqual(product.description_ky, '[ky] Braided USB-C cable.')
+        self.assertIn('Translated 1; failed 0.', out.getvalue())
+
+        # Run again: nothing is left to do.
+        out = io.StringIO()
+        call_command('translate_catalog', stdout=out)
+        self.assertIn('0 item(s) need translating.', out.getvalue())
+
+    def test_the_request_sent_to_claude(self):
+        """request_translations() itself, against a stubbed SDK client."""
+        reply = {'description': {'detected': {'en': 'en', 'ru': 'empty', 'ky': 'empty'},
+                                 'en': 'Fast.', 'ru': 'Быстро.', 'ky': 'Тез.'}}
+        message = SimpleNamespace(stop_reason='end_turn',
+                                  content=[SimpleNamespace(type='text', text=json.dumps(reply))])
+        with mock.patch('anthropic.Anthropic') as client_class:
+            client_class.return_value.beta.messages.create.return_value = message
+            result = REAL_REQUEST({'description': {'en': 'Fast.', 'ru': '', 'ky': ''}})
+
+        self.assertEqual(result, reply)
+        kwargs = client_class.return_value.beta.messages.create.call_args.kwargs
+        self.assertEqual(kwargs['model'], settings.TRANSLATION_MODEL)
+        self.assertEqual(kwargs['fallbacks'], 'default')
+        self.assertEqual(kwargs['output_config']['format']['type'], 'json_schema')
+        self.assertEqual(kwargs['output_config']['format']['schema']['required'], ['description'])
+
+        message.stop_reason = 'refusal'
+        with mock.patch('anthropic.Anthropic') as client_class:
+            client_class.return_value.beta.messages.create.return_value = message
+            with self.assertRaises(translator.TranslationError):
+                REAL_REQUEST({'description': {'en': 'Fast.', 'ru': '', 'ky': ''}})

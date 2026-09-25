@@ -74,6 +74,7 @@
     //   reset        the form is cleared for the next entry
     //   refresh      the content column is fetched again and swapped in
     //   (none)       the form stays as it is — a toast says it saved
+    // Whatever the mode, an answer carrying `redirect` is followed instead.
     // A form with a file chosen refreshes regardless, so the new picture is
     // seen. `data-reload` opts a form out entirely (sign out).
     (function () {
@@ -211,6 +212,9 @@
                 })
                 .then(function (data) {
                     if (!data) return;
+                    // A save that finishes on another page (an edit form
+                    // returning to its list): go there; it shows the message.
+                    if (data.ok && data.redirect) { window.location.href = data.redirect; return; }
                     toast(data.messages);
                     if (!data.ok) { if (el.matches('form')) showErrors(el, data.errors); return; }
                     if (el.matches('form')) clearErrors(el);

@@ -29,7 +29,7 @@
     {% endcomment %}
 
     <form method="GET" class="relative">
-        <input type="text" name="q" value="{{ search_query }}" placeholder="{% translate 'Search every category by name, brand, or #ID...' %}"
+        <input type="text" name="q" value="{{ search_query }}" placeholder="{% translate 'Search every category by name, brand, or ID (e.g. L-12)...' %}"
                class="w-full bg-white border border-gray-200 rounded-xl pl-9 pr-9 py-2.5 text-xs font-bold text-gray-800 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all">
         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
         {% if search_query %}
@@ -127,9 +127,15 @@
                     {% if product_instance %}{% translate "Update Product" %}: {{ product_instance.name }}{% else %}{% translate "Add New Product" %}{% endif %}
                 </h2>
             </div>
+            {% if product_instance %}
+            <span class="bg-indigo-50 text-indigo-700 text-xs font-black px-2.5 py-1 rounded-lg border border-indigo-100/50 font-mono" title="{% translate 'Product ID' %}">
+                {{ product_instance.catalog_code }}
+            </span>
+            {% else %}
             <span class="bg-indigo-50 text-indigo-700 text-[10px] font-black uppercase px-2.5 py-1 rounded-lg tracking-wider border border-indigo-100/50">
                 {% translate "Authorized Portal" %}
             </span>
+            {% endif %}
         </div>
 
         <!-- Form Error Banner -->
@@ -207,6 +213,18 @@
                 <div class="lang-field" data-group="product-description" data-lang="en">{{ form.description }}</div>
                 <div class="lang-field hidden" data-group="product-description" data-lang="ru">{{ form.description_ru }}</div>
                 <div class="lang-field hidden" data-group="product-description" data-lang="ky">{{ form.description_ky }}</div>
+                {% if translation_enabled %}
+                <p class="text-[11px] text-gray-400 mt-1.5 flex items-start gap-1.5">
+                    <i class="fa-solid fa-language text-indigo-400 mt-0.5"></i>
+                    <span>{% translate "Write the title and description in any one language. After saving, the other tabs are filled in automatically; you can correct them there." %}</span>
+                </p>
+                {% endif %}
+                {% if auto_translated %}
+                <p class="text-[11px] text-indigo-600 mt-1 flex items-start gap-1.5">
+                    <i class="fa-solid fa-wand-magic-sparkles mt-0.5"></i>
+                    <span>{% translate "Translated automatically — check before relying on it:" %} {{ auto_translated|join:", " }}</span>
+                </p>
+                {% endif %}
             </div>
 
             <!-- Technical characteristics: as many or as few rows as this
@@ -317,6 +335,10 @@
         const slugInput = document.querySelector('input[name="slug"]');
 
         if (nameInput && slugInput) {
+            // An address that already exists (editing) is kept unless the
+            // admin changes it: renaming must not move the product's URL
+            // and break links people have saved or shared.
+            if (slugInput.value.trim()) slugInput.dataset.touched = "true";
             nameInput.addEventListener('input', function() {
                 if (!slugInput.dataset.touched || slugInput.value.trim() === '') {
                     slugInput.value = nameInput.value.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');

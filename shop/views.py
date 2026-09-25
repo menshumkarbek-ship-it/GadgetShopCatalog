@@ -26,6 +26,7 @@ from .forms import (
     ProductCreateForm, CategoryCreateForm, ContactSettingsForm, AboutPageContentForm,
     HomePageContentForm,
 )
+from . import translation
 
 CATEGORIES_CACHE_KEY = 'global_store_categories'
 # Short on purpose — see the note on SETTINGS_CACHE_TIMEOUT in
@@ -288,7 +289,7 @@ def _wants_json(request):
     return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
 
-def _panel_response(request, redirect_response, ok=True, **payload):
+def _panel_response(request, redirect_response, ok=True, navigate=False, **payload):
     """
     Every action in the management panel is posted in the background by the
     panel's script, so the page updates in place instead of reloading. Those
@@ -298,9 +299,15 @@ def _panel_response(request, redirect_response, ok=True, **payload):
 
     A plain post — no script, or JavaScript off — gets the redirect the
     panel always used, so nothing depends on the script being there.
+
+    `navigate=True` is for a save that finishes on another page (an edit
+    form returning to its list): the script is told to go to the redirect's
+    URL, and the flash messages are left for that page to show.
     """
     if not _wants_json(request):
         return redirect_response
+    if navigate and ok:
+        return JsonResponse({'ok': True, 'messages': [], 'redirect': redirect_response.url})
     flashes = [{'level': message.level_tag, 'text': str(message)} for message in messages.get_messages(request)]
     return JsonResponse({'ok': ok, 'messages': flashes, **payload}, status=200 if ok else 400)
 
@@ -360,6 +367,11 @@ def _are_images(files, form):
     return True
 
 
+# Shown after a save that set the automatic translator going (see
+# shop/translation.py); it finishes a few seconds later, in the background.
+TRANSLATING_MESSAGE = gettext_lazy("The other languages are being translated automatically and will appear in a few seconds.")
+
+
 # One-click row names for the product form's characteristics section: the
 # ones most devices share. Anything else is typed in by hand.
 SPEC_PRESETS = [
@@ -380,6 +392,7 @@ def create_product(request, product_id=None):
         extra_images = request.FILES.getlist('extra_images')
         if form.is_valid() and _are_images(extra_images, form):
             product = form.save()
+            translating = translation.schedule(product, form.changed_data)
 
             # Extra gallery photos: a plain <input type="file" name="extra_images"
             # multiple> isn't a ModelForm field (Django forms don't support
@@ -393,7 +406,11 @@ def create_product(request, product_id=None):
             if product_instance:
                 messages.success(request, _("Product successfully updated!"))
             else:
-                messages.success(request, _("Product successfully cataloged!"))
+                messages.success(
+                    request, _("Product successfully cataloged! Its ID is %(code)s.") % {'code': product.catalog_code}
+                )
+            if translating:
+                messages.info(request, TRANSLATING_MESSAGE)
             return _panel_response(request, redirect('shop:product_list'))
         else:
             messages.error(request, _("Please correct the entry errors down below."))
@@ -436,7 +453,7 @@ def create_product(request, product_id=None):
             matches = [
                 p for p in group['products']
                 if any(needle in text.lower() for text in (p.name, p.name_ru, p.name_ky, p.brand))
-                or p.category_number == number
+                or p.category_number == number or p.catalog_code.lower() == needle
             ]
             if matches:
                 search_groups.append({'category': group['category'], 'products': matches})
@@ -455,10 +472,20 @@ def create_product(request, product_id=None):
         'search_groups': search_groups,
         'known_brands': known_brands,
         'spec_presets': SPEC_PRESETS,
+        'translation_enabled': translation.is_enabled(),
+        'auto_translated': translation.describe(product_instance.machine_translated) if product_instance else [],
         'gallery_images': gallery_images,
         'active': 'products',
     }
     return render(request, 'shop/product/create.html', context)
+
+
+def _parse_catalog_code(text):
+    """('L', 12) for a product ID like 'L-12' or 'l-012', else None."""
+    prefix, _sep, number = text.strip().rpartition('-')
+    if prefix and number.isdigit():
+        return prefix, int(number)
+    return None
 
 
 def _sale_for_removal(product):
@@ -716,6 +743,8 @@ def create_category(request):
         if form.is_valid():
             category = form.save()
             messages.success(request, _("Category created! It now appears in the catalog filter and will get its own homepage row once it has products."))
+            if translation.schedule(category, form.changed_data):
+                messages.info(request, TRANSLATING_MESSAGE)
             return _panel_response(
                 request, redirect('shop:create_category'),
                 html=_category_row_html(request, category.id), category_count=Category.objects.count(),
@@ -739,6 +768,39 @@ def create_category(request):
         'active': 'categories',
     }
     return render(request, 'shop/product/category_create.html', context)
+
+
+@login_required
+@user_passes_test(is_admin_or_manager, login_url='shop:product_list', redirect_field_name=None)
+def edit_category(request, category_id):
+    """
+    Everything set when the category was created — its name in each
+    language, its catalog address, its product-ID prefix and number length,
+    and its homepage switches — changed in place. A new prefix renumbers
+    nothing: each product keeps its number, and its ID takes the new prefix.
+    """
+    category = get_object_or_404(Category, id=category_id)
+
+    if request.method == 'POST':
+        form = CategoryCreateForm(request.POST, instance=category)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _('Category "%(name)s" saved.') % {'name': category.name})
+            if translation.schedule(category, form.changed_data):
+                messages.info(request, TRANSLATING_MESSAGE)
+            return _panel_response(request, redirect('shop:create_category'), navigate=True)
+        messages.error(request, _("Please correct the entry errors down below."))
+        if _wants_json(request):
+            return _panel_response(request, None, ok=False, errors=_form_errors(form))
+    else:
+        form = CategoryCreateForm(instance=category)
+
+    return render(request, 'shop/product/category_create.html', {
+        'form': form,
+        'category_instance': category,
+        'product_count': Product.all_objects.filter(category=category).count(),
+        'active': 'categories',
+    })
 
 
 @login_required
@@ -1024,6 +1086,9 @@ def removed_products(request):
         )
         if search_query.lstrip('#').isdigit():
             search_filter |= Q(category_number=int(search_query.lstrip('#')))
+        code = _parse_catalog_code(search_query)
+        if code:
+            search_filter |= Q(category__id_prefix__iexact=code[0], category_number=code[1])
         removed = removed.filter(search_filter)
 
     removed = _annotate_removal_kind(removed)

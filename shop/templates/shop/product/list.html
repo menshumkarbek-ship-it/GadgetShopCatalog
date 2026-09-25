@@ -19,8 +19,12 @@
     }
     .field:focus { outline: none; border-color: #1d1d1f; }
     .field::placeholder { color: #707070; }
-    .field-label {
+    /* Not on a label that is `hidden` on phones: that one sits under its
+       own collapsible toggle, which already names it. */
+    .field-label:not(.hidden) {
         display: block;
+    }
+    .field-label {
         font-size: 12px;
         line-height: 1.333;
         letter-spacing: -0.01em;
@@ -52,8 +56,8 @@
 
         <form method="GET" action="{% url 'shop:product_list' %}" class="space-y-5">
             <div>
-                <label class="field-label">{% translate "Search" %}</label>
-                <input type="text" name="search" value="{{ search_query }}" placeholder="{% translate 'Search premium electronics...' %}" class="field">
+                <label for="filter-search" class="field-label">{% translate "Search" %}</label>
+                <input type="text" name="search" id="filter-search" value="{{ search_query }}" placeholder="{% translate 'Search premium electronics...' %}" class="field">
             </div>
 
             <div class="divide-y divide-hairline sm:divide-y-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-5 sm:items-end">
@@ -63,9 +67,9 @@
                         <span class="t-body-sm text-ink">{% translate "Device Type" %}</span>
                         <i class="fa-solid fa-chevron-down text-[11px] text-midgray transition-transform duration-200 {% if selected_type %}rotate-180{% endif %}"></i>
                     </button>
-                    <label class="hidden sm:block field-label">{% translate "Device Type" %}</label>
+                    <label for="filter-type" class="hidden sm:block field-label">{% translate "Device Type" %}</label>
                     <div class="filter-body {% if not selected_type %}hidden{% endif %} sm:block pt-3 sm:pt-0">
-                        <select name="type" class="field cursor-pointer">
+                        <select name="type" id="filter-type" class="field cursor-pointer">
                             <option value="">{% translate "All Gadget Types" %}</option>
                             {% for cat in categories %}
                                 <option value="{{ cat.slug }}" {% if selected_type == cat.slug %}selected{% endif %}>{{ cat.translated_name }}</option>
@@ -79,9 +83,9 @@
                         <span class="t-body-sm text-ink">{% translate "Brand / Model" %}</span>
                         <i class="fa-solid fa-chevron-down text-[11px] text-midgray transition-transform duration-200 {% if selected_brand %}rotate-180{% endif %}"></i>
                     </button>
-                    <label class="hidden sm:block field-label">{% translate "Brand / Model" %}</label>
+                    <label for="filter-brand" class="hidden sm:block field-label">{% translate "Brand / Model" %}</label>
                     <div class="filter-body {% if not selected_brand %}hidden{% endif %} sm:block pt-3 sm:pt-0">
-                        <select name="brand" class="field cursor-pointer">
+                        <select name="brand" id="filter-brand" class="field cursor-pointer">
                             <option value="">{% translate "All Brands" %}</option>
                             {% for brand in available_brands %}
                                 <option value="{{ brand }}" {% if selected_brand == brand %}selected{% endif %}>{{ brand }}</option>

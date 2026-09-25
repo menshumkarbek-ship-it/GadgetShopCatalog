@@ -1,3 +1,5 @@
+import re
+
 from django import forms
 from django.utils.translation import gettext_lazy as _
 from .models import Product, Category, ContactSettings, AboutPageContent, HomePageContent
@@ -24,13 +26,27 @@ FILE_INPUT_CLASS = (
 FALLBACK_HEADING_HINT = _('Optional — falls back to the heading above if left blank')
 FALLBACK_TEXT_HINT = _('Optional — falls back to the text above if left blank')
 FALLBACK_LABEL_HINT = _('Optional — falls back to the label above if left blank')
+# Kyrgyz falls back to Russian before the main text (utils.FALLBACK_LANGUAGES).
+FALLBACK_KY_HINT = _('Optional — falls back to Russian, then to the main text, if left blank')
+
+
+class KyrgyzFallbackHints:
+    """Give every Kyrgyz (`*_ky`) field the hint that matches how it
+    actually falls back — Russian first — instead of the Russian fields'
+    'falls back to the text above'. One place, rather than per widget."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            if name.endswith('_ky') and 'placeholder' in field.widget.attrs:
+                field.widget.attrs['placeholder'] = FALLBACK_KY_HINT
 
 
 # ==========================================
 # 📦 PRODUCT CREATION & UPDATE FORM
 # ==========================================
 
-class ProductCreateForm(forms.ModelForm):
+class ProductCreateForm(KyrgyzFallbackHints, forms.ModelForm):
     slug = forms.CharField(
         required=False,
         widget=forms.TextInput(attrs={
@@ -64,6 +80,10 @@ class ProductCreateForm(forms.ModelForm):
             'description_ky': forms.Textarea(attrs={'class': TEXTAREA_CLASS, 'placeholder': _('Optional — falls back to the description above if left blank'), 'rows': 4}),
             'image': forms.FileInput(attrs={'class': FILE_INPUT_CLASS}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['category'].empty_label = _('Choose a category…')
 
     def clean_slug(self):
         slug = self.cleaned_data.get('slug')
@@ -134,7 +154,7 @@ class ProductCreateForm(forms.ModelForm):
 # 🏷️ CATEGORY CREATION FORM
 # ==========================================
 
-class CategoryCreateForm(forms.ModelForm):
+class CategoryCreateForm(KyrgyzFallbackHints, forms.ModelForm):
     # The slug sits inside a "/catalog/" prefix box in the template, so the
     # box carries the border and the field itself is bare.
     slug = forms.CharField(
@@ -158,9 +178,26 @@ class CategoryCreateForm(forms.ModelForm):
         widget=forms.CheckboxInput(attrs={'class': ''})
     )
 
+    id_prefix = forms.CharField(
+        max_length=10,
+        label=_('ID prefix'),
+        widget=forms.TextInput(attrs={
+            'class': LIGHT_INPUT_CLASS + ' uppercase font-mono',
+            'placeholder': _('e.g. L or A1'),
+            'autocomplete': 'off', 'autocapitalize': 'characters', 'spellcheck': 'false',
+        }),
+    )
+    id_digits = forms.TypedChoiceField(
+        label=_('Number length'),
+        coerce=int,
+        choices=[(n, n) for n in range(1, 7)],
+        initial=1,
+        widget=forms.Select(attrs={'class': SELECT_CLASS}),
+    )
+
     class Meta:
         model = Category
-        fields = ['name', 'name_ru', 'name_ky', 'slug', 'is_featured_in_hero', 'show_newest_row']
+        fields = ['name', 'name_ru', 'name_ky', 'slug', 'id_prefix', 'id_digits', 'is_featured_in_hero', 'show_newest_row']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': LIGHT_INPUT_CLASS,
@@ -169,6 +206,19 @@ class CategoryCreateForm(forms.ModelForm):
             'name_ru': forms.TextInput(attrs={'class': LIGHT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the name above if left blank')}),
             'name_ky': forms.TextInput(attrs={'class': LIGHT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the name above if left blank')}),
         }
+
+    def clean_id_prefix(self):
+        """Letters and digits only, stored upper-case, and not already used
+        by another category — the prefix is what keeps IDs unique store-wide."""
+        prefix = self.cleaned_data['id_prefix'].strip().upper()
+        if not re.fullmatch(r'[^\W_]+', prefix):
+            raise forms.ValidationError(_('Use letters and digits only, e.g. L or A1.'))
+        taken = Category.objects.filter(id_prefix__iexact=prefix).exclude(pk=self.instance.pk).first()
+        if taken:
+            raise forms.ValidationError(
+                _('“%(prefix)s” is already the prefix of %(category)s.') % {'prefix': prefix, 'category': taken.name}
+            )
+        return prefix
 
     def clean_slug(self):
         slug = self.cleaned_data.get('slug')
@@ -223,7 +273,7 @@ class ContactSettingsForm(forms.ModelForm):
 # 📖 ABOUT PAGE CONTENT FORM
 # ==========================================
 
-class AboutPageContentForm(forms.ModelForm):
+class AboutPageContentForm(KyrgyzFallbackHints, forms.ModelForm):
     class Meta:
         model = AboutPageContent
         fields = [
@@ -292,7 +342,7 @@ class AboutPageContentForm(forms.ModelForm):
 # 🏠 HOME PAGE CONTENT FORM
 # ==========================================
 
-class HomePageContentForm(forms.ModelForm):
+class HomePageContentForm(KyrgyzFallbackHints, forms.ModelForm):
     """
     Edits the two editorial bands on the homepage. Same shape as
     AboutPageContentForm: every field has a Russian and Kyrgyz twin, and the
