@@ -1,8 +1,10 @@
 import re
 
 from django import forms
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.utils.translation import gettext_lazy as _
-from .models import Product, Category, ContactSettings, AboutPageContent, HomePageContent
+from .models import Product, Category, ContactSettings, ExtraContact, AboutPageContent, HomePageContent
 from .utils import build_unique_slug
 
 # Shared widget styling for every input in the management panel. The panel
@@ -267,6 +269,49 @@ class ContactSettingsForm(forms.ModelForm):
                 'placeholder': _('username, without the @')
             }),
         }
+
+
+class ExtraContactForm(forms.ModelForm):
+    """One row of the "more contacts" list. A row left without a value is
+    simply ignored rather than reported as an error."""
+
+    class Meta:
+        model = ExtraContact
+        fields = ['kind', 'label', 'value']
+        widgets = {
+            'kind': forms.Select(attrs={'class': TEXT_INPUT_CLASS}),
+            'label': forms.TextInput(attrs={
+                'class': TEXT_INPUT_CLASS, 'placeholder': _('Title, e.g. Business WhatsApp (optional)')
+            }),
+            'value': forms.TextInput(attrs={
+                'class': TEXT_INPUT_CLASS, 'placeholder': _('Number, username, address or link')
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['value'].required = False
+
+    def clean(self):
+        cleaned = super().clean()
+        kind = cleaned.get('kind')
+        value = (cleaned.get('value') or '').strip()
+        cleaned['value'] = value
+        if not value or not kind:
+            return cleaned
+        if kind == 'email':
+            try:
+                validate_email(value)
+            except ValidationError:
+                self.add_error('value', _('Enter a valid email address.'))
+        elif kind in ('phone', 'whatsapp') and not any(ch.isdigit() for ch in value):
+            self.add_error('value', _('Enter a phone number.'))
+        return cleaned
+
+
+ExtraContactFormSet = forms.modelformset_factory(
+    ExtraContact, form=ExtraContactForm, extra=0, can_delete=True,
+)
 
 
 # ==========================================

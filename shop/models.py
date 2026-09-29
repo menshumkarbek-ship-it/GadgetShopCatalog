@@ -2,6 +2,8 @@ import logging
 
 from django.conf import settings
 from django.db import models
+from django.utils.functional import cached_property
+from django.utils.translation import gettext_lazy
 from .utils import derive_id_prefix, process_no_bg_image, translatable_property
 
 logger = logging.getLogger(__name__)
@@ -158,7 +160,126 @@ class ContactSettings(models.Model):
             self.whatsapp_digits,
             self.telegram_handle,
             self.instagram_handle,
-        ])
+        ]) or bool(self.extras)
+
+    @cached_property
+    def extras(self):
+        """
+        The admin-added extra contacts. Loaded once and kept on the instance,
+        so the cached copy the context processor hands every template carries
+        them too, instead of costing a query per page.
+        """
+        return list(ExtraContact.objects.all())
+
+
+class ExtraContact(models.Model):
+    """
+    One additional contact channel the admin adds beyond the five fixed ones
+    on ContactSettings: a second phone, a business WhatsApp, a Facebook page.
+    Any number of them, each shown as its own tile on the Contact page.
+    """
+    KIND_CHOICES = [
+        ('phone', gettext_lazy('Phone')),
+        ('whatsapp', gettext_lazy('WhatsApp')),
+        ('telegram', gettext_lazy('Telegram')),
+        ('instagram', gettext_lazy('Instagram')),
+        ('email', gettext_lazy('Email')),
+        ('facebook', gettext_lazy('Facebook')),
+        ('tiktok', gettext_lazy('TikTok')),
+        ('youtube', gettext_lazy('YouTube')),
+        ('website', gettext_lazy('Website / link')),
+        ('text', gettext_lazy('Other (plain text)')),
+    ]
+    ICONS = {
+        'phone': 'fa-solid fa-phone', 'whatsapp': 'fa-brands fa-whatsapp',
+        'telegram': 'fa-brands fa-telegram', 'instagram': 'fa-brands fa-instagram',
+        'email': 'fa-solid fa-envelope', 'facebook': 'fa-brands fa-facebook',
+        'tiktok': 'fa-brands fa-tiktok', 'youtube': 'fa-brands fa-youtube',
+        'website': 'fa-solid fa-globe', 'text': 'fa-solid fa-circle-info',
+    }
+    # Channels where the visitor's inquiry text can be pre-filled.
+    PREFILL_KINDS = ('whatsapp', 'telegram')
+    SITE_URLS = {
+        'instagram': 'https://instagram.com/', 'facebook': 'https://facebook.com/',
+        'tiktok': 'https://tiktok.com/@', 'youtube': 'https://youtube.com/@',
+    }
+
+    kind = models.CharField(max_length=20, choices=KIND_CHOICES, default='phone')
+    label = models.CharField(
+        max_length=100, blank=True,
+        help_text="Optional title shown on the tile, e.g. \"Business WhatsApp\"."
+    )
+    value = models.CharField(
+        max_length=255,
+        help_text="The number, username, address or link."
+    )
+
+    class Meta:
+        ordering = ['id']
+
+    def __str__(self):
+        return f"{self.title}: {self.value}"
+
+    @property
+    def title(self):
+        return self.label or self.get_kind_display()
+
+    @property
+    def icon(self):
+        return self.ICONS.get(self.kind, self.ICONS['text'])
+
+    @property
+    def digits(self):
+        keep = '+' if self.kind == 'phone' else ''
+        return ''.join(ch for ch in self.value if ch.isdigit() or ch in keep)
+
+    @property
+    def handle(self):
+        """A username with any @ or profile-URL prefix stripped off."""
+        value = self.value.strip()
+        for prefix in ('https://', 'http://', 'www.'):
+            if value.lower().startswith(prefix):
+                value = value[len(prefix):]
+        if '/' in value:
+            value = value.rstrip('/').rsplit('/', 1)[-1]
+        return value.lstrip('@')
+
+    @property
+    def display(self):
+        if self.kind == 'whatsapp':
+            return f"+{self.digits}"
+        if self.kind in ('telegram', 'instagram', 'tiktok', 'youtube'):
+            return f"@{self.handle}"
+        return self.value
+
+    @property
+    def href(self):
+        """Where the tile links, or '' when it is plain text."""
+        if self.kind == 'phone':
+            return f"tel:{self.digits}"
+        if self.kind == 'whatsapp':
+            return f"https://wa.me/{self.digits}"
+        if self.kind == 'telegram':
+            return f"https://t.me/{self.handle}"
+        if self.kind == 'email':
+            return f"mailto:{self.value}"
+        if self.kind in self.SITE_URLS:
+            if self.value.lower().startswith(('http://', 'https://')):
+                return self.value
+            return f"{self.SITE_URLS[self.kind]}{self.handle}"
+        if self.kind == 'website':
+            if self.value.lower().startswith(('http://', 'https://')):
+                return self.value
+            return f"https://{self.value}"
+        return ''
+
+    @property
+    def supports_prefill(self):
+        return self.kind in self.PREFILL_KINDS
+
+    @property
+    def opens_new_tab(self):
+        return self.href.startswith('http')
 
 
 # ==========================================

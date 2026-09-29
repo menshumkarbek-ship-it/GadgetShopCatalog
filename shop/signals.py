@@ -4,7 +4,7 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
 from .context_processors import CONTACT_SETTINGS_CACHE_KEY, SITE_IDENTITY_CACHE_KEY
-from .models import Category, ContactSettings, HomePageContent
+from .models import Category, ContactSettings, ExtraContact, HomePageContent
 
 
 @receiver([post_save, post_delete], sender=Category)
@@ -15,7 +15,8 @@ def invalidate_category_cache(sender, **kwargs):
     cache.delete('global_store_categories')
 
 
-@receiver(post_save, sender=ContactSettings)
+@receiver([post_save, post_delete], sender=ContactSettings)
+@receiver([post_save, post_delete], sender=ExtraContact)
 def invalidate_contact_settings_cache(sender, **kwargs):
     """Contact channels are cached per request in a context processor, so an
     edit has to clear it or the Contact page keeps showing the old number."""

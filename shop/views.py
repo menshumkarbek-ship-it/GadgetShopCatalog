@@ -14,17 +14,18 @@ from django.db import transaction
 from django.db.models import Q, Sum, Count, Min, Max
 from django.utils import timezone
 from django.utils.dates import MONTHS
-from django.utils.http import urlencode
+from django.utils.http import url_has_allowed_host_and_scheme, urlencode
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django.views.decorators.http import require_POST
 
 from .models import (
-    Product, Category, ProductImage, ContactSettings, AboutPageContent, HomePageContent, Sale,
+    Product, Category, ProductImage, ContactSettings, ExtraContact, AboutPageContent,
+    HomePageContent, Sale,
 )
 from .forms import (
-    ProductCreateForm, CategoryCreateForm, ContactSettingsForm, AboutPageContentForm,
-    HomePageContentForm,
+    ProductCreateForm, CategoryCreateForm, ContactSettingsForm, ExtraContactFormSet,
+    AboutPageContentForm, HomePageContentForm,
 )
 from . import translation
 
@@ -704,11 +705,13 @@ def discard_sale(request, sale_id):
         request,
         _('"%(name)s" was struck from the sales report.') % {'name': sale.product_name},
     )
+    # Back to the exact report (period and filters) the sale was struck from.
+    next_url = request.POST.get('next', '')
+    if next_url.startswith('/management/') and url_has_allowed_host_and_scheme(
+            next_url, allowed_hosts={request.get_host()}):
+        return _panel_response(request, redirect(next_url))
     if request.POST.get('period') == 'all':
-        # Struck from the all-time view, so go back to it rather than
-        # dropping the admin into whatever month the sale happened to be in.
         return _panel_response(request, redirect('shop:sales_archive'))
-
     url = reverse('shop:sales_report')
     month, year = request.POST.get('month'), request.POST.get('year')
     if month and year:
@@ -843,20 +846,41 @@ def manage_contacts(request):
     """
     settings_obj = ContactSettings.get_solo()
 
+    extras_qs = ExtraContact.objects.all()
+
     if request.method == 'POST':
         form = ContactSettingsForm(request.POST, instance=settings_obj)
-        if form.is_valid():
-            form.save()
+        extras = ExtraContactFormSet(request.POST, queryset=extras_qs, prefix='extra')
+        if form.is_valid() and extras.is_valid():
+            with transaction.atomic():
+                form.save()
+                for extra in extras.forms:
+                    data = extra.cleaned_data
+                    if not data:
+                        continue
+                    if data.get('DELETE') or not data.get('value'):
+                        # Ticked for removal, or emptied out: drop a saved
+                        # row, and quietly skip a new one never filled in.
+                        if extra.instance.pk:
+                            extra.instance.delete()
+                        continue
+                    extra.save()
             messages.success(request, _("Contact channels updated!"))
             return _panel_response(request, redirect('shop:manage_contacts'))
         else:
             messages.error(request, _("Please correct the entry errors below."))
             if _wants_json(request):
-                return _panel_response(request, None, ok=False, errors=_form_errors(form))
+                errors = _form_errors(form)
+                for extra in extras.forms:
+                    errors += _form_errors(extra)
+                return _panel_response(request, None, ok=False, errors=errors)
     else:
         form = ContactSettingsForm(instance=settings_obj)
+        extras = ExtraContactFormSet(queryset=extras_qs, prefix='extra')
 
-    return render(request, 'shop/product/contact_settings.html', {'form': form, 'active': 'contacts'})
+    return render(request, 'shop/product/contact_settings.html', {
+        'form': form, 'extras': extras, 'active': 'contacts',
+    })
 
 
 @login_required
@@ -917,7 +941,7 @@ def sales_report(request, period='month'):
     """
     # The store's own date, not the server's UTC one (see TIME_ZONE).
     today = timezone.localdate()
-    if request.GET.get('period') in ('month', 'all'):
+    if request.GET.get('period') in ('month', 'year', 'all'):
         period = request.GET['period']
 
     try:
@@ -936,11 +960,30 @@ def sales_report(request, period='month'):
 
     # product is joined too: each row says whether the listing behind it
     # still exists, which would otherwise be a query per sale.
-    sales = Sale.objects.select_related('sold_by', 'product')
+    period_sales = Sale.objects.select_related('sold_by', 'product')
     if period == 'month':
-        sales = sales.filter(sold_at__year=year, sold_at__month=month)
+        period_sales = period_sales.filter(sold_at__year=year, sold_at__month=month)
+    elif period == 'year':
+        period_sales = period_sales.filter(sold_at__year=year)
 
+    # Filters. The dropdown choices come from the period's own sales (before
+    # the filters narrow them), so every option always has results.
+    def _choices(column):
+        return list(
+            period_sales.exclude(**{column: ''}).order_by(column)
+            .values_list(column, flat=True).distinct()
+        )
+    category_choices = _choices('category_name')
+    brand_choices = _choices('brand')
+
+    sales = period_sales
+    category = (request.GET.get('category') or '').strip()
+    brand = (request.GET.get('brand') or '').strip()
     search_query = (request.GET.get('search') or '').strip()
+    if category:
+        sales = sales.filter(category_name=category)
+    if brand:
+        sales = sales.filter(brand=brand)
     if search_query:
         sales = sales.filter(
             Q(product_name__icontains=search_query) |
@@ -953,22 +996,36 @@ def sales_report(request, period='month'):
 
     # The trailing order_by is what keeps these grouped by one column: it
     # clears Sale's default '-sold_at' ordering, which would otherwise join
-    # the GROUP BY and split every category across its individual sale dates.
-    by_category = sales.values('category_name').annotate(
-        total=Sum('price'), count=Count('id')
-    ).order_by('-total')
+    # the GROUP BY and split every group across its individual sale dates.
+    def _breakdown(*columns):
+        return sales.values(*columns).annotate(
+            total=Sum('price'), count=Count('id')
+        ).order_by('-total', '-count')
 
-    by_brand = sales.values('brand').annotate(
-        total=Sum('price'), count=Count('id')
-    ).order_by('-total')
+    by_category = _breakdown('category_name')
+    by_brand = _breakdown('brand')
+    by_model = _breakdown('product_name', 'brand')[:50]
+
+    # A yearly report is read month by month.
+    by_month = []
+    if period == 'year':
+        monthly = {
+            row['sold_at__month']: row
+            for row in sales.order_by().values('sold_at__month')
+            .annotate(total=Sum('price'), count=Count('id'))
+        }
+        by_month = [
+            {'label': label, 'month': num,
+             'total': monthly[num]['total'] if num in monthly else 0,
+             'count': monthly[num]['count'] if num in monthly else 0}
+            for num, label in sorted(MONTHS.items())
+        ]
 
     # Years to offer in the filter: every year that has at least one sale,
     # plus the current year so the dropdown is never empty on a fresh store.
     sale_years = set(Sale.objects.dates('sold_at', 'year').values_list('sold_at__year', flat=True))
     sale_years.add(today.year)
     available_years = sorted(sale_years, reverse=True)
-
-    months = sorted(MONTHS.items())
 
     context = {
         'period': period,
@@ -977,11 +1034,26 @@ def sales_report(request, period='month'):
         'total_count': totals['total_count'] or 0,
         'by_category': by_category,
         'by_brand': by_brand,
+        'by_model': by_model,
+        'by_month': by_month,
         'selected_year': year,
         'selected_month': month,
+        'selected_month_name': MONTHS[month],
         'available_years': available_years,
-        'months': months,
+        'months': sorted(MONTHS.items()),
+        'category_choices': category_choices,
+        'brand_choices': brand_choices,
+        'selected_category': category,
+        'selected_brand': brand,
         'search_query': search_query,
+        'period_tabs': [('month', _('Month')), ('year', _('Year')), ('all', _('All time'))],
+        'breakdowns': [
+            (_('By Category'), by_category, 'category'),
+            (_('By Brand'), by_brand, 'brand'),
+            (_('By Model'), by_model, 'model'),
+        ],
+        'has_filters': bool(category or brand or search_query),
+        'next_url': request.get_full_path(),
         'active': 'sales',
     }
     return render(request, 'shop/product/sales_report.html', context)

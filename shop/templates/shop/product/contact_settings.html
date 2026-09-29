@@ -20,7 +20,7 @@
         </div>
         {% endif %}
 
-        <form method="POST" class="space-y-5">
+        <form method="POST" class="space-y-5" data-after="refresh">
             {% csrf_token %}
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -62,6 +62,33 @@
                 </div>
             </div>
 
+            <!-- Any number of additional contacts: a second number, a business
+                 WhatsApp, a Facebook page… each becomes its own tile on the
+                 Contact page. -->
+            <div class="pt-5 border-t border-gray-100 space-y-3">
+                <div>
+                    <h2 class="text-[11px] font-black uppercase tracking-wider text-indigo-600">{% translate "More Contacts" %}</h2>
+                    <p class="text-[10px] text-gray-400 mt-1 leading-relaxed">{% translate "Add as many extra contacts as you need. Pick the type, give it a title if you like, and enter the number, username or link." %}</p>
+                </div>
+
+                {{ extras.management_form }}
+                {{ extras.non_form_errors }}
+
+                <div id="extra-contact-rows" class="space-y-3">
+                    {% for f in extras %}
+                        {% include "shop/product/_extra_contact_row.html" with f=f %}
+                    {% endfor %}
+                </div>
+
+                <button type="button" id="add-extra-contact" class="inline-flex items-center gap-2 text-xs font-bold text-indigo-600 hover:text-indigo-500 bg-indigo-50 hover:bg-indigo-100 px-4 py-2.5 rounded-xl transition-colors">
+                    <i class="fa-solid fa-plus"></i> {% translate "Add a contact" %}
+                </button>
+
+                <template id="extra-contact-template">
+                    {% include "shop/product/_extra_contact_row.html" with f=extras.empty_form %}
+                </template>
+            </div>
+
             <div class="pt-4 border-t border-gray-100 flex items-center justify-end">
                 <button type="submit" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-7 py-3 rounded-xl transition-all shadow-md shadow-indigo-600/30 active:scale-95 uppercase tracking-wider">
                     <i class="fa-solid fa-floppy-disk"></i> {% translate "Save Contact Channels" %}
@@ -80,7 +107,8 @@
             {% if form.instance.instagram_username %}<span class="text-[10px] font-bold uppercase px-2.5 py-1.5 rounded-lg bg-fuchsia-50 text-fuchsia-600 border border-fuchsia-100"><i class="fa-brands fa-instagram"></i> {% translate "Instagram" %}</span>{% endif %}
             {% if form.instance.phone_number %}<span class="text-[10px] font-bold uppercase px-2.5 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100"><i class="fa-solid fa-phone"></i> {% translate "Phone" %}</span>{% endif %}
             {% if form.instance.email %}<span class="text-[10px] font-bold uppercase px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-600 border border-amber-100"><i class="fa-solid fa-envelope"></i> {% translate "Email" %}</span>{% endif %}
-            {% if not form.instance.whatsapp_number and not form.instance.telegram_username and not form.instance.instagram_username and not form.instance.phone_number and not form.instance.email %}
+            {% for extra in form.instance.extras %}<span class="text-[10px] font-bold uppercase px-2.5 py-1.5 rounded-lg bg-gray-100 text-gray-600 border border-gray-200"><i class="{{ extra.icon }}"></i> {{ extra.title }}</span>{% endfor %}
+            {% if not form.instance.has_any_channel %}
                 <span class="text-[10px] text-gray-400 italic">{% translate "Nothing configured yet — the Contact page will show an empty-state notice." %}</span>
             {% endif %}
         </div>
@@ -88,4 +116,43 @@
             {% translate "Open Contact page" %} <i class="fa-solid fa-arrow-up-right-from-square"></i>
         </a>
     </div>
+
+    <script>
+    // "Add a contact" clones the blank row Django prepared; removing a saved
+    // row ticks its hidden delete box so the save deletes it, while a row that
+    // was never saved is blanked and hidden (a blank row is skipped on save).
+    // Delegated on document and guarded, so the panel re-running this script
+    // after swapping the content in doesn't bind it twice.
+    (function () {
+        if (window.__extraContactsBound) return;
+        window.__extraContactsBound = true;
+        document.addEventListener('click', function (event) {
+            if (!event.target.closest) return;
+            if (event.target.closest('#add-extra-contact')) {
+                const total = document.getElementById('id_extra-TOTAL_FORMS');
+                const template = document.getElementById('extra-contact-template');
+                const rows = document.getElementById('extra-contact-rows');
+                if (!total || !template || !rows) return;
+                rows.insertAdjacentHTML('beforeend', template.innerHTML.replace(/__prefix__/g, total.value));
+                total.value = parseInt(total.value, 10) + 1;
+                const value = rows.lastElementChild.querySelector('input[name$="-value"]');
+                if (value) value.focus();
+                return;
+            }
+            const remove = event.target.closest('.js-remove-extra');
+            if (remove) {
+                const row = remove.closest('.extra-contact-row');
+                const id = row.querySelector('input[type="hidden"][name$="-id"]');
+                const del = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+                if (id && id.value && del) {
+                    del.checked = true;
+                } else {
+                    const value = row.querySelector('input[name$="-value"]');
+                    if (value) value.value = '';
+                }
+                row.classList.add('hidden');
+            }
+        });
+    })();
+    </script>
 {% endblock %}

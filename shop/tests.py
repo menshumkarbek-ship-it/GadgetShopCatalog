@@ -891,6 +891,57 @@ class ManagementPanelTests(TestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertEqual(response.context['selected_year'], timezone.localdate().year)
 
+    def test_admin_can_add_edit_and_remove_extra_contacts(self):
+        from .models import ExtraContact
+        url = reverse('shop:manage_contacts')
+
+        def post(rows, total=None):
+            data = {'email': '', 'phone_number': '', 'whatsapp_number': '',
+                    'telegram_username': '', 'instagram_username': '',
+                    'extra-TOTAL_FORMS': str(total if total is not None else len(rows)),
+                    'extra-INITIAL_FORMS': str(sum(1 for r in rows if r.get('id'))),
+                    'extra-MIN_NUM_FORMS': '0', 'extra-MAX_NUM_FORMS': '1000'}
+            for i, row in enumerate(rows):
+                for key, value in row.items():
+                    data[f'extra-{i}-{key}'] = value
+            return self.client.post(url, data)
+
+        # Two new rows plus a blank one, which is ignored.
+        post([
+            {'kind': 'whatsapp', 'label': 'Business WhatsApp', 'value': '+996 555 111 222'},
+            {'kind': 'phone', 'label': '', 'value': '+996700000000'},
+            {'kind': 'phone', 'label': '', 'value': ''},
+        ])
+        self.assertEqual(ExtraContact.objects.count(), 2)
+        page = self.client.get(reverse('shop:contact_us'))
+        self.assertContains(page, 'Business WhatsApp')
+        self.assertContains(page, 'https://wa.me/996555111222')
+        self.assertContains(page, 'tel:+996700000000')
+
+        # A bad email is refused; delete removes a saved row.
+        first, second = ExtraContact.objects.all()
+        post([{'id': first.id, 'kind': 'email', 'label': '', 'value': 'nope'}])
+        first.refresh_from_db()
+        self.assertEqual(first.kind, 'whatsapp')
+        post([
+            {'id': first.id, 'kind': 'whatsapp', 'label': 'Business WhatsApp', 'value': '996555111222', 'DELETE': 'on'},
+            {'id': second.id, 'kind': 'phone', 'label': '', 'value': '+996700000000'},
+        ])
+        self.assertEqual(list(ExtraContact.objects.all()), [second])
+
+    def test_sales_report_year_view_and_model_filters(self):
+        for name, slug in (('Phone', 'phone'), ('Tablet', 'tablet')):
+            product = self.make_product(name, slug, '100.00')
+            self.client.post(reverse('shop:sell_product', args=[product.id]))
+        url = reverse('shop:sales_report')
+        year = self.client.get(url, {'period': 'year'})
+        self.assertEqual(year.status_code, 200)
+        self.assertEqual(year.context['total_count'], 2)
+        self.assertEqual(len(year.context['by_month']), 12)
+        self.assertEqual(year.context['by_model'].count(), 2)
+        model = self.client.get(url, {'period': 'all', 'search': 'Tablet'})
+        self.assertEqual(model.context['total_count'], 1)
+
     def test_sales_count_towards_the_month_in_bishkek_time(self):
         product = self.make_product('Phone', 'phone', '250.00')
         self.client.post(reverse('shop:sell_product', args=[product.id]))

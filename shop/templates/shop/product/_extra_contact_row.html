@@ -1,0 +1,16 @@
+{% load i18n %}
+<div class="extra-contact-row grid grid-cols-1 sm:grid-cols-[10rem_1fr_1.4fr_auto] gap-2 items-start p-3 bg-gray-50/60 border border-gray-100 rounded-2xl">
+    {% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
+    <div>{{ f.kind }}</div>
+    <div>{{ f.label }}</div>
+    <div>
+        {{ f.value }}
+        {% for error in f.value.errors %}<p class="text-[11px] font-bold text-red-600 mt-1">{{ error }}</p>{% endfor %}
+    </div>
+    <div class="flex items-center sm:h-[46px]">
+        <label class="hidden">{{ f.DELETE }}</label>
+        <button type="button" class="js-remove-extra text-gray-400 hover:text-red-600 transition-colors px-3 py-2" title="{% translate 'Remove this contact' %}">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
+    </div>
+</div>

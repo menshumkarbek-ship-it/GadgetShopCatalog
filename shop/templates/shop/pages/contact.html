@@ -103,6 +103,27 @@
             </a>
             {% endif %}
 
+            {# Extra contacts the admin added: any number, any type. #}
+            {% for c in contact_settings.extras %}
+            {% if c.href %}
+            <a href="{{ c.href }}{% if c.supports_prefill %}?text={{ inquiry_message|urlencode }}{% elif c.kind == 'email' %}?subject={{ 'Product Inquiry'|urlencode }}&body={{ inquiry_message|urlencode }}{% endif %}"
+               {% if c.opens_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
+               {% if c.kind == 'instagram' %}data-copy-text="{{ inquiry_message }}"{% endif %}
+               class="{% if c.kind == 'instagram' %}js-instagram-link {% endif %}card bg-paper p-8 flex flex-col group">
+                <span class="w-12 h-12 rounded-full bg-canvas flex items-center justify-center text-ink text-xl"><i class="{{ c.icon }}"></i></span>
+                <h3 class="t-body-lg text-ink mt-6">{{ c.title }}</h3>
+                <p class="t-body-sm text-ink mt-5 figures truncate">{{ c.display }}</p>
+                <span class="link-arrow mt-auto pt-3">{% translate "Open" %} &rsaquo;</span>
+            </a>
+            {% else %}
+            <div class="card bg-paper p-8 flex flex-col">
+                <span class="w-12 h-12 rounded-full bg-canvas flex items-center justify-center text-ink text-xl"><i class="{{ c.icon }}"></i></span>
+                <h3 class="t-body-lg text-ink mt-6">{{ c.title }}</h3>
+                <p class="t-body-sm text-ink mt-5 break-words">{{ c.display }}</p>
+            </div>
+            {% endif %}
+            {% endfor %}
+
         </div>
 
         {% if contact_settings.instagram_username %}

@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.shortcuts import redirect
 from django.urls import reverse
 from .models import (
-    Category, Product, ProductImage, ContactSettings, AboutPageContent, HomePageContent, Sale,
+    Category, Product, ProductImage, ContactSettings, ExtraContact, AboutPageContent, HomePageContent, Sale,
 )
 
 
@@ -49,6 +49,11 @@ class ContactSettingsAdmin(admin.ModelAdmin):
         # instance's edit form (creating it on first visit if needed).
         obj = ContactSettings.get_solo()
         return redirect(reverse('admin:shop_contactsettings_change', args=[obj.pk]))
+
+
+@admin.register(ExtraContact)
+class ExtraContactAdmin(admin.ModelAdmin):
+    list_display = ('title', 'kind', 'value')
 
 
 @admin.register(Sale)
