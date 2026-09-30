@@ -73,8 +73,7 @@ def site_identity(request):
 
 def management_nav(request):
     """
-    The management panel's menu: the section cards on its front door, grouped,
-    with the Removed count on its card.
+    The management panel's menu: the section cards on its front door, grouped.
 
     Built here rather than spelled out in the template so adding a page to
     the panel is one entry. Only the front door renders the cards — section
@@ -89,10 +88,6 @@ def management_nav(request):
     from django.urls import reverse
     from django.utils.translation import gettext as _
 
-    from .models import Product
-
-    removed_count = Product.all_objects.filter(deleted_at__isnull=False).count()
-
     return {
         'management_groups': [
             {
@@ -103,7 +98,7 @@ def management_nav(request):
                     {'key': 'categories', 'label': _('Categories'), 'icon': 'fa-tags',
                      'url': reverse('shop:create_category')},
                     {'key': 'removed', 'label': _('Removed'), 'icon': 'fa-trash-can',
-                     'url': reverse('shop:removed_products'), 'badge': removed_count},
+                     'url': reverse('shop:removed_products')},
                 ],
             },
             {

@@ -278,28 +278,34 @@
                 </div>
             </div>
 
-            <!-- Image Upload Box -->
-            <div class="bg-gray-50/50 rounded-xl p-4 border border-gray-100">
-                <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">{% translate "Product Showcase Image" %}</label>
+            <!-- Cover image: the one photo shown on the catalog and product cards. -->
+            <div class="bg-indigo-50/40 rounded-xl p-4 border-2 border-indigo-100 space-y-3">
+                <label class="text-xs font-bold text-indigo-600 uppercase tracking-wide block">1 · {% translate "Cover Image" %}</label>
+                <p class="text-[10px] text-gray-500">{% translate "The main photo shown on the catalog and product cards. Choosing a new one replaces the current cover." %}</p>
+                {% if product_instance and product_instance.image %}
+                <div class="w-24 aspect-square bg-white rounded-lg border-2 border-indigo-500 overflow-hidden">
+                    <img src="{{ product_instance.image.url }}" class="w-full h-full object-contain p-1" alt="{% translate 'Current cover image' %}">
+                </div>
+                {% endif %}
                 {{ form.image }}
-                <p class="text-[10px] text-gray-400 mt-1">{% translate "The main photo shown on the catalog and product cards." %}</p>
             </div>
 
-            <!-- Additional Gallery Photos -->
+            <!-- Additional photos: the gallery shown on the product's own page. -->
             <div class="bg-gray-50/50 rounded-xl p-4 border border-gray-100 space-y-3">
-                <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">{% translate "Additional Photos" %}</label>
+                <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block">2 · {% translate "Additional Photos" %}</label>
+                <p class="text-[10px] text-gray-400">{% translate "Optional extra photos for the product page. Choosing more adds them to the ones below; they never replace the cover." %}</p>
 
                 {% if gallery_images %}
                 <div class="grid grid-cols-4 sm:grid-cols-6 gap-2">
                     {% for photo in gallery_images %}
-                    <div class="relative group" data-row="photo-{{ photo.id }}">
+                    <div class="relative" data-row="photo-{{ photo.id }}">
                         <div class="w-full aspect-square bg-white rounded-lg border border-gray-200 overflow-hidden">
                             <img src="{{ photo.image.url }}" class="w-full h-full object-contain p-1">
                         </div>
                         <!-- A button, not a form: this sits inside the product
                              form, and forms cannot nest. It posts on its own. -->
                         <button type="button" data-post="{% url 'shop:delete_product_image' photo.id %}" data-confirm="{% translate 'Remove this photo?' %}" data-after="remove-row"
-                                title="{% translate 'Remove photo' %}" class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-600 hover:bg-red-500 text-white text-[10px] flex items-center justify-center shadow-md transition-colors">
+                                title="{% translate 'Remove photo' %}" class="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-600 hover:bg-red-500 text-white text-[11px] flex items-center justify-center shadow-md transition-colors">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>
@@ -309,7 +315,6 @@
 
                 <input type="file" name="extra_images" multiple accept="image/*"
                        class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
-                <p class="text-[10px] text-gray-400">{% translate "Select multiple files to add several photos at once. They're added to the gallery below the main image." %}</p>
             </div>
 
             <!-- Action Buttons -->

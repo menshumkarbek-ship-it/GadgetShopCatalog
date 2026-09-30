@@ -1088,14 +1088,16 @@ class ManagementPanelTests(TestCase):
         response = self.client.get(reverse('shop:management_home'))
         self.assertEqual(response.status_code, 302)
 
-    def test_removed_card_counts_removed_listings_only_on_the_panel(self):
+    def test_removed_card_shows_no_count_on_the_front_door(self):
         self.make_product('Gone', 'gone', '100.00')
         self.client.post(reverse('shop:remove_product', args=[Product.all_objects.get(slug='gone').id]))
 
         panel = self.client.get(reverse('shop:management_home'))
         removed = next(item for group in panel.context['management_groups']
                        for item in group['items'] if item['key'] == 'removed')
-        self.assertEqual(removed['badge'], 1)
+        # The count is only visible once inside the Removed section.
+        self.assertNotIn('badge', removed)
+        self.assertEqual(self.client.get(reverse('shop:removed_products')).context['deleted_count'], 1)
 
         # The storefront renders no panel menu, so it must not pay for the count.
         self.assertNotIn('management_groups', self.client.get(reverse('shop:home')).context)
