@@ -5,6 +5,7 @@
 {% block title %}{{ store_name }} | {% translate "Contact" %}{% endblock %}
 
 {% block content %}
+{% translate 'Product Inquiry' as email_subject %}
 
 <!-- Statement hero, like the About page. If the visitor arrived from a
      product's Enquire button, that product sits under the heading so the
@@ -81,7 +82,7 @@
             {% endif %}
 
             {% if contact_settings.email %}
-            <a href="mailto:{{ contact_settings.email }}?subject={{ 'Product Inquiry'|urlencode }}&body={{ inquiry_message|urlencode }}"
+            <a href="mailto:{{ contact_settings.email }}?subject={{ email_subject|urlencode }}&body={{ inquiry_message|urlencode }}"
                class="card bg-paper p-8 flex flex-col group">
                 <span class="w-12 h-12 rounded-full bg-canvas flex items-center justify-center text-ink text-xl"><i class="fa-solid fa-envelope"></i></span>
                 <h3 class="t-body-lg text-ink mt-6">{% translate "Email" %}</h3>
@@ -106,7 +107,7 @@
             {# Extra contacts the admin added: any number, any type. #}
             {% for c in contact_settings.extras %}
             {% if c.href %}
-            <a href="{{ c.href }}{% if c.supports_prefill %}?text={{ inquiry_message|urlencode }}{% elif c.kind == 'email' %}?subject={{ 'Product Inquiry'|urlencode }}&body={{ inquiry_message|urlencode }}{% endif %}"
+            <a href="{{ c.href }}{% if c.supports_prefill %}?text={{ inquiry_message|urlencode }}{% elif c.kind == 'email' %}?subject={{ email_subject|urlencode }}&body={{ inquiry_message|urlencode }}{% endif %}"
                {% if c.opens_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
                {% if c.kind == 'instagram' %}data-copy-text="{{ inquiry_message }}"{% endif %}
                class="{% if c.kind == 'instagram' %}js-instagram-link {% endif %}card bg-paper p-8 flex flex-col group">

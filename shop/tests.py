@@ -27,6 +27,35 @@ def in_language(client, language):
     client.cookies[settings.LANGUAGE_COOKIE_NAME] = language
 
 
+class TranslationCatalogTests(TestCase):
+    """Every string marked for translation has a Russian and a Kyrgyz version.
+    A fuzzy entry is a guess the site ignores, so visitors would see English:
+    after adding text to a template, run makemessages and translate it."""
+
+    def entries(self, language):
+        import re
+        from pathlib import Path
+        path = Path(settings.BASE_DIR) / 'locale' / language / 'LC_MESSAGES' / 'django.po'
+        blocks = re.split(r'\n\s*\n', path.read_text(encoding='utf-8'))
+        for block in blocks[1:]:  # the first block is the file header
+            if block.lstrip().startswith('#~') or 'msgid ' not in block:
+                continue
+            yield block
+
+    def test_no_string_is_left_untranslated_or_fuzzy(self):
+        import re
+        for language in ('ru', 'ky'):
+            for block in self.entries(language):
+                msgid = re.search(r'^msgid "(.*)"', block, flags=re.M).group(1)[:60]
+                with self.subTest(language=language, msgid=msgid):
+                    self.assertNotRegex(block, r'(?m)^#,.*fuzzy', 'marked fuzzy')
+                    # each msgstr, with any continuation lines that follow it
+                    translations = re.findall(r'(?ms)^msgstr(?:\[\d\])? ((?:"[^\n]*"\n?)+)', block + '\n')
+                    self.assertTrue(translations)
+                    for text in translations:
+                        self.assertNotEqual(''.join(re.findall(r'"(.*)"', text)), '', 'no translation')
+
+
 class DefaultLanguageTests(TestCase):
     """The store is Russian-first: the browser's language is ignored, and
     only the navbar switcher changes it."""
@@ -123,6 +152,71 @@ class StorefrontTests(TestCase):
         response = self.client.get(reverse('shop:home'))
 
         self.assertNotContains(response, reverse('shop:management_home'))
+
+    # --- switching languages on and off ---------------------------------
+
+    def _languages(self, **switches):
+        """Save the language switches the way the panel does."""
+        from .models import LanguageSettings
+        data = {name: 'on' for name in ('english', 'russian', 'kyrgyz')}
+        for name, on in switches.items():
+            if on:
+                data[name] = 'on'
+            else:
+                data.pop(name, None)
+        return self.client.post(reverse('shop:manage_languages'), data, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+    def test_admin_can_switch_languages_off_and_the_site_follows(self):
+        staff = User.objects.create_user(username='manager', password='manager-password-123', is_staff=True)
+        self.client.force_login(staff)
+
+        # Everything is on to begin with, and the switcher offers all three.
+        home = self.client.get(reverse('shop:home'))
+        for name in ('English', 'Русский', 'Кыргызча'):
+            self.assertContains(home, f'>{name}</option>')
+
+        # Turn English and Kyrgyz off: only Russian is left, so no switcher.
+        self.assertTrue(self._languages(english=False, kyrgyz=False).json()['ok'])
+        visitor = self.client_class()
+        page = visitor.get(reverse('shop:home'))
+        self.assertNotContains(page, 'id="language-switcher-form"')
+        self.assertEqual(page.wsgi_request.LANGUAGE_CODE, 'ru')
+
+        # A visitor whose cookie still names a language that is off gets Russian.
+        in_language(visitor, 'en')
+        self.assertEqual(visitor.get(reverse('shop:home')).wsgi_request.LANGUAGE_CODE, 'ru')
+
+        # Only Kyrgyz on: it becomes the language everyone is served.
+        self.assertTrue(self._languages(russian=False, english=False, kyrgyz=True).json()['ok'])
+        page = self.client_class().get(reverse('shop:home'))
+        self.assertEqual(page.wsgi_request.LANGUAGE_CODE, 'ky')
+
+        # Russian and English on: the switcher offers just those two.
+        self._languages(kyrgyz=False)
+        page = self.client_class().get(reverse('shop:home'))
+        self.assertContains(page, '>English</option>')
+        self.assertContains(page, '>Русский</option>')
+        self.assertNotContains(page, '>Кыргызча</option>')
+
+    def test_at_least_one_language_must_stay_on(self):
+        from .models import LanguageSettings
+        staff = User.objects.create_user(username='manager', password='manager-password-123', is_staff=True)
+        self.client.force_login(staff)
+
+        refused = self._languages(english=False, russian=False, kyrgyz=False)
+        self.assertEqual(refused.status_code, 400)
+        self.assertEqual(LanguageSettings.get_solo().enabled_codes, ['en', 'ru', 'ky'])
+
+    def test_sign_out_is_the_last_card_on_a_phone(self):
+        staff = User.objects.create_user(username='manager', password='manager-password-123', is_staff=True)
+        self.client.force_login(staff)
+        html = self.client.get(reverse('shop:management_home')).content.decode()
+
+        # Sign Out takes order-5 (last) on a phone and joins the Sales row on
+        # a wide screen; Languages is the card after the Site label.
+        self.assertIn('data-reload class="order-5 lg:order-2"', html)
+        self.assertIn(reverse('shop:manage_languages'), html)
+        self.assertLess(html.index(reverse('shop:sold_products')), html.index('order-5 lg:order-2'))
 
     def test_sign_in_page_wears_the_storefront_theme_and_still_signs_in(self):
         User.objects.create_user(username='manager', password='manager-password-123', is_staff=True)
@@ -1108,6 +1202,7 @@ class ManagementPanelTests(TestCase):
         ('shop:deleted_products', 'deleted'),
         ('shop:sales_report', 'sales'),
         ('shop:sold_products', 'sold'),
+        ('shop:manage_languages', 'languages'),
     ]
 
     # The navbar's Settings link points at the front door too, so the Back

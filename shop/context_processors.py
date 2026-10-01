@@ -46,6 +46,25 @@ def contact_settings(request):
     return {'contact_settings': settings_obj}
 
 
+def site_languages(request):
+    """
+    The languages the navbar switcher offers: only those the admin has
+    switched on, each named in its own language. With one left there is
+    nothing to choose, so the switcher is not shown at all.
+    """
+    from django.utils.translation import get_language_info
+
+    from .languages import enabled_languages
+
+    codes = enabled_languages()
+    return {
+        'site_languages': [
+            {'code': code, 'name': get_language_info(code)['name_local']} for code in codes
+        ],
+        'show_language_switcher': len(codes) > 1,
+    }
+
+
 def site_identity(request):
     """
     Expose the admin-editable store/market name to every template (navbar,
@@ -88,8 +107,10 @@ def management_nav(request):
     from django.urls import reverse
     from django.utils.translation import gettext as _
 
-    # Three rows of three cards: Pages, Catalog, then Sales, whose last card
-    # is Sign Out (`signout`), so the grid ends squarely.
+    # Pages and Catalog are two plain rows. The last two groups share one
+    # grid (see management_home.html), whose cards carry an explicit order:
+    # on a phone Sign Out comes last of all, on a wide screen it sits beside
+    # Sales and Sold with Languages on the row below.
     return {
         'management_groups': [
             {
@@ -116,14 +137,21 @@ def management_nav(request):
             },
             {
                 'label': _('Sales'),
-                'signout': True,
+                'label_order': 'order-1', 'item_order': 'order-2',
                 'items': [
-                    # Opens on the headline numbers; the filters on the page
-                    # bring up the figures for a period.
+                    # Opens on this month; the filters on the page change it.
                     {'key': 'sales', 'label': _('Sales'), 'icon': 'fa-chart-line',
                      'url': reverse('shop:sales_report')},
                     {'key': 'sold', 'label': _('Sold'), 'icon': 'fa-circle-check',
                      'url': reverse('shop:sold_products')},
+                ],
+            },
+            {
+                'label': _('Site'),
+                'label_order': 'order-3', 'item_order': 'order-4',
+                'items': [
+                    {'key': 'languages', 'label': _('Languages'), 'icon': 'fa-language',
+                     'url': reverse('shop:manage_languages')},
                 ],
             },
         ],

@@ -278,6 +278,51 @@ class ExtraContact(models.Model):
 
 
 # ==========================================
+# 🌐 LANGUAGE SETTINGS (SINGLETON)
+# ==========================================
+
+class LanguageSettings(models.Model):
+    """
+    Which of the site's languages are switched on. A language that is off
+    leaves the navbar switcher and is never served to visitors; the text
+    already written in it stays saved and returns when it is turned back on.
+    Only one row exists. At least one language is always on (the form
+    enforces it; enabled_codes falls back to all of them as a safety net).
+    """
+    english = models.BooleanField(default=True)
+    russian = models.BooleanField(default=True)
+    kyrgyz = models.BooleanField(default=True)
+
+    # language code -> the field that switches it
+    FIELDS = {'en': 'english', 'ru': 'russian', 'ky': 'kyrgyz'}
+
+    class Meta:
+        verbose_name = "Language Settings"
+        verbose_name_plural = "Language Settings"
+
+    def __str__(self):
+        return "Language Settings"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def get_solo(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    @property
+    def enabled_codes(self):
+        """Codes of the languages that are on, in settings.LANGUAGES order."""
+        codes = [code for code, _name in settings.LANGUAGES if getattr(self, self.FIELDS[code])]
+        return codes or [code for code, _name in settings.LANGUAGES]
+
+
+# ==========================================
 # 📖 ABOUT PAGE CONTENT (SINGLETON)
 # ==========================================
 

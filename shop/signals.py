@@ -4,7 +4,8 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
 from .context_processors import CONTACT_SETTINGS_CACHE_KEY, SITE_IDENTITY_CACHE_KEY
-from .models import Category, ContactSettings, ExtraContact, HomePageContent
+from .languages import CACHE_KEY as ENABLED_LANGUAGES_CACHE_KEY
+from .models import Category, ContactSettings, ExtraContact, HomePageContent, LanguageSettings
 
 
 @receiver([post_save, post_delete], sender=Category)
@@ -30,3 +31,10 @@ def invalidate_site_identity_cache(sender, **kwargs):
     cache.delete_many([
         f'{SITE_IDENTITY_CACHE_KEY}:{code}' for code, _ in settings.LANGUAGES
     ])
+
+
+@receiver(post_save, sender=LanguageSettings)
+def invalidate_enabled_languages_cache(sender, **kwargs):
+    """Turning a language on or off has to reach the switcher and the
+    middleware straight away, not when the cached list expires."""
+    cache.delete(ENABLED_LANGUAGES_CACHE_KEY)

@@ -91,6 +91,7 @@ TEMPLATES = [
                 'shop.context_processors.is_admin',
                 'shop.context_processors.contact_settings',
                 'shop.context_processors.site_identity',
+                'shop.context_processors.site_languages',
                 'shop.context_processors.management_nav',
             ],
         },

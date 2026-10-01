@@ -4,7 +4,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.utils.translation import gettext_lazy as _
-from .models import Product, Category, ContactSettings, ExtraContact, AboutPageContent, HomePageContent
+from .models import Product, Category, ContactSettings, ExtraContact, LanguageSettings, AboutPageContent, HomePageContent
 from .utils import build_unique_slug
 
 # Shared widget styling for every input in the management panel. The panel
@@ -284,6 +284,21 @@ class ContactSettingsForm(forms.ModelForm):
                 'placeholder': _('username, without the @')
             }),
         }
+
+
+class LanguageSettingsForm(forms.ModelForm):
+    """The three on/off switches. At least one language has to stay on."""
+
+    class Meta:
+        model = LanguageSettings
+        fields = ['english', 'russian', 'kyrgyz']
+        widgets = {name: forms.CheckboxInput(attrs={'class': ''}) for name in fields}
+
+    def clean(self):
+        cleaned = super().clean()
+        if not any(cleaned.get(name) for name in self.Meta.fields):
+            raise ValidationError(_('Keep at least one language turned on.'))
+        return cleaned
 
 
 class ExtraContactForm(forms.ModelForm):

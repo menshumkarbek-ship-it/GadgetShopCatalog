@@ -203,19 +203,20 @@
                 </div>
 
                 <div class="flex items-center gap-3 shrink-0">
+                    {% if show_language_switcher %}
                     <form action="{% url 'set_language' %}" method="post" id="language-switcher-form">
                         {% csrf_token %}
                         <input name="next" type="hidden" value="{{ request.get_full_path }}">
-                        {# Each language in its own name (English, Русский, Кыргызча), #}
-                        {# so a visitor can find theirs whatever the page is in now.     #}
+                        {# Only the languages the admin has switched on, each in its own name #}
+                        {# (English, Русский, Кыргызча), so a visitor can find theirs.        #}
                         <select name="language" onchange="this.form.submit()" aria-label="{% translate 'Language' %}" class="bg-transparent text-deepgray hover:text-ink focus:outline-none cursor-pointer">
                             {% get_current_language as CURRENT_LANG %}
-                            {% get_language_info_list for LANGUAGES as AVAILABLE_LANGS %}
-                            {% for lang in AVAILABLE_LANGS %}
-                                <option value="{{ lang.code }}" lang="{{ lang.code }}" {% if lang.code == CURRENT_LANG %}selected{% endif %}>{{ lang.name_local|capfirst }}</option>
+                            {% for lang in site_languages %}
+                                <option value="{{ lang.code }}" lang="{{ lang.code }}" {% if lang.code == CURRENT_LANG %}selected{% endif %}>{{ lang.name|capfirst }}</option>
                             {% endfor %}
                         </select>
                     </form>
+                    {% endif %}
 
                     {% if request.user.is_authenticated and is_admin_user %}
                         <a href="{% url 'shop:management_home' %}" class="hidden sm:inline-flex items-center gap-1.5 text-deepgray hover:text-ink transition-colors" title="{% translate 'Settings' %}">

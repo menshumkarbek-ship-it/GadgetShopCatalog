@@ -12,7 +12,8 @@
 {% block page_intro %}{% translate "Pick a section to edit your catalog, review sales, or change what the storefront shows." %}{% endblock %}
 
 {% block management_content %}
-    {% for group in management_groups %}
+    {# Pages and Catalog: one titled row of cards each. #}
+    {% for group in management_groups|slice:":2" %}
     <section>
         <p class="px-1 pb-2 text-[10px] font-black uppercase tracking-wider text-gray-400">{{ group.label }}</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -22,25 +23,44 @@
                     <i class="fa-solid {{ item.icon }}"></i>
                 </span>
                 <span class="min-w-0 flex-1 text-sm font-black text-gray-950 truncate">{{ item.label }}</span>
-                {% if item.badge %}<span class="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-black text-gray-500 tabular-nums">{{ item.badge }}</span>{% endif %}
                 <i class="fa-solid fa-chevron-right shrink-0 text-[10px] text-gray-300 group-hover:text-indigo-400 transition-colors"></i>
             </a>
             {% endfor %}
-            {% if group.signout %}
-            <!-- The way out. A full page load (data-reload), not a background
-                 post: after signing out there is no panel left to update. -->
-            <form method="POST" action="{% url 'admin:logout' %}" data-reload>
-                {% csrf_token %}
-                <button type="submit" class="group w-full flex items-center gap-3.5 bg-white border border-gray-100 rounded-2xl shadow-sm px-4 py-3.5 hover:border-red-200 hover:shadow-md transition-all text-left">
-                    <span class="w-10 h-10 shrink-0 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors">
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                    </span>
-                    <span class="min-w-0 flex-1 text-sm font-black text-gray-950 truncate">{% translate "Sign Out" %}</span>
-                </button>
-            </form>
-            {% endif %}
         </div>
     </section>
     {% endfor %}
 
+    {# Sales and Site share one grid so Sign Out can move: its `order` puts it #}
+    {# last of all on a phone, and beside Sales and Sold on a wide screen,    #}
+    {# with Languages on the row below. Cards with equal `order` keep their   #}
+    {# page order.                                                            #}
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-3">
+        {% for group in management_groups|slice:"2:" %}
+        <p class="col-span-full {{ group.label_order }} px-1 -mb-1 {% if not forloop.first %}mt-2{% endif %} text-[10px] font-black uppercase tracking-wider text-gray-400">{{ group.label }}</p>
+        {% for item in group.items %}
+        <div class="{{ group.item_order }}">
+            <a href="{{ item.url }}" class="group flex items-center gap-3.5 bg-white border border-gray-100 rounded-2xl shadow-sm px-4 py-3.5 hover:border-indigo-200 hover:shadow-md transition-all">
+                <span class="w-10 h-10 shrink-0 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                    <i class="fa-solid {{ item.icon }}"></i>
+                </span>
+                <span class="min-w-0 flex-1 text-sm font-black text-gray-950 truncate">{{ item.label }}</span>
+                <i class="fa-solid fa-chevron-right shrink-0 text-[10px] text-gray-300 group-hover:text-indigo-400 transition-colors"></i>
+            </a>
+        </div>
+        {% endfor %}
+        {% if forloop.first %}
+        <!-- The way out. A full page load (data-reload), not a background
+             post: after signing out there is no panel left to update. -->
+        <form method="POST" action="{% url 'admin:logout' %}" data-reload class="order-5 lg:order-2">
+            {% csrf_token %}
+            <button type="submit" class="group w-full flex items-center gap-3.5 bg-white border border-gray-100 rounded-2xl shadow-sm px-4 py-3.5 hover:border-red-200 hover:shadow-md transition-all text-left">
+                <span class="w-10 h-10 shrink-0 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </span>
+                <span class="min-w-0 flex-1 text-sm font-black text-gray-950 truncate">{% translate "Sign Out" %}</span>
+            </button>
+        </form>
+        {% endif %}
+        {% endfor %}
+    </section>
 {% endblock %}

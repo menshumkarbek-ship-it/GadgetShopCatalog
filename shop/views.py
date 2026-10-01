@@ -4,6 +4,7 @@ from decimal import Decimal, InvalidOperation
 
 from dateutil.relativedelta import relativedelta
 
+from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
@@ -24,11 +25,12 @@ from django.utils.translation import gettext_lazy
 from django.views.decorators.http import require_POST
 
 from .models import (
-    Product, Category, ProductImage, ContactSettings, ExtraContact, AboutPageContent,
-    HomePageContent, Sale,
+    Product, Category, ProductImage, ContactSettings, ExtraContact, LanguageSettings,
+    AboutPageContent, HomePageContent, Sale,
 )
 from .forms import (
     ProductCreateForm, CategoryCreateForm, ContactSettingsForm, ExtraContactFormSet,
+    LanguageSettingsForm,
     AboutPageContentForm, HomePageContentForm,
 )
 
@@ -573,7 +575,7 @@ def sell_product(request, product_id):
 
     messages.success(
         request,
-        _('"%(name)s" was marked as sold and removed from the catalog. You can undo this from "Removed".')
+        _('"%(name)s" was marked as sold and removed from the catalog. You can undo this in the Sold section.')
         % {'name': product.name},
     )
     return _panel_response(request, _after_catalog_action(request))
@@ -592,7 +594,7 @@ def remove_product(request, product_id):
 
     messages.success(
         request,
-        _('"%(name)s" was removed from the catalog (not counted as a sale). You can undo this from "Removed".')
+        _('"%(name)s" was removed from the catalog (not counted as a sale). You can undo this in the Deleted section.')
         % {'name': product.name},
     )
     return _panel_response(request, _after_catalog_action(request))
@@ -872,6 +874,51 @@ def manage_contacts(request):
 
     return render(request, 'shop/product/contact_settings.html', {
         'form': form, 'extras': extras, 'active': 'contacts',
+    })
+
+
+@login_required
+@user_passes_test(is_admin_or_manager, login_url='shop:product_list', redirect_field_name=None)
+def manage_languages(request):
+    """
+    Switch the site's languages on and off. A language that is off leaves
+    the visitors' language switcher and is never served; its saved text
+    stays and comes back when it is switched on again.
+    """
+    settings_obj = LanguageSettings.get_solo()
+
+    if request.method == 'POST':
+        form = LanguageSettingsForm(request.POST, instance=settings_obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Language settings saved."))
+            # A full page load, so the navbar switcher and the page's own
+            # language are redrawn for the new settings.
+            return _panel_response(request, redirect('shop:manage_languages'), navigate=True)
+        problems = [str(error) for error in form.non_field_errors()]
+        messages.error(request, ' '.join(problems) or _("Please correct the entry errors below."))
+        if _wants_json(request):
+            return _panel_response(
+                request, None, ok=False,
+                errors=[{'field': '', 'label': str(_('Languages')), 'messages': problems}],
+            )
+    else:
+        form = LanguageSettingsForm(instance=settings_obj)
+
+    from django.utils.translation import get_language_info
+    from .languages import default_language
+    default = default_language(settings_obj.enabled_codes)
+    rows = [
+        {
+            'code': code,
+            'name': get_language_info(code)['name_local'],
+            'field': form[LanguageSettings.FIELDS[code]],
+            'is_default': code == default and getattr(settings_obj, LanguageSettings.FIELDS[code]),
+        }
+        for code, _name in settings.LANGUAGES
+    ]
+    return render(request, 'shop/product/language_settings.html', {
+        'form': form, 'rows': rows, 'active': 'languages',
     })
 
 

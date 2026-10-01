@@ -44,6 +44,7 @@ urlpatterns = [
     path('management/sold/', views.sold_products, name='sold_products'),
     path('management/deleted/', views.deleted_products, name='deleted_products'),
     path('management/homepage/', views.manage_homepage, name='manage_homepage'),
+    path('management/languages/', views.manage_languages, name='manage_languages'),
     path('management/contacts/', views.manage_contacts, name='manage_contacts'),
     path('management/about/', views.manage_about, name='manage_about'),
     # Two views of one page: the monthly report, and the same figures

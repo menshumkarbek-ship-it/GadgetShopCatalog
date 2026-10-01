@@ -1,0 +1,50 @@
+{% extends "shop/product/_management_base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Site Languages" %} | {{ store_name }}{% endblock %}
+{% block page_heading %}{% translate "Site Languages" %}{% endblock %}
+{% block page_intro %}{% translate "Choose which languages visitors can use. Turn a language off to take it out of the language switcher; the text written in it stays saved and returns when you turn it back on." %}{% endblock %}
+
+{% block management_content %}
+    <section class="bg-white border border-gray-100 rounded-3xl shadow-sm p-5 sm:p-8">
+        <form method="POST" class="space-y-5">
+            {% csrf_token %}
+
+            <div class="rounded-2xl border border-gray-200 divide-y divide-gray-100 overflow-hidden">
+                {% for row in rows %}
+                <label class="flex items-center gap-4 p-4 cursor-pointer hover:bg-gray-50/80 transition-colors">
+                    <span class="w-9 h-9 shrink-0 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-[11px] font-black uppercase">{{ row.code }}</span>
+                    <span class="flex-1 min-w-0">
+                        <span class="block text-sm font-bold text-gray-900">{{ row.name|capfirst }}</span>
+                        {% if row.is_default %}
+                        <span class="block text-[11px] text-gray-400 mt-0.5">{% translate "Opens first" %}</span>
+                        {% endif %}
+                    </span>
+                    <span class="switch shrink-0">
+                        {{ row.field }}
+                        <span class="switch-track"></span>
+                        <span class="switch-knob"></span>
+                    </span>
+                </label>
+                {% endfor %}
+            </div>
+
+            <div class="flex items-center justify-end">
+                <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-6 py-3 rounded-xl transition-all shadow-md shadow-indigo-600/30 active:scale-95 uppercase tracking-wider">
+                    <i class="fa-solid fa-floppy-disk"></i> {% translate "Save Languages" %}
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <style>
+        /* On/off switch: the real checkbox sits invisibly over a drawn track. */
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+        .switch-track { position: absolute; inset: 0; border-radius: 9999px; background: #e5e7eb; transition: background-color .2s; pointer-events: none; }
+        .switch-knob  { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 9999px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .2s; pointer-events: none; }
+        .switch input:checked ~ .switch-track { background: #4f46e5; }
+        .switch input:checked ~ .switch-knob  { transform: translateX(20px); }
+        .switch input:focus-visible ~ .switch-track { box-shadow: 0 0 0 4px rgba(79,70,229,.15); }
+    </style>
+{% endblock %}

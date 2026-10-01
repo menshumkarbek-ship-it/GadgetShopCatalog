@@ -23,7 +23,7 @@
         <i class="fa-solid fa-pen"></i>
     </a>
     <form method="POST" action="{% url 'shop:delete_category' cat.id %}" data-after="remove-row"
-          data-confirm-delete="{% blocktranslate with name=cat.name total=cat.product_count %}The category {{ name }} will be deleted together with everything filed under it — products, including any sitting in Removed: {{ total }}. Their photos go too. Sales already recorded stay in the report.{% endblocktranslate %}">
+          data-confirm-delete="{% blocktranslate with name=cat.name total=cat.product_count %}The category {{ name }} will be deleted together with everything filed under it — products, including any already sold or deleted: {{ total }}. Their photos go too. Sales already recorded stay in the report.{% endblocktranslate %}">
         {% csrf_token %}
         <button type="submit" title="{% translate 'Delete category and its products' %}" class="w-9 h-9 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition-colors">
             <i class="fa-solid fa-trash-can"></i>
