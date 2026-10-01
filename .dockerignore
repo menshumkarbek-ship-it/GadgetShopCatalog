@@ -8,3 +8,8 @@ __pycache__
 media
 staticfiles
 node_modules
+.claude
+.github
+.vscode
+skills-lock.json
+*.sqlite3

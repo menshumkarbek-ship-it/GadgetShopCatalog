@@ -1,16 +1,10 @@
-import io
-import json
-import re
 from datetime import datetime, timedelta, timezone as dt_timezone
 from decimal import Decimal
 from io import BytesIO
-from types import SimpleNamespace
-from unittest import mock
 
 from PIL import Image
 
 from django.contrib.auth.models import User, Group
-from django.core.management import call_command
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import connection
 from django.conf import settings
@@ -157,7 +151,6 @@ class StorefrontTests(TestCase):
 
     def _languages(self, **switches):
         """Save the language switches the way the panel does."""
-        from .models import LanguageSettings
         data = {name: 'on' for name in ('english', 'russian', 'kyrgyz')}
         for name, on in switches.items():
             if on:
