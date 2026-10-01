@@ -1,0 +1,102 @@
+MOBILE SHOP - COMMERCIAL SOFTWARE LICENSE (SINGLE SITE)
+
+Copyright (c) 2026 SHUMKARBEK ("the Licensor"). All rights reserved.
+
+This is a legal agreement between the Licensor and the person or company that
+purchased or otherwise lawfully received a copy of this software ("the
+Licensee"). By installing or using the software you accept these terms. If you
+do not accept them, do not install or use it.
+
+"The Software" means all source code, templates, stylesheets, scripts,
+translations, documentation, images and other files in this package.
+
+
+1. LICENSE GRANT
+
+The Licensor grants the Licensee a non-exclusive, non-transferable,
+non-sublicensable, perpetual licence to:
+
+  a. install and run one copy of the Software on ONE production website,
+     meaning one domain name and its subdomains, owned or operated by the
+     Licensee;
+  b. make additional copies for development, testing and backup of that same
+     website; and
+  c. modify the Software for the Licensee's own use on that website.
+
+
+2. RESTRICTIONS
+
+The Licensee shall not, and shall not allow anyone else to:
+
+  a. sell, resell, rent, lease, lend, sublicense, give away or otherwise
+     distribute the Software or any part of it, modified or not;
+  b. publish the source code, or make it available in a public or shared
+     repository;
+  c. use the Software, or anything derived from it, for a second website, or
+     for the websites of clients, without buying a separate licence for each;
+  d. use the Software to create a product or template that is offered for sale
+     or distribution, or that competes with the Software;
+  e. remove or alter copyright notices or this licence file.
+
+The Licensee may give access to the source code to employees and contractors
+who work on the Licensee's website, provided they are bound to keep it
+confidential and use it only for that purpose. The Licensee is responsible for
+their compliance.
+
+
+3. OWNERSHIP
+
+The Software is licensed, not sold. The Licensor keeps all ownership and
+intellectual property rights in the Software. The Licensee owns the content it
+puts into its own website (products, photographs, texts, customer data); that
+content is not part of the Software.
+
+
+4. THIRD-PARTY COMPONENTS
+
+The Software depends on open-source components (for example Django, Django REST
+framework, Pillow, WhiteNoise, Gunicorn, Tailwind CSS and others). Each is
+licensed under its own terms, which continue to apply to it and are not changed
+by this licence. Nothing here limits the rights those licences give you over
+those components.
+
+
+5. NO WARRANTY
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. The Licensor does not
+warrant that the Software will be error-free or uninterrupted, or that it
+meets the Licensee's particular requirements. The Licensee is responsible for
+configuring, securing, hosting and backing up its own installation.
+
+
+6. LIMITATION OF LIABILITY
+
+TO THE FULLEST EXTENT PERMITTED BY LAW, THE LICENSOR SHALL NOT BE LIABLE FOR
+ANY INDIRECT, INCIDENTAL, SPECIAL OR CONSEQUENTIAL DAMAGES, OR FOR LOSS OF
+PROFITS, REVENUE, DATA OR BUSINESS, ARISING OUT OF OR IN CONNECTION WITH THE
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. THE LICENSOR'S
+TOTAL LIABILITY FOR ANY CLAIM SHALL NOT EXCEED THE PRICE THE LICENSEE PAID FOR
+THE SOFTWARE.
+
+
+7. SUPPORT AND UPDATES
+
+Support, installation help, customisation and future updates are not included
+unless agreed separately in writing.
+
+
+8. TERMINATION
+
+This licence ends automatically if the Licensee breaks any of its terms. On
+termination the Licensee must stop using the Software and delete all copies.
+Sections 3, 4, 5, 6 and 9 survive termination.
+
+
+9. GENERAL
+
+This agreement is governed by the laws of the country in which the Licensor
+resides. If any part of it is found unenforceable, the rest remains in effect.
+It is the entire agreement about the Software between the parties and may be
+changed only in writing signed by the Licensor.

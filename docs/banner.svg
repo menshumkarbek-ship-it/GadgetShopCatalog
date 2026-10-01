@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 320" width="1280" height="320" role="img" aria-label="Mobile Shop">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4f46e5"/>
+      <stop offset="0.55" stop-color="#7c3aed"/>
+      <stop offset="1" stop-color="#db2777"/>
+    </linearGradient>
+    <linearGradient id="screen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a5b4fc"/>
+      <stop offset="1" stop-color="#f9a8d4"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.8" cy="0.2" r="0.7">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1280" height="320" rx="28" fill="url(#bg)"/>
+  <rect width="1280" height="320" rx="28" fill="url(#glow)"/>
+
+  <!-- devices -->
+  <g transform="translate(930 38)">
+    <rect x="0" y="40" width="120" height="236" rx="22" fill="#18181b"/>
+    <rect x="7" y="47" width="106" height="222" rx="16" fill="url(#screen)"/>
+    <rect x="46" y="54" width="28" height="7" rx="3.5" fill="#18181b"/>
+  </g>
+  <g transform="translate(1068 92)" opacity="0.96">
+    <rect x="0" y="0" width="150" height="104" rx="12" fill="#27272a"/>
+    <rect x="7" y="7" width="136" height="90" rx="7" fill="url(#screen)"/>
+    <path d="M-16 112 H166 L152 128 H-2 Z" fill="#d4d4d8"/>
+  </g>
+  <g transform="translate(1062 218)" opacity="0.96">
+    <rect x="0" y="0" width="64" height="64" rx="18" fill="#18181b"/>
+    <rect x="6" y="6" width="52" height="52" rx="13" fill="url(#screen)"/>
+  </g>
+
+  <!-- title -->
+  <g font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" fill="#ffffff">
+    <text x="72" y="142" font-size="70" font-weight="700" letter-spacing="-1.5">Mobile Shop</text>
+    <text x="74" y="190" font-size="26" font-weight="500" fill-opacity="0.92">A multilingual electronics storefront</text>
+    <text x="74" y="224" font-size="26" font-weight="500" fill-opacity="0.92">with a full management panel.</text>
+    <g font-size="17" font-weight="600" fill-opacity="0.95">
+      <rect x="74" y="250" width="132" height="34" rx="17" fill="#ffffff" fill-opacity="0.18"/>
+      <text x="96" y="272">English</text>
+      <rect x="218" y="250" width="118" height="34" rx="17" fill="#ffffff" fill-opacity="0.18"/>
+      <text x="240" y="272">Русский</text>
+      <rect x="348" y="250" width="132" height="34" rx="17" fill="#ffffff" fill-opacity="0.18"/>
+      <text x="370" y="272">Кыргызча</text>
+    </g>
+  </g>
+</svg>

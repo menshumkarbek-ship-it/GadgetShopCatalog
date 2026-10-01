@@ -13,3 +13,4 @@ node_modules
 .vscode
 skills-lock.json
 *.sqlite3
+docs
