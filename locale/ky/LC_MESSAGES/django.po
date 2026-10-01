@@ -2099,3 +2099,6 @@ msgstr "Мезгил ичинде канча сатылгандыгы жана �
 
 msgid "Nothing was sold in this period."
 msgstr "Бул мезгилде эч нерсе сатылган жок."
+
+msgid "Enter a whole number, without decimals."
+msgstr "Бүтүн сан киргизиңиз, ондук белгисиз."

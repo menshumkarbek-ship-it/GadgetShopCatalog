@@ -1046,7 +1046,7 @@ def sales_report(request, period=None):
         'category_choices': category_choices,
         'total_revenue': revenue,
         'total_count': count,
-        'average_sale': round(revenue / count, 2) if count else 0,
+        'average_sale': round(revenue / count) if count else 0,
         'by_category': by_category,
         'by_month': by_month,
         'active': 'sales',

@@ -57,6 +57,16 @@ class ProductCreateForm(KyrgyzFallbackHints, forms.ModelForm):
         })
     )
 
+    # Prices are whole numbers. Declared here, rather than taken from the
+    # model, so "250.00" (a pasted value, or an older client) is accepted as
+    # 250 while "99.5" gets a clear message instead of a decimal-places error.
+    price = forms.DecimalField(
+        max_digits=12, decimal_places=2, min_value=0,
+        widget=forms.NumberInput(attrs={
+            'class': TEXT_INPUT_CLASS, 'placeholder': '999', 'min': '0', 'step': '1',
+        }),
+    )
+
     description = forms.CharField(
         widget=forms.Textarea(attrs={
             'class': TEXT_INPUT_CLASS,
@@ -77,7 +87,6 @@ class ProductCreateForm(KyrgyzFallbackHints, forms.ModelForm):
             'name': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('e.g., iPhone 15 Pro Max')}),
             'name_ru': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the title above if left blank')}),
             'name_ky': forms.TextInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': _('Optional — falls back to the title above if left blank')}),
-            'price': forms.NumberInput(attrs={'class': TEXT_INPUT_CLASS, 'placeholder': '999.99'}),
             'description_ru': forms.Textarea(attrs={'class': TEXTAREA_CLASS, 'placeholder': _('Optional — falls back to the description above if left blank'), 'rows': 4}),
             'description_ky': forms.Textarea(attrs={'class': TEXTAREA_CLASS, 'placeholder': _('Optional — falls back to the description above if left blank'), 'rows': 4}),
             'image': forms.FileInput(attrs={'class': FILE_INPUT_CLASS}),
@@ -86,6 +95,12 @@ class ProductCreateForm(KyrgyzFallbackHints, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['category'].empty_label = _('Choose a category…')
+
+    def clean_price(self):
+        price = self.cleaned_data['price']
+        if price != price.to_integral_value():
+            raise ValidationError(_('Enter a whole number, without decimals.'))
+        return price.to_integral_value()
 
     def clean_slug(self):
         slug = self.cleaned_data.get('slug')

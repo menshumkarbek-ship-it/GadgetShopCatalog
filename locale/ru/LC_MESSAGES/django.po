@@ -2117,3 +2117,6 @@ msgstr "Сколько продано за период и в каких кат�
 
 msgid "Nothing was sold in this period."
 msgstr "За этот период ничего не продано."
+
+msgid "Enter a whole number, without decimals."
+msgstr "Введите целое число, без десятичных знаков."

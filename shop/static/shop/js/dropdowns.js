@@ -45,7 +45,12 @@
     // A press inside the list must not take focus off the field.
     menu.addEventListener('mousedown', function (e) { e.preventDefault(); });
 
-    function reposition() { place(menu, anchor); }
+    // The list scrolling is not a reason to move it: repositioning briefly
+    // lifts its height limit, which would snap its own scroll back to the top.
+    function reposition(e) {
+      if (e && e.target === menu) return;
+      place(menu, anchor);
+    }
     function outside(e) {
       if (!menu.contains(e.target) && !anchor.contains(e.target)) handle.close();
     }
@@ -81,6 +86,7 @@
 
     menu.style.minWidth = Math.min(Math.max(r.width, 176), vw - margin * 2) + 'px';
     menu.style.maxWidth = (vw - margin * 2) + 'px';
+    var scrolled = menu.scrollTop;
     menu.style.maxHeight = 'none';
 
     var below = vh - r.bottom - gap - margin;
@@ -91,6 +97,7 @@
     var up = natural > below && below < 200 && above > below;
     var maxHeight = Math.max(120, Math.min(MAX_HEIGHT, up ? above : below));
     menu.style.maxHeight = maxHeight + 'px';
+    menu.scrollTop = scrolled;
 
     var height = Math.min(menu.scrollHeight, maxHeight);
     var width = menu.offsetWidth;

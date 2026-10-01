@@ -232,7 +232,7 @@ class StorefrontTests(TestCase):
             'category': self.category.id,
             'brand': 'Sony',
             'name': 'Наушники Про',
-            'price': '199.99',
+            'price': '199',
             'description': 'Test description.',
             'slug': '',
         })
@@ -951,6 +951,28 @@ class ManagementPanelTests(TestCase):
             {'id': second.id, 'kind': 'phone', 'label': '', 'value': '+996700000000'},
         ])
         self.assertEqual(list(ExtraContact.objects.all()), [second])
+
+    def test_prices_are_whole_numbers_everywhere(self):
+        product = self.make_product('Phone', 'phone', '250')
+        page = self.client.get(reverse('shop:product_detail', args=[product.slug]))
+        self.assertContains(page, '250')
+        self.assertNotContains(page, '250.00')
+        self.assertNotContains(page, '250,00')
+
+        # The product form refuses a price with decimals, and takes a whole one.
+        data = {'name': 'Tablet', 'slug': 'tablet', 'brand': 'Example', 'category': self.category.id,
+                'description': 'A tablet.'}
+        refused = self.client.post(reverse('shop:create_product'), {**data, 'price': '99.5'}, **self.AJAX)
+        self.assertEqual(refused.status_code, 400)
+        accepted = self.client.post(reverse('shop:create_product'), {**data, 'price': '99'}, **self.AJAX)
+        self.assertTrue(accepted.json()['ok'])
+
+        # Sales and the report carry whole numbers too.
+        self.client.post(reverse('shop:sell_product', args=[product.id]))
+        report = self.client.get(reverse('shop:sales_report'))
+        self.assertContains(report, '250')
+        self.assertNotContains(report, '250,00')
+        self.assertNotContains(report, '250.00')
 
     def test_sales_report_periods(self):
         for name, slug in (('Phone', 'phone'), ('Tablet', 'tablet'), ('Old', 'old')):

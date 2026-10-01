@@ -574,7 +574,7 @@ class Product(models.Model):
     brand = models.CharField(max_length=100, db_index=True, help_text="e.g., Apple, Samsung, Asus")
     name = models.CharField(max_length=255, db_index=True)
     slug = models.SlugField(max_length=255, unique=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2, db_index=True)
+    price = models.DecimalField(max_digits=10, decimal_places=0, db_index=True)
     description = models.TextField()
     image = models.ImageField(upload_to='products/', blank=True, null=True)
 
@@ -723,7 +723,7 @@ class Sale(models.Model):
     brand = models.CharField(max_length=100, blank=True)
     category_name = models.CharField(max_length=100, blank=True)
     catalog_code = models.CharField(max_length=50, blank=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2, help_text="Price at the moment of the sale.")
+    price = models.DecimalField(max_digits=10, decimal_places=0, help_text="Price at the moment of the sale.")
     sold_at = models.DateTimeField(auto_now_add=True, db_index=True)
     sold_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='recorded_sales'
