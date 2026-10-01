@@ -1,5 +1,8 @@
-from datetime import timedelta
+from collections import Counter
+from datetime import datetime, time, timedelta
 from decimal import Decimal, InvalidOperation
+
+from dateutil.relativedelta import relativedelta
 
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -12,6 +15,7 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models.functions import TruncMonth
 from django.utils import timezone
 from django.utils.dates import MONTHS
 from django.utils.http import url_has_allowed_host_and_scheme, urlencode
@@ -27,7 +31,6 @@ from .forms import (
     ProductCreateForm, CategoryCreateForm, ContactSettingsForm, ExtraContactFormSet,
     AboutPageContentForm, HomePageContentForm,
 )
-from . import translation
 
 CATEGORIES_CACHE_KEY = 'global_store_categories'
 # Short on purpose — see the note on SETTINGS_CACHE_TIMEOUT in
@@ -368,11 +371,6 @@ def _are_images(files, form):
     return True
 
 
-# Shown after a save that set the automatic translator going (see
-# shop/translation.py); it finishes a few seconds later, in the background.
-TRANSLATING_MESSAGE = gettext_lazy("The other languages are being translated automatically and will appear in a few seconds.")
-
-
 # One-click row names for the product form's characteristics section: the
 # ones most devices share. Anything else is typed in by hand.
 SPEC_PRESETS = [
@@ -393,7 +391,6 @@ def create_product(request, product_id=None):
         extra_images = request.FILES.getlist('extra_images')
         if form.is_valid() and _are_images(extra_images, form):
             product = form.save()
-            translating = translation.schedule(product, form.changed_data)
 
             # Extra gallery photos: a plain <input type="file" name="extra_images"
             # multiple> isn't a ModelForm field (Django forms don't support
@@ -410,8 +407,6 @@ def create_product(request, product_id=None):
                 messages.success(
                     request, _("Product successfully cataloged! Its ID is %(code)s.") % {'code': product.catalog_code}
                 )
-            if translating:
-                messages.info(request, TRANSLATING_MESSAGE)
             return _panel_response(request, redirect('shop:product_list'))
         else:
             messages.error(request, _("Please correct the entry errors down below."))
@@ -473,8 +468,6 @@ def create_product(request, product_id=None):
         'search_groups': search_groups,
         'known_brands': known_brands,
         'spec_presets': SPEC_PRESETS,
-        'translation_enabled': translation.is_enabled(),
-        'auto_translated': translation.describe(product_instance.machine_translated) if product_instance else [],
         'gallery_images': gallery_images,
         'active': 'products',
     }
@@ -532,7 +525,10 @@ def _after_catalog_action(request):
     own `next` and the admin stays on the page they acted from — and, on
     the Products page, in the category they acted from.
     """
-    destinations = {'removed': 'shop:removed_products', 'products': 'shop:create_product'}
+    destinations = {
+        'removed': 'shop:removed_products', 'sold': 'shop:sold_products',
+        'deleted': 'shop:deleted_products', 'products': 'shop:create_product',
+    }
     url = reverse(destinations.get(request.POST.get('next'), 'shop:create_product'))
     category_slug = request.POST.get('category', '')
     if category_slug and request.POST.get('next') != 'removed':
@@ -746,8 +742,6 @@ def create_category(request):
         if form.is_valid():
             category = form.save()
             messages.success(request, _("Category created! It now appears in the catalog filter and will get its own homepage row once it has products."))
-            if translation.schedule(category, form.changed_data):
-                messages.info(request, TRANSLATING_MESSAGE)
             return _panel_response(
                 request, redirect('shop:create_category'),
                 html=_category_row_html(request, category.id), category_count=Category.objects.count(),
@@ -789,8 +783,6 @@ def edit_category(request, category_id):
         if form.is_valid():
             form.save()
             messages.success(request, _('Category "%(name)s" saved.') % {'name': category.name})
-            if translation.schedule(category, form.changed_data):
-                messages.info(request, TRANSLATING_MESSAGE)
             return _panel_response(request, redirect('shop:create_category'), navigate=True)
         messages.error(request, _("Please correct the entry errors down below."))
         if _wants_json(request):
@@ -926,144 +918,146 @@ def manage_about(request):
     })
 
 
+# The periods the sales report can be read over, in the order the filter
+# offers them. `lastN` means the N months up to today.
+SALES_PERIODS = [
+    ('month', gettext_lazy('A month')),
+    ('year', gettext_lazy('A year')),
+    ('last1', gettext_lazy('Last month')),
+    ('last2', gettext_lazy('Last 2 months')),
+    ('last3', gettext_lazy('Last 3 months')),
+    ('last6', gettext_lazy('Last 6 months')),
+    ('last12', gettext_lazy('Last 12 months')),
+    ('all', gettext_lazy('All time')),
+]
+
+
+def _report_choice(request, period, today):
+    """
+    What the sales report was asked for: which period, and which month and
+    year if the period needs them. Anything missing or out of range falls
+    back to the current month, so the page always has something to show.
+    """
+    valid = [key for key, _label in SALES_PERIODS]
+    period = period or request.GET.get('period')
+    if period not in valid:
+        period = 'month'
+
+    def number(name, default, low, high):
+        try:
+            value = int(request.GET.get(name, default))
+        except (TypeError, ValueError):
+            return default
+        # A year outside what datetime can hold would 500 the page.
+        return value if low <= value <= high else default
+
+    return {
+        'period': period,
+        'year': number('year', today.year, 2000, today.year + 1),
+        'month': number('month', today.month, 1, 12),
+    }
+
+
+def _sales_in_period(choice, today):
+    """Sale rows inside the chosen period; `lastN` is the N months up to today."""
+    sales = Sale.objects.all()
+    period = choice['period']
+    if period == 'month':
+        return sales.filter(sold_at__year=choice['year'], sold_at__month=choice['month'])
+    if period == 'year':
+        return sales.filter(sold_at__year=choice['year'])
+    if period.startswith('last'):
+        since = today - relativedelta(months=int(period[4:]))
+        return sales.filter(sold_at__gte=timezone.make_aware(datetime.combine(since, time.min)))
+    return sales
+
+
+def _period_label(choice):
+    if choice['period'] == 'month':
+        return f"{MONTHS[choice['month']]} {choice['year']}"
+    if choice['period'] == 'year':
+        return str(choice['year'])
+    return str(dict(SALES_PERIODS)[choice['period']])
+
+
 @login_required
 @user_passes_test(is_admin_or_manager, login_url='shop:product_list', redirect_field_name=None)
-def sales_report(request, period='month'):
+def sales_report(request, period=None):
     """
-    One sales page answering both questions staff ask of it: "how did this
-    month go", and "when did we sell that". Both read the same Sale rows —
-    created when a product is marked sold, which is how a sale gets recorded
-    here since the store has no checkout flow — so the monthly figures and
-    the full history can never disagree.
+    The sales report: statistics for one period and, optionally, one
+    category. One filter bar, one set of results — it opens on the current
+    month, and changing the filter changes the same results in place.
 
-    `period` is 'month' (filtered by the month/year pickers) or 'all' (every
-    sale ever recorded); shop:sales_archive is this same page pinned to 'all'.
+    The figures: revenue, items sold and the average sale; how revenue splits
+    across categories; and, for anything longer than a month, month by
+    month. Individual sales are not listed here.
+
+    Sales are the Sale rows created when a product is marked sold, so the
+    figures and the sales history can never disagree. `period` is passed
+    only by sales_archive, the all-time address older links still use.
     """
-    # The store's own date, not the server's UTC one (see TIME_ZONE).
     today = timezone.localdate()
-    if request.GET.get('period') in ('month', 'year', 'all'):
-        period = request.GET['period']
+    choice = _report_choice(request, period, today)
 
-    try:
-        year = int(request.GET.get('year', today.year))
-    except (TypeError, ValueError):
-        year = today.year
-    if not 2000 <= year <= today.year + 1:
-        # A year outside what datetime can hold would 500 the page.
-        year = today.year
-    try:
-        month = int(request.GET.get('month', today.month))
-    except (TypeError, ValueError):
-        month = today.month
-    if not 1 <= month <= 12:
-        month = today.month
-
-    # product is joined too: each row says whether the listing behind it
-    # still exists, which would otherwise be a query per sale.
-    period_sales = Sale.objects.select_related('sold_by', 'product')
-    if period == 'month':
-        period_sales = period_sales.filter(sold_at__year=year, sold_at__month=month)
-    elif period == 'year':
-        period_sales = period_sales.filter(sold_at__year=year)
-
-    # Filters. The dropdown choices come from the period's own sales (before
-    # the filters narrow them), so every option always has results.
-    def _choices(column):
-        return list(
-            period_sales.exclude(**{column: ''}).order_by(column)
-            .values_list(column, flat=True).distinct()
-        )
-    category_choices = _choices('category_name')
-    brand_choices = _choices('brand')
-
-    sales = period_sales
+    sales = _sales_in_period(choice, today)
     category = (request.GET.get('category') or '').strip()
-    brand = (request.GET.get('brand') or '').strip()
-    search_query = (request.GET.get('search') or '').strip()
     if category:
         sales = sales.filter(category_name=category)
-    if brand:
-        sales = sales.filter(brand=brand)
-    if search_query:
-        sales = sales.filter(
-            Q(product_name__icontains=search_query) |
-            Q(brand__icontains=search_query) |
-            Q(category_name__icontains=search_query) |
-            Q(catalog_code__icontains=search_query)
-        )
 
-    totals = sales.aggregate(total_revenue=Sum('price'), total_count=Count('id'))
+    totals = sales.aggregate(revenue=Sum('price'), count=Count('id'))
+    revenue, count = totals['revenue'] or 0, totals['count'] or 0
 
     # The trailing order_by is what keeps these grouped by one column: it
     # clears Sale's default '-sold_at' ordering, which would otherwise join
-    # the GROUP BY and split every group across its individual sale dates.
-    def _breakdown(*columns):
-        return sales.values(*columns).annotate(
+    # the GROUP BY and split every category across its individual sale dates.
+    by_category = [
+        {**row, 'share': round(row['total'] * 100 / revenue) if revenue else 0}
+        for row in sales.values('category_name').annotate(
             total=Sum('price'), count=Count('id')
-        ).order_by('-total', '-count')
+        ).order_by('-total', 'category_name')
+    ]
 
-    by_category = _breakdown('category_name')
-    by_brand = _breakdown('brand')
-    by_model = _breakdown('product_name', 'brand')[:50]
-
-    # A yearly report is read month by month.
     by_month = []
-    if period == 'year':
-        monthly = {
-            row['sold_at__month']: row
-            for row in sales.order_by().values('sold_at__month')
-            .annotate(total=Sum('price'), count=Count('id'))
-        }
-        by_month = [
-            {'label': label, 'month': num,
-             'total': monthly[num]['total'] if num in monthly else 0,
-             'count': monthly[num]['count'] if num in monthly else 0}
-            for num, label in sorted(MONTHS.items())
-        ]
+    if choice['period'] != 'month':
+        by_month = list(
+            sales.order_by().annotate(m=TruncMonth('sold_at')).values('m')
+            .annotate(total=Sum('price'), count=Count('id')).order_by('-m')
+        )
 
-    # Years to offer in the filter: every year that has at least one sale,
-    # plus the current year so the dropdown is never empty on a fresh store.
-    sale_years = set(Sale.objects.dates('sold_at', 'year').values_list('sold_at__year', flat=True))
-    sale_years.add(today.year)
-    available_years = sorted(sale_years, reverse=True)
+    # What the filter offers: the categories that have a sale on record
+    # (including ones since deleted, whose sales are still in the history),
+    # and every year with a sale plus the current one.
+    category_choices = list(
+        Sale.objects.exclude(category_name='').order_by('category_name')
+        .values_list('category_name', flat=True).distinct()
+    )
+    years = set(Sale.objects.dates('sold_at', 'year').values_list('sold_at__year', flat=True))
+    years.add(today.year)
 
-    context = {
-        'period': period,
-        'sales': sales,
-        'total_revenue': totals['total_revenue'] or 0,
-        'total_count': totals['total_count'] or 0,
-        'by_category': by_category,
-        'by_brand': by_brand,
-        'by_model': by_model,
-        'by_month': by_month,
-        'selected_year': year,
-        'selected_month': month,
-        'selected_month_name': MONTHS[month],
-        'available_years': available_years,
-        'months': sorted(MONTHS.items()),
-        'category_choices': category_choices,
-        'brand_choices': brand_choices,
+    return render(request, 'shop/product/sales_report.html', {
+        'period': choice['period'],
+        'selected_year': choice['year'],
+        'selected_month': choice['month'],
         'selected_category': category,
-        'selected_brand': brand,
-        'search_query': search_query,
-        'period_tabs': [('month', _('Month')), ('year', _('Year')), ('all', _('All time'))],
-        'breakdowns': [
-            (_('By Category'), by_category, 'category'),
-            (_('By Brand'), by_brand, 'brand'),
-            (_('By Model'), by_model, 'model'),
-        ],
-        'has_filters': bool(category or brand or search_query),
-        'next_url': request.get_full_path(),
+        'period_label': _period_label(choice),
+        'periods': SALES_PERIODS,
+        'months': sorted(MONTHS.items()),
+        'available_years': sorted(years, reverse=True),
+        'category_choices': category_choices,
+        'total_revenue': revenue,
+        'total_count': count,
+        'average_sale': round(revenue / count, 2) if count else 0,
+        'by_category': by_category,
+        'by_month': by_month,
         'active': 'sales',
-    }
-    return render(request, 'shop/product/sales_report.html', context)
+    })
 
 
 def sales_archive(request):
     """
-    The all-time view of the sales page above, kept on its own URL: it is
-    what the Sales card opens, and links made to
-    /management/archive/ before the two pages merged still land on it.
+    The all-time view of the sales page above, kept on its own address so
+    links made to /management/archive/ before the pages merged still land
+    on it.
     """
     return sales_report(request, period='all')
 
@@ -1133,10 +1127,13 @@ def manage_homepage(request):
 
 @login_required
 @user_passes_test(is_admin_or_manager, login_url='shop:product_list', redirect_field_name=None)
-def removed_products(request):
+def removed_products(request, kind=None):
     """
-    Every listing taken off the catalog, newest removal first, with restore
-    and permanent delete on each.
+    Listings taken off the catalog, newest removal first, with restore and
+    permanent delete on each. `kind` is 'sold' or 'deleted' for the two
+    separate panels in the menu (shop:sold_products / shop:deleted_products);
+    with none it lists both, which is what the original /management/removed/
+    address still shows.
 
     This is the only place removed listings appear in the panel: the
     Products page shows what is on sale and nothing else, so undoing a
@@ -1164,15 +1161,60 @@ def removed_products(request):
         removed = removed.filter(search_filter)
 
     removed = _annotate_removal_kind(removed)
+    if kind == 'sold':
+        removed = [product for product in removed if product.was_sold]
+    elif kind == 'deleted':
+        removed = [product for product in removed if not product.was_sold]
 
     context = {
         'removed_products': removed,
         'search_query': search_query,
-        # Counted off the list actually shown, so the tallies agree with it
-        # while a search is narrowing things down.
+        'kind': kind,
         'shown_count': len(removed),
-        'sold_count': sum(1 for product in removed if product.was_sold),
-        'deleted_count': sum(1 for product in removed if not product.was_sold),
-        'active': 'removed',
+        'active': kind or 'removed',
     }
+
+    if kind:
+        # Each panel is a drill-down like the Products page: an overall card
+        # and one card per category, and pressing one lists its products. A
+        # search, like the overall card, lists across every category.
+        counts = Counter(product.category_id for product in removed)
+        context['category_cards'] = [
+            {'category': category, 'count': counts.get(category.id, 0)}
+            for category in Category.objects.order_by('name')
+        ]
+        context['panel_total'] = len(removed)
+
+        requested = request.GET.get('category', '')
+        selected_category = next(
+            (card['category'] for card in context['category_cards'] if card['category'].slug == requested),
+            None,
+        )
+        if selected_category:
+            removed = [product for product in removed if product.category_id == selected_category.id]
+        context.update({
+            'removed_products': removed,
+            'shown_count': len(removed),
+            'selected_category': selected_category,
+            'category_param': selected_category.slug if selected_category else 'all',
+            'show_cards': not (search_query or selected_category or requested == 'all'),
+        })
+    else:
+        # The original combined page, with a tally for each kind.
+        context['sold_count'] = sum(1 for product in removed if product.was_sold)
+        context['deleted_count'] = len(removed) - context['sold_count']
     return render(request, 'shop/product/removed_products.html', context)
+
+
+@login_required
+@user_passes_test(is_admin_or_manager, login_url='shop:product_list', redirect_field_name=None)
+def sold_products(request):
+    """The Sold panel: listings removed by marking them sold."""
+    return removed_products(request, kind='sold')
+
+
+@login_required
+@user_passes_test(is_admin_or_manager, login_url='shop:product_list', redirect_field_name=None)
+def deleted_products(request):
+    """The Deleted panel: listings taken off the catalog without a sale."""
+    return removed_products(request, kind='deleted')

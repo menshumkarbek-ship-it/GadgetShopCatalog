@@ -19,11 +19,7 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone, translation
 
-from . import translation as translator
-from .models import AboutPageContent, Category, ContactSettings, HomePageContent, Product, Sale
-
-# The real request function, kept before any test patches it out.
-REAL_REQUEST = translator.request_translations
+from .models import AboutPageContent, Category, ContactSettings, HomePageContent, Product, ProductImage, Sale
 
 
 def in_language(client, language):
@@ -144,6 +140,17 @@ class StorefrontTests(TestCase):
             'username': 'manager', 'password': 'manager-password-123', 'next': reverse('shop:create_product'),
         })
         self.assertRedirects(right, reverse('shop:create_product'))
+
+    def test_signing_in_from_the_plain_page_lands_on_the_home_page(self):
+        User.objects.create_user(username='manager', password='manager-password-123', is_staff=True)
+        for address in (reverse('admin:login'), '/admin/', f"{reverse('admin:login')}?next=/admin/"):
+            with self.subTest(address=address):
+                self.client.logout()
+                page = self.client.get(reverse('admin:login'), {'next': address} if address.startswith('/admin/') else {})
+                self.assertContains(page, f'name="next" value="{reverse("shop:home")}"')
+        # Coming from a protected page still goes back to it.
+        page = self.client.get(reverse('admin:login'), {'next': reverse('shop:management_home')})
+        self.assertContains(page, f'name="next" value="{reverse("shop:management_home")}"')
 
     def test_staff_sees_settings_link_and_sign_out_lives_inside_it(self):
         staff = User.objects.create_user(username='manager', password='manager-password-123', is_staff=True)
@@ -854,6 +861,22 @@ class ManagementPanelTests(TestCase):
         self.assertNotContains(self.client.get(reverse('shop:product_list')), 'RAM: 8 GB')
         self.assertContains(self.client.get(reverse('shop:product_detail', args=[product.slug])), '8 GB')
 
+    def test_product_page_has_photo_arrows_only_when_there_is_a_gallery(self):
+        buffer = BytesIO()
+        Image.new('RGB', (10, 10), 'red').save(buffer, format='PNG')
+        product = self.make_product('Phone', 'phone', '250.00')
+        product.image = SimpleUploadedFile('cover.png', buffer.getvalue(), content_type='image/png')
+        product.save()
+        page = self.client.get(reverse('shop:product_detail', args=[product.slug]))
+        self.assertNotContains(page, 'id="product-next"')
+
+        ProductImage.objects.create(
+            product=product, image=SimpleUploadedFile('two.png', buffer.getvalue(), content_type='image/png'),
+        )
+        page = self.client.get(reverse('shop:product_detail', args=[product.slug]))
+        self.assertContains(page, 'id="product-next"')
+        self.assertContains(page, 'id="product-prev"')
+
     def test_a_gallery_upload_that_is_not_an_image_is_refused(self):
         fake = SimpleUploadedFile('notes.png', b'<script>alert(1)</script>', content_type='image/png')
         response = self.client.post(reverse('shop:create_product'), {
@@ -929,18 +952,30 @@ class ManagementPanelTests(TestCase):
         ])
         self.assertEqual(list(ExtraContact.objects.all()), [second])
 
-    def test_sales_report_year_view_and_model_filters(self):
-        for name, slug in (('Phone', 'phone'), ('Tablet', 'tablet')):
+    def test_sales_report_periods(self):
+        for name, slug in (('Phone', 'phone'), ('Tablet', 'tablet'), ('Old', 'old')):
             product = self.make_product(name, slug, '100.00')
             self.client.post(reverse('shop:sell_product', args=[product.id]))
+        # Push one sale four months back.
+        old = Sale.objects.get(product_name='Old')
+        Sale.objects.filter(pk=old.pk).update(sold_at=timezone.now() - timedelta(days=125))
         url = reverse('shop:sales_report')
-        year = self.client.get(url, {'period': 'year'})
-        self.assertEqual(year.status_code, 200)
-        self.assertEqual(year.context['total_count'], 2)
-        self.assertEqual(len(year.context['by_month']), 12)
-        self.assertEqual(year.context['by_model'].count(), 2)
-        model = self.client.get(url, {'period': 'all', 'search': 'Tablet'})
-        self.assertEqual(model.context['total_count'], 1)
+
+        def count(**params):
+            response = self.client.get(url, params)
+            self.assertEqual(response.status_code, 200)
+            return response.context['total_count']
+
+        self.assertEqual(count(period='month'), 2)
+        self.assertEqual(count(period='last1'), 2)
+        self.assertEqual(count(period='last3'), 2)
+        self.assertEqual(count(period='last6'), 3)
+        self.assertEqual(count(period='all'), 3)
+        year = self.client.get(url, {'period': 'year', 'year': timezone.localdate().year})
+        self.assertGreaterEqual(year.context['total_count'], 2)
+        self.assertTrue(len(year.context['by_month']) >= 1)
+        # An unknown period falls back to the current month.
+        self.assertEqual(self.client.get(url, {'period': 'bogus'}).context['period'], 'month')
 
     def test_sales_count_towards_the_month_in_bishkek_time(self):
         product = self.make_product('Phone', 'phone', '250.00')
@@ -1043,13 +1078,14 @@ class ManagementPanelTests(TestCase):
     # --- the panel's menu: section cards, Back links ---------------------
 
     SECTION_PAGES = [
-        ('shop:create_product', 'products'),
-        ('shop:create_category', 'categories'),
-        ('shop:removed_products', 'removed'),
-        ('shop:sales_archive', 'sales'),
         ('shop:manage_homepage', 'homepage'),
         ('shop:manage_about', 'about'),
         ('shop:manage_contacts', 'contacts'),
+        ('shop:create_product', 'products'),
+        ('shop:create_category', 'categories'),
+        ('shop:deleted_products', 'deleted'),
+        ('shop:sales_report', 'sales'),
+        ('shop:sold_products', 'sold'),
     ]
 
     # The navbar's Settings link points at the front door too, so the Back
@@ -1088,16 +1124,29 @@ class ManagementPanelTests(TestCase):
         response = self.client.get(reverse('shop:management_home'))
         self.assertEqual(response.status_code, 302)
 
-    def test_removed_card_shows_no_count_on_the_front_door(self):
-        self.make_product('Gone', 'gone', '100.00')
-        self.client.post(reverse('shop:remove_product', args=[Product.all_objects.get(slug='gone').id]))
+    def test_sold_and_deleted_are_separate_panels_without_counts_on_the_front_door(self):
+        sold = self.make_product('Sold Phone', 'sold-phone', '250.00')
+        gone = self.make_product('Gone', 'gone', '100.00')
+        self.client.post(reverse('shop:sell_product', args=[sold.id]))
+        self.client.post(reverse('shop:remove_product', args=[gone.id]))
 
         panel = self.client.get(reverse('shop:management_home'))
-        removed = next(item for group in panel.context['management_groups']
-                       for item in group['items'] if item['key'] == 'removed')
-        # The count is only visible once inside the Removed section.
-        self.assertNotIn('badge', removed)
-        self.assertEqual(self.client.get(reverse('shop:removed_products')).context['deleted_count'], 1)
+        items = {item['key']: item for group in panel.context['management_groups']
+                 for item in group['items']}
+        self.assertNotIn('removed', items)
+        # The counts are only visible once inside a section.
+        self.assertNotIn('badge', items['sold'])
+        self.assertNotIn('badge', items['deleted'])
+
+        sold_page = self.client.get(reverse('shop:sold_products'))
+        self.assertEqual([p.pk for p in sold_page.context['removed_products']], [sold.pk])
+        deleted_page = self.client.get(reverse('shop:deleted_products'))
+        self.assertEqual([p.pk for p in deleted_page.context['removed_products']], [gone.pk])
+        self.assertEqual(deleted_page.context['panel_total'], 1)
+
+        # Restoring from a panel comes back to that panel.
+        response = self.client.post(reverse('shop:restore_product', args=[sold.id]), {'next': 'sold'})
+        self.assertRedirects(response, reverse('shop:sold_products'))
 
         # The storefront renders no panel menu, so it must not pay for the count.
         self.assertNotIn('management_groups', self.client.get(reverse('shop:home')).context)
@@ -1198,7 +1247,7 @@ class ManagementPanelTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Блоки главной страницы')
         self.assertContains(response, 'Управление')  # the Back link
-        self.assertContains(self.client.get(reverse('shop:management_home')), 'Удалённые')
+        self.assertContains(self.client.get(reverse('shop:management_home')), 'Удалено')
 
     def test_regular_user_cannot_edit_the_homepage(self):
         self.client.force_login(User.objects.create_user(username='shopper', password='shopper-pass-123'))
@@ -1208,6 +1257,42 @@ class ManagementPanelTests(TestCase):
         self.assertRedirects(response, reverse('shop:product_list'))
 
     # --- removed listings ----------------------------------------------
+
+    def test_sold_and_deleted_panels_open_on_category_cards(self):
+        phones = self.category
+        laptops = Category.objects.create(name='Laptops', slug='laptops', id_prefix='L')
+        Category.objects.create(name='Empty', slug='empty', id_prefix='E')
+        sold = self.make_product('Sold Phone', 'sold-phone', '250.00')
+        gone = self.make_product('Gone Laptop', 'gone-laptop', '900.00')
+        gone.category = laptops
+        gone.save()
+        self.client.post(reverse('shop:sell_product', args=[sold.id]))
+        self.client.post(reverse('shop:remove_product', args=[gone.id]))
+
+        # No Sold/Deleted switch left, and a card per category plus an overall one.
+        page = self.client.get(reverse('shop:sold_products'))
+        self.assertTrue(page.context['show_cards'])
+        self.assertEqual(page.context['panel_total'], 1)
+        counts = {c['category'].slug: c['count'] for c in page.context['category_cards']}
+        self.assertEqual(counts, {phones.slug: 1, 'laptops': 0, 'empty': 0})
+        self.assertNotContains(page, reverse('shop:deleted_products'))
+
+        # A category card lists only that category's sold products.
+        listed = self.client.get(reverse('shop:sold_products'), {'category': phones.slug})
+        self.assertFalse(listed.context['show_cards'])
+        self.assertEqual([p.pk for p in listed.context['removed_products']], [sold.pk])
+        empty = self.client.get(reverse('shop:sold_products'), {'category': 'laptops'})
+        self.assertEqual(list(empty.context['removed_products']), [])
+
+        # The overall card lists them all; the Deleted panel never shows a sale.
+        overall = self.client.get(reverse('shop:deleted_products'), {'category': 'all'})
+        self.assertEqual([p.pk for p in overall.context['removed_products']], [gone.pk])
+
+        # Restoring from a category comes back to that category.
+        response = self.client.post(
+            reverse('shop:restore_product', args=[sold.id]), {'next': 'sold', 'category': phones.slug}
+        )
+        self.assertRedirects(response, f"{reverse('shop:sold_products')}?category={phones.slug}")
 
     def test_removed_page_lists_every_removal_and_labels_how_it_happened(self):
         sold = self.make_product('Sold Phone', 'sold-phone', '250.00')
@@ -1298,16 +1383,42 @@ class ManagementPanelTests(TestCase):
         self.assertEqual(self.client.get(reverse('shop:sales_report')).context['total_count'], 0)
         self.assertEqual(self.client.get(reverse('shop:sales_archive')).context['total_count'], 1)
 
-    def test_all_time_view_can_be_searched(self):
-        keep = self.make_product('Galaxy Phone', 'galaxy', '250.00')
-        other = self.make_product('Laptop', 'laptop', '900.00')
-        self.client.post(reverse('shop:sell_product', args=[keep.id]))
-        self.client.post(reverse('shop:sell_product', args=[other.id]))
+    def test_report_opens_on_this_month_and_filters_by_category(self):
+        phones = self.category
+        laptops = Category.objects.create(name='Laptops', slug='laptops', id_prefix='L')
+        phone = self.make_product('Galaxy Phone', 'galaxy', '250.00')
+        laptop = self.make_product('Laptop', 'laptop', '900.00')
+        laptop.category = laptops
+        laptop.save()
+        self.client.post(reverse('shop:sell_product', args=[phone.id]))
+        self.client.post(reverse('shop:sell_product', args=[laptop.id]))
+        url = reverse('shop:sales_report')
 
-        response = self.client.get(reverse('shop:sales_archive'), {'search': 'galaxy'})
+        # Opened bare: this month, every category, with the figures already there.
+        bare = self.client.get(url)
+        self.assertEqual(bare.context['period'], 'month')
+        self.assertEqual(bare.context['total_revenue'], Decimal('1150.00'))
+        self.assertEqual(bare.context['total_count'], 2)
+        self.assertEqual(bare.context['average_sale'], Decimal('575.00'))
+        self.assertEqual(sorted(bare.context['category_choices']), sorted([phones.name, 'Laptops']))
+        shares = {r['category_name']: r['share'] for r in bare.context['by_category']}
+        self.assertEqual(shares, {'Laptops': 78, phones.name: 22})
 
+        # One category over a longer period.
+        response = self.client.get(url, {'period': 'last3', 'category': 'Laptops'})
         self.assertEqual(response.context['total_count'], 1)
-        self.assertEqual(response.context['total_revenue'], Decimal('250.00'))
+        self.assertEqual(response.context['total_revenue'], Decimal('900.00'))
+        self.assertEqual([r['category_name'] for r in response.context['by_category']], ['Laptops'])
+
+        # Brand, model and search are no longer filters.
+        ignored = self.client.get(url, {'period': 'all', 'search': 'galaxy', 'brand': 'Nope'})
+        self.assertEqual(ignored.context['total_count'], 2)
+
+        # An empty period still renders, with a plain message.
+        empty = self.client.get(url, {'period': 'month', 'year': 2001, 'month': 1})
+        self.assertEqual(empty.context['total_count'], 0)
+        self.assertEqual(empty.context['average_sale'], 0)
+        self.assertContains(empty, 'Nothing was sold in this period.')
 
     def test_breakdowns_group_by_one_column_not_by_sale_date(self):
         first = self.make_product('Phone One', 'phone-one', '100.00')
@@ -1333,204 +1444,3 @@ class ManagementPanelTests(TestCase):
 
         self.assertRedirects(response, reverse('shop:sales_archive'))
         self.assertFalse(Sale.objects.exists())
-
-
-# ── Automatic translation ──────────────────────────────────────────────────
-
-def detect(text):
-    """The fake translator's language detector: good enough for the tests."""
-    if not text:
-        return 'empty'
-    if re.search('[ңөүҢӨҮ]', text):
-        return 'ky'
-    if re.search('[а-яА-ЯёЁ]', text):
-        return 'ru'
-    return 'en'
-
-
-class FakeClaude:
-    """Stands in for request_translations(): answers the way the real model
-    would, marking each translation with its language so tests can see
-    what came from where."""
-
-    def __init__(self, fail=False, during=None):
-        self.calls, self.fail, self.during = [], fail, during
-
-    def __call__(self, texts):
-        self.calls.append(texts)
-        if self.during:
-            self.during()
-        if self.fail:
-            raise translator.TranslationError('Claude API error 529: Overloaded')
-        answer = {}
-        for field, slots in texts.items():
-            detected = {lang: detect(text) for lang, text in slots.items()}
-            source = next(text for text in slots.values() if text)
-            answer[field] = {'detected': detected}
-            for lang in ('en', 'ru', 'ky'):
-                if detected[lang] == lang:
-                    answer[field][lang] = slots[lang]
-                elif field == 'name' and source == 'iPhone 15':
-                    answer[field][lang] = source  # a bare brand and model
-                else:
-                    answer[field][lang] = f'[{lang}] {source}'
-        return answer
-
-
-@override_settings(LANGUAGE_CODE='en', TRANSLATION_ENABLED=True, ANTHROPIC_API_KEY='test-key')
-class AutomaticTranslationTests(TestCase):
-    AJAX = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
-
-    def setUp(self):
-        self.category = Category.objects.create(
-            name='Chargers', name_ru='Зарядки', name_ky='Кубаттагычтар', slug='chargers',
-        )
-        staff = User.objects.create_user(username='manager', password='manager-password-123', is_staff=True)
-        self.client.force_login(staff)
-        self.fake = FakeClaude()
-        patcher = mock.patch.object(translator, 'request_translations', self.fake)
-        patcher.start()
-        self.addCleanup(patcher.stop)
-
-    def save_product(self, product=None, **fields):
-        data = {'name': 'Wireless Charger', 'slug': 'charger', 'brand': 'Anker', 'category': self.category.id,
-                'price': '1500', 'description': ''}
-        if product:
-            data.update({f: getattr(product, f) for f in ('name', 'name_ru', 'name_ky', 'slug',
-                                                          'description', 'description_ru', 'description_ky')})
-        data.update(fields)
-        url = reverse('shop:update_product', args=[product.id]) if product else reverse('shop:create_product')
-        return self.client.post(url, data, **self.AJAX)
-
-    def test_a_product_written_in_one_language_gets_the_other_two(self):
-        response = self.save_product(description='Fast 15W wireless charging.')
-
-        product = Product.objects.get(slug='charger')
-        self.assertEqual(product.description, 'Fast 15W wireless charging.')
-        self.assertEqual(product.description_ru, '[ru] Fast 15W wireless charging.')
-        self.assertEqual(product.description_ky, '[ky] Fast 15W wireless charging.')
-        self.assertEqual(product.name_ky, '[ky] Wireless Charger')
-        self.assertEqual(sorted(product.machine_translated),
-                         ['description_ky', 'description_ru', 'name_ky', 'name_ru'])
-        # The admin is told the other languages are on their way.
-        self.assertIn('translated automatically', ' '.join(m['text'] for m in response.json()['messages']))
-        # And the Kyrgyz site now reads Kyrgyz.
-        in_language(self.client, 'ky')
-        self.assertContains(self.client.get(reverse('shop:product_detail', args=['charger'])),
-                            '[ky] Fast 15W wireless charging.')
-
-    def test_russian_typed_into_the_english_tab_moves_to_the_russian_one(self):
-        self.save_product(name='Беспроводная зарядка', description='Быстрая зарядка 15 Вт.')
-
-        product = Product.objects.get(slug='charger')
-        self.assertEqual(product.description_ru, 'Быстрая зарядка 15 Вт.')
-        self.assertEqual(product.description, '[en] Быстрая зарядка 15 Вт.')
-        self.assertEqual(product.description_ky, '[ky] Быстрая зарядка 15 Вт.')
-        self.assertEqual(product.name_ru, 'Беспроводная зарядка')
-        # The moved original is the admin's text, not a machine translation.
-        self.assertNotIn('description_ru', product.machine_translated)
-        self.assertIn('description', product.machine_translated)
-
-    def test_a_translation_staff_correct_is_theirs_and_never_overwritten(self):
-        self.save_product(description='Fast charging.')
-        product = Product.objects.get(slug='charger')
-
-        self.save_product(product, description_ky='Тез кубаттоо.')
-        product.refresh_from_db()
-        self.assertEqual(product.description_ky, 'Тез кубаттоо.')
-        self.assertNotIn('description_ky', product.machine_translated)
-
-        # The source changes: the machine-made Russian follows it, the
-        # corrected Kyrgyz does not.
-        self.save_product(product, description='Very fast charging.')
-        product.refresh_from_db()
-        self.assertEqual(product.description_ru, '[ru] Very fast charging.')
-        self.assertEqual(product.description_ky, 'Тез кубаттоо.')
-
-    def test_saving_again_without_changes_asks_nothing(self):
-        self.save_product(description='Fast charging.')
-        calls = len(self.fake.calls)
-        self.save_product(Product.objects.get(slug='charger'))
-        self.assertEqual(len(self.fake.calls), calls)
-
-    def test_a_product_written_in_every_language_asks_nothing(self):
-        self.save_product(name='Charger', name_ru='Зарядка', name_ky='Кубаттагыч',
-                          description='Fast.', description_ru='Быстрая.', description_ky='Тез.')
-        self.assertEqual(self.fake.calls, [])
-
-    def test_a_bare_brand_and_model_name_is_not_copied_into_every_tab(self):
-        self.save_product(name='iPhone 15', description='A phone.')
-        product = Product.objects.get(slug='charger')
-        self.assertEqual((product.name_ru, product.name_ky), ('', ''))
-        self.assertNotIn('name_ru', product.machine_translated)
-
-    def test_a_failed_translation_still_saves_the_product(self):
-        self.fake.fail = True
-        with self.assertLogs('shop.translation', level='WARNING'):
-            response = self.save_product(description='Fast charging.')
-        self.assertTrue(response.json()['ok'])
-        product = Product.objects.get(slug='charger')
-        self.assertEqual((product.description_ru, product.description_ky), ('', ''))
-        self.assertEqual(product.machine_translated, [])
-
-    def test_an_edit_made_while_translating_is_not_overwritten(self):
-        def staff_types_kyrgyz_meanwhile():
-            Product.all_objects.filter(slug='charger').update(description_ky='Адам жазган.')
-        self.fake.during = staff_types_kyrgyz_meanwhile
-
-        self.save_product(description='Fast charging.')
-        product = Product.objects.get(slug='charger')
-        self.assertEqual(product.description_ky, 'Адам жазган.')
-        self.assertEqual(product.description_ru, '[ru] Fast charging.')
-        self.assertNotIn('description_ky', product.machine_translated)
-
-    @override_settings(TRANSLATION_ENABLED=False)
-    def test_without_a_key_nothing_is_sent_and_nothing_is_promised(self):
-        response = self.save_product(description='Fast charging.')
-        self.assertEqual(self.fake.calls, [])
-        self.assertNotIn('translated automatically', ' '.join(m['text'] for m in response.json()['messages']))
-
-    def test_category_names_are_translated_too(self):
-        response = self.client.post(reverse('shop:create_category'), {
-            'name': 'Power Banks', 'slug': '', 'id_prefix': 'PB', 'id_digits': '1',
-        }, **self.AJAX)
-        self.assertTrue(response.json()['ok'])
-        category = Category.objects.get(name='Power Banks')
-        self.assertEqual(category.name_ky, '[ky] Power Banks')
-
-    def test_translate_catalog_fills_in_what_is_already_there(self):
-        Product.objects.create(category=self.category, brand='Anker', name='Cable', slug='cable',
-                               price=Decimal('300'), description='Braided USB-C cable.')
-        out = io.StringIO()
-        call_command('translate_catalog', stdout=out)
-        product = Product.objects.get(slug='cable')
-        self.assertEqual(product.description_ky, '[ky] Braided USB-C cable.')
-        self.assertIn('Translated 1; failed 0.', out.getvalue())
-
-        # Run again: nothing is left to do.
-        out = io.StringIO()
-        call_command('translate_catalog', stdout=out)
-        self.assertIn('0 item(s) need translating.', out.getvalue())
-
-    def test_the_request_sent_to_claude(self):
-        """request_translations() itself, against a stubbed SDK client."""
-        reply = {'description': {'detected': {'en': 'en', 'ru': 'empty', 'ky': 'empty'},
-                                 'en': 'Fast.', 'ru': 'Быстро.', 'ky': 'Тез.'}}
-        message = SimpleNamespace(stop_reason='end_turn',
-                                  content=[SimpleNamespace(type='text', text=json.dumps(reply))])
-        with mock.patch('anthropic.Anthropic') as client_class:
-            client_class.return_value.beta.messages.create.return_value = message
-            result = REAL_REQUEST({'description': {'en': 'Fast.', 'ru': '', 'ky': ''}})
-
-        self.assertEqual(result, reply)
-        kwargs = client_class.return_value.beta.messages.create.call_args.kwargs
-        self.assertEqual(kwargs['model'], settings.TRANSLATION_MODEL)
-        self.assertEqual(kwargs['fallbacks'], 'default')
-        self.assertEqual(kwargs['output_config']['format']['type'], 'json_schema')
-        self.assertEqual(kwargs['output_config']['format']['schema']['required'], ['description'])
-
-        message.stop_reason = 'refusal'
-        with mock.patch('anthropic.Anthropic') as client_class:
-            client_class.return_value.beta.messages.create.return_value = message
-            with self.assertRaises(translator.TranslationError):
-                REAL_REQUEST({'description': {'en': 'Fast.', 'ru': '', 'ky': ''}})

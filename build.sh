@@ -18,14 +18,6 @@ python manage.py makemigrations --check --dry-run
 
 python manage.py migrate
 
-# Automatic translation (shop/translation.py): fill in whatever English,
-# Russian or Kyrgyz text the catalog is still missing. Only empty or
-# machine-made fields are written, so repeating it is harmless and cheap.
-# Never fails the deploy — untranslated text just shows its fallback.
-if [ -n "$ANTHROPIC_API_KEY" ]; then
-    python manage.py translate_catalog || true
-fi
-
 # One-time staff account bootstrap: only runs when DJANGO_SUPERUSER_USERNAME
 # is set (e.g. on the very first deploy). Django's --noinput reads
 # DJANGO_SUPERUSER_USERNAME/EMAIL/PASSWORD from the environment. `|| true`

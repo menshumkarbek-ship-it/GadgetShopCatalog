@@ -26,13 +26,27 @@
         {% endif %}
 
         {% if product.image %}
-        <div class="mt-12 flex justify-center">
-            <img id="product-main-image" src="{{ product.image.url }}" alt="{{ product.translated_name }}" style="mix-blend-mode: multiply; max-height: 460px;" class="w-full max-w-2xl object-contain">
+        {# Photo viewer: the cover first, then the gallery. Arrows, swipe, arrow keys and the thumbnails all move through the same list. #}
+        <div id="product-viewer" class="mt-12 relative mx-auto w-full max-w-2xl" style="outline: none;" tabindex="0" aria-roledescription="carousel" aria-label="{{ product.translated_name }}">
+            <div class="flex justify-center" style="touch-action: pan-y;">
+                <img id="product-main-image" src="{{ product.image.url }}" alt="{{ product.translated_name }}" style="mix-blend-mode: multiply; max-height: 460px;" class="w-full object-contain select-none" draggable="false">
+            </div>
+            {% if product.gallery_images.all %}
+            <button type="button" id="product-prev" aria-label="{% translate 'Previous photo' %}"
+                    class="absolute left-0 sm:-left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-paper text-ink shadow-md ring-1 ring-hairline flex items-center justify-center hover:bg-canvas transition-colors">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <button type="button" id="product-next" aria-label="{% translate 'Next photo' %}"
+                    class="absolute right-0 sm:-right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-paper text-ink shadow-md ring-1 ring-hairline flex items-center justify-center hover:bg-canvas transition-colors">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+            <p id="product-counter" class="t-caption text-midgray mt-3 figures" aria-live="polite"></p>
+            {% endif %}
         </div>
         {% endif %}
 
         {% if product.gallery_images.all %}
-        <div class="mt-8 flex items-center justify-center gap-3 overflow-x-auto no-scrollbar">
+        <div class="mt-5 flex items-center justify-center gap-3 overflow-x-auto no-scrollbar">
             {% if product.image %}
             <button type="button" class="product-thumb shrink-0 w-20 h-20 rounded-2xl bg-canvas p-2.5 overflow-hidden ring-1 ring-ink transition-all" data-image-url="{{ product.image.url }}">
                 <img src="{{ product.image.url }}" alt="" style="mix-blend-mode: multiply;" class="w-full h-full object-contain">
@@ -113,20 +127,51 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const mainImage = document.getElementById('product-main-image');
-        const thumbs = document.querySelectorAll('.product-thumb');
+        const thumbs = Array.from(document.querySelectorAll('.product-thumb'));
         if (!mainImage || !thumbs.length) return;
 
-        thumbs.forEach(function (thumb) {
-            thumb.addEventListener('click', function () {
-                mainImage.src = thumb.dataset.imageUrl;
-                thumbs.forEach(function (t) {
-                    t.classList.remove('ring-ink');
-                    t.classList.add('ring-transparent');
-                });
-                thumb.classList.remove('ring-transparent');
-                thumb.classList.add('ring-ink');
+        const viewer = document.getElementById('product-viewer');
+        const counter = document.getElementById('product-counter');
+        let index = 0;
+
+        function show(i) {
+            index = (i + thumbs.length) % thumbs.length;
+            mainImage.src = thumbs[index].dataset.imageUrl;
+            thumbs.forEach(function (t, n) {
+                t.classList.toggle('ring-ink', n === index);
+                t.classList.toggle('ring-transparent', n !== index);
             });
+            thumbs[index].scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            if (counter) counter.textContent = (index + 1) + ' / ' + thumbs.length;
+        }
+
+        thumbs.forEach(function (thumb, n) {
+            thumb.addEventListener('click', function () { show(n); });
         });
+        document.getElementById('product-prev').addEventListener('click', function () { show(index - 1); });
+        document.getElementById('product-next').addEventListener('click', function () { show(index + 1); });
+
+        // Arrow keys while the viewer has focus.
+        viewer.addEventListener('keydown', function (event) {
+            if (event.key === 'ArrowLeft') { show(index - 1); event.preventDefault(); }
+            if (event.key === 'ArrowRight') { show(index + 1); event.preventDefault(); }
+        });
+
+        // Swipe: a mostly-horizontal drag past 40px moves one photo.
+        let startX = null, startY = null;
+        viewer.addEventListener('touchstart', function (event) {
+            startX = event.touches[0].clientX;
+            startY = event.touches[0].clientY;
+        }, { passive: true });
+        viewer.addEventListener('touchend', function (event) {
+            if (startX === null) return;
+            const dx = event.changedTouches[0].clientX - startX;
+            const dy = event.changedTouches[0].clientY - startY;
+            startX = startY = null;
+            if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) show(index + (dx < 0 ? 1 : -1));
+        });
+
+        show(0);
     });
 </script>
 {% endblock %}

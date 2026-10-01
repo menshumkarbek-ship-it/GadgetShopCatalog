@@ -2021,3 +2021,81 @@ msgstr "Сырсөз"
 #: .\templates\admin\login.html:86
 msgid "Sign In"
 msgstr "Кирүү"
+
+msgid "Sold Products"
+msgstr "Сатылган товарлар"
+
+msgid "Deleted Products"
+msgstr "Өчүрүлгөн товарлар"
+
+msgid "Products you marked as sold, newest first. Each one is counted in the sales report. Restoring one puts it back on sale and removes that sale."
+msgstr "Сатылды деп белгиленген товарлар, жаңылары биринчи. Алардын ар бири сатуу отчетуна кирет. Калыбына келтирүү товарды кайра сатууга коёт жана бул сатууну өчүрөт."
+
+msgid "Products you deleted without a sale, newest first. Put one back on sale, or erase it for good."
+msgstr "Сатуусуз өчүрүлгөн товарлар, жаңылары биринчи. Товарды кайра сатууга коюңуз же биротоло өчүрүңүз."
+
+msgid "Search sold products"
+msgstr "Сатылган товарлардан издөө"
+
+msgid "Search deleted products"
+msgstr "Өчүрүлгөн товарлардан издөө"
+
+msgid "Nothing sold yet. Products you mark as sold from the Products page land here."
+msgstr "Азырынча эч нерсе сатыла элек. «Товарлар» бетинен сатылды деп белгиленген товарлар ушул жерде чыгат."
+
+msgid "Nothing deleted. Products you delete from the Products page land here, and can be restored from here."
+msgstr "Эч нерсе өчүрүлгөн жок. «Товарлар» бетинен өчүрүлгөн товарлар ушул жерде чыгат жана бул жерден калыбына келтирүүгө болот."
+
+msgid "All sold products"
+msgstr "Бардык сатылган товарлар"
+
+msgid "All deleted products"
+msgstr "Бардык өчүрүлгөн товарлар"
+
+msgid "A year"
+msgstr "Жыл"
+
+msgid "Last month"
+msgstr "Акыркы ай"
+
+msgid "Last 2 months"
+msgstr "Акыркы 2 ай"
+
+msgid "Last 3 months"
+msgstr "Акыркы 3 ай"
+
+msgid "Last 6 months"
+msgstr "Акыркы 6 ай"
+
+msgid "Last 12 months"
+msgstr "Акыркы 12 ай"
+
+msgid "Period"
+msgstr "Мезгил"
+
+msgid "Made this month"
+msgstr "Бул айдагы киреше"
+
+msgid "Made in total"
+msgstr "Бардык убакыттагы киреше"
+
+msgid "By Month"
+msgstr "Айлар боюнча"
+
+msgid "Pick a period, and a category if you like, to see how much was sold. A sale is recorded the moment you mark a product sold."
+msgstr "Мезгилди, кааласаңыз категорияны тандап, канчалык сатылганын көрүңүз. Сатуу товарды сатылды деп белгилеген заматта жазылат."
+
+msgid "All categories"
+msgstr "Бардык категориялар"
+
+msgid "Average sale"
+msgstr "Орточо сатуу"
+
+msgid "Show"
+msgstr "Көрсөтүү"
+
+msgid "How much was sold over a period, and in which categories. A sale is recorded the moment you mark a product sold."
+msgstr "Мезгил ичинде канча сатылгандыгы жана кайсы категорияларда. Сатуу товарды сатылды деп белгилеген заматта жазылат."
+
+msgid "Nothing was sold in this period."
+msgstr "Бул мезгилде эч нерсе сатылган жок."

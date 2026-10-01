@@ -88,29 +88,10 @@ def management_nav(request):
     from django.urls import reverse
     from django.utils.translation import gettext as _
 
+    # Three rows of three cards: Pages, Catalog, then Sales, whose last card
+    # is Sign Out (`signout`), so the grid ends squarely.
     return {
         'management_groups': [
-            {
-                'label': _('Catalog'),
-                'items': [
-                    {'key': 'products', 'label': _('Products'), 'icon': 'fa-box',
-                     'url': reverse('shop:create_product')},
-                    {'key': 'categories', 'label': _('Categories'), 'icon': 'fa-tags',
-                     'url': reverse('shop:create_category')},
-                    {'key': 'removed', 'label': _('Removed'), 'icon': 'fa-trash-can',
-                     'url': reverse('shop:removed_products')},
-                ],
-            },
-            {
-                'label': _('Sales'),
-                'items': [
-                    # One entry: the page carries its own month / all-time
-                    # switch, and opens on all time, which is the view
-                    # staff actually read.
-                    {'key': 'sales', 'label': _('Sales'), 'icon': 'fa-chart-line',
-                     'url': reverse('shop:sales_archive')},
-                ],
-            },
             {
                 'label': _('Pages'),
                 'items': [
@@ -120,6 +101,29 @@ def management_nav(request):
                      'url': reverse('shop:manage_about')},
                     {'key': 'contacts', 'label': _('Contacts'), 'icon': 'fa-address-book',
                      'url': reverse('shop:manage_contacts')},
+                ],
+            },
+            {
+                'label': _('Catalog'),
+                'items': [
+                    {'key': 'products', 'label': _('Products'), 'icon': 'fa-box',
+                     'url': reverse('shop:create_product')},
+                    {'key': 'categories', 'label': _('Categories'), 'icon': 'fa-tags',
+                     'url': reverse('shop:create_category')},
+                    {'key': 'deleted', 'label': _('Deleted'), 'icon': 'fa-trash-can',
+                     'url': reverse('shop:deleted_products')},
+                ],
+            },
+            {
+                'label': _('Sales'),
+                'signout': True,
+                'items': [
+                    # Opens on the headline numbers; the filters on the page
+                    # bring up the figures for a period.
+                    {'key': 'sales', 'label': _('Sales'), 'icon': 'fa-chart-line',
+                     'url': reverse('shop:sales_report')},
+                    {'key': 'sold', 'label': _('Sold'), 'icon': 'fa-circle-check',
+                     'url': reverse('shop:sold_products')},
                 ],
             },
         ],

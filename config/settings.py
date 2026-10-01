@@ -159,16 +159,6 @@ LANGUAGES = [
 LANGUAGE_COOKIE_AGE = 60 * 60 * 24 * 365
 LANGUAGE_COOKIE_SAMESITE = 'Lax'
 
-# Automatic translation of product titles/descriptions and category names
-# between English, Russian and Kyrgyz, by Claude (shop/translation.py). Off
-# until ANTHROPIC_API_KEY is set — and always off under tests, which must
-# never call a paid API. The translation runs in a background thread so the
-# admin's save returns at once; tests run it inline.
-ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY', '').strip()
-TRANSLATION_ENABLED = bool(ANTHROPIC_API_KEY) and sys.argv[1:2] != ['test']
-TRANSLATION_MODEL = os.getenv('TRANSLATION_MODEL', 'claude-opus-5').strip()
-TRANSLATION_IN_BACKGROUND = sys.argv[1:2] != ['test']
-
 # Directory where translation files (.po / .mo) will be stored
 LOCALE_PATHS = [
     os.path.join(BASE_DIR, 'locale'),

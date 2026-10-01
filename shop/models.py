@@ -44,11 +44,6 @@ class Category(models.Model):
         help_text="Minimum digits in the number; shorter numbers get leading zeros (3 gives L-007)."
     )
 
-    # Which of the name fields above were filled in by the automatic
-    # translator (shop/translation.py) rather than typed by staff — those
-    # are the only ones it may later rewrite.
-    machine_translated = models.JSONField(default=list, blank=True, editable=False)
-
     class Meta:
         verbose_name_plural = "Categories"
         ordering = ['name']
@@ -590,11 +585,6 @@ class Product(models.Model):
     name_ky = models.CharField(max_length=255, blank=True, verbose_name="Product Title (Kyrgyz)")
     description_ru = models.TextField(blank=True, verbose_name="Product Description (Russian)")
     description_ky = models.TextField(blank=True, verbose_name="Product Description (Kyrgyz)")
-
-    # Which of the title/description fields were filled in by the automatic
-    # translator (shop/translation.py) rather than typed by staff — those
-    # are the only ones it may later rewrite, e.g. after the source changes.
-    machine_translated = models.JSONField(default=list, blank=True, editable=False)
 
     # A short, stable, per-category number (1, 2, 3, ...), assigned once
     # when the product is created and never changed afterwards. With the

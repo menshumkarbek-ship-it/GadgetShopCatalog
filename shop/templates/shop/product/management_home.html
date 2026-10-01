@@ -3,7 +3,7 @@
 
 {% comment %}
   The panel's front door, and its only menu: one card per section, grouped,
-  and Sign Out at the end. Passes no `active` key, which is what tells the
+  and Sign Out as the last card of the last group. Passes no `active` key, which is what tells the
   shell to leave out the Back link every section page carries.
 {% endcomment %}
 
@@ -26,14 +26,9 @@
                 <i class="fa-solid fa-chevron-right shrink-0 text-[10px] text-gray-300 group-hover:text-indigo-400 transition-colors"></i>
             </a>
             {% endfor %}
-        </div>
-    </section>
-    {% endfor %}
-
-    <!-- The way out. A full page load (data-reload), not a background post:
-         after signing out there is no panel left to update. -->
-    <section class="pt-2">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {% if group.signout %}
+            <!-- The way out. A full page load (data-reload), not a background
+                 post: after signing out there is no panel left to update. -->
             <form method="POST" action="{% url 'admin:logout' %}" data-reload>
                 {% csrf_token %}
                 <button type="submit" class="group w-full flex items-center gap-3.5 bg-white border border-gray-100 rounded-2xl shadow-sm px-4 py-3.5 hover:border-red-200 hover:shadow-md transition-all text-left">
@@ -43,6 +38,9 @@
                     <span class="min-w-0 flex-1 text-sm font-black text-gray-950 truncate">{% translate "Sign Out" %}</span>
                 </button>
             </form>
+            {% endif %}
         </div>
     </section>
+    {% endfor %}
+
 {% endblock %}

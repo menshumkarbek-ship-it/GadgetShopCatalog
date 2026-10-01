@@ -2039,3 +2039,81 @@ msgstr "Пароль"
 #: .\templates\admin\login.html:86
 msgid "Sign In"
 msgstr "Войти"
+
+msgid "Sold Products"
+msgstr "Проданные товары"
+
+msgid "Deleted Products"
+msgstr "Удалённые товары"
+
+msgid "Products you marked as sold, newest first. Each one is counted in the sales report. Restoring one puts it back on sale and removes that sale."
+msgstr "Товары, отмеченные как проданные, сначала новые. Каждый учтён в отчёте о продажах. Восстановление возвращает товар в продажу и удаляет эту продажу."
+
+msgid "Products you deleted without a sale, newest first. Put one back on sale, or erase it for good."
+msgstr "Товары, удалённые без продажи, сначала новые. Верните товар в продажу или сотрите его навсегда."
+
+msgid "Search sold products"
+msgstr "Поиск среди проданных товаров"
+
+msgid "Search deleted products"
+msgstr "Поиск среди удалённых товаров"
+
+msgid "Nothing sold yet. Products you mark as sold from the Products page land here."
+msgstr "Пока ничего не продано. Товары, отмеченные как проданные на странице «Товары», появятся здесь."
+
+msgid "Nothing deleted. Products you delete from the Products page land here, and can be restored from here."
+msgstr "Ничего не удалено. Товары, удалённые на странице «Товары», появятся здесь, и их можно восстановить."
+
+msgid "All sold products"
+msgstr "Все проданные товары"
+
+msgid "All deleted products"
+msgstr "Все удалённые товары"
+
+msgid "A year"
+msgstr "Год"
+
+msgid "Last month"
+msgstr "Последний месяц"
+
+msgid "Last 2 months"
+msgstr "Последние 2 месяца"
+
+msgid "Last 3 months"
+msgstr "Последние 3 месяца"
+
+msgid "Last 6 months"
+msgstr "Последние 6 месяцев"
+
+msgid "Last 12 months"
+msgstr "Последние 12 месяцев"
+
+msgid "Period"
+msgstr "Период"
+
+msgid "Made this month"
+msgstr "Выручка за этот месяц"
+
+msgid "Made in total"
+msgstr "Выручка за всё время"
+
+msgid "By Month"
+msgstr "По месяцам"
+
+msgid "Pick a period, and a category if you like, to see how much was sold. A sale is recorded the moment you mark a product sold."
+msgstr "Выберите период и при желании категорию, чтобы увидеть, сколько продано. Продажа записывается в тот момент, когда вы отмечаете товар проданным."
+
+msgid "All categories"
+msgstr "Все категории"
+
+msgid "Average sale"
+msgstr "Средний чек"
+
+msgid "Show"
+msgstr "Показать"
+
+msgid "How much was sold over a period, and in which categories. A sale is recorded the moment you mark a product sold."
+msgstr "Сколько продано за период и в каких категориях. Продажа записывается в тот момент, когда вы отмечаете товар проданным."
+
+msgid "Nothing was sold in this period."
+msgstr "За этот период ничего не продано."

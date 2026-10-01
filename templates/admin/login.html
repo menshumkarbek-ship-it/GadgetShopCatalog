@@ -80,7 +80,9 @@
                         {% for error in form.password.errors %}
                             <p class="t-caption text-ember mt-1.5">{{ error }}</p>
                         {% endfor %}
-                        <input type="hidden" name="next" value="{% if next == '/admin/' %}/management/product/add/{% else %}{{ next }}{% endif %}">
+                        {% url 'admin:index' as admin_index %}
+                        {# Signing in from the plain sign-in page lands on the home page; arriving from a protected page (e.g. Settings) returns to it. #}
+                        <input type="hidden" name="next" value="{% if not next or next == '/admin/' or next == admin_index %}{% url 'shop:home' %}{% else %}{{ next }}{% endif %}">
                     </div>
 
                     <button type="submit" class="btn btn-blue w-full">{% translate "Sign In" %}</button>

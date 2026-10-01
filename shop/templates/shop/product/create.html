@@ -213,18 +213,6 @@
                 <div class="lang-field" data-group="product-description" data-lang="en">{{ form.description }}</div>
                 <div class="lang-field hidden" data-group="product-description" data-lang="ru">{{ form.description_ru }}</div>
                 <div class="lang-field hidden" data-group="product-description" data-lang="ky">{{ form.description_ky }}</div>
-                {% if translation_enabled %}
-                <p class="text-[11px] text-gray-400 mt-1.5 flex items-start gap-1.5">
-                    <i class="fa-solid fa-language text-indigo-400 mt-0.5"></i>
-                    <span>{% translate "Write the title and description in any one language. After saving, the other tabs are filled in automatically; you can correct them there." %}</span>
-                </p>
-                {% endif %}
-                {% if auto_translated %}
-                <p class="text-[11px] text-indigo-600 mt-1 flex items-start gap-1.5">
-                    <i class="fa-solid fa-wand-magic-sparkles mt-0.5"></i>
-                    <span>{% translate "Translated automatically — check before relying on it:" %} {{ auto_translated|join:", " }}</span>
-                </p>
-                {% endif %}
             </div>
 
             <!-- Technical characteristics: as many or as few rows as this
@@ -282,11 +270,6 @@
             <div class="bg-indigo-50/40 rounded-xl p-4 border-2 border-indigo-100 space-y-3">
                 <label class="text-xs font-bold text-indigo-600 uppercase tracking-wide block">1 · {% translate "Cover Image" %}</label>
                 <p class="text-[10px] text-gray-500">{% translate "The main photo shown on the catalog and product cards. Choosing a new one replaces the current cover." %}</p>
-                {% if product_instance and product_instance.image %}
-                <div class="w-24 aspect-square bg-white rounded-lg border-2 border-indigo-500 overflow-hidden">
-                    <img src="{{ product_instance.image.url }}" class="w-full h-full object-contain p-1" alt="{% translate 'Current cover image' %}">
-                </div>
-                {% endif %}
                 {{ form.image }}
             </div>
 
